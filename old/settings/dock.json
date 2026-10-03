@@ -1,0 +1,134 @@
+[
+  {
+    "name": "Apps",
+    "path": "/System/Applications/Apps.app"
+  },
+  {
+    "name": "1Password",
+    "path": "/Applications/Nix Apps/1Password.app"
+  },
+  {
+    "name": "App Store",
+    "path": "/System/Applications/App Store.app"
+  },
+  {
+    "name": "Music",
+    "path": "/System/Applications/Music.app"
+  },
+  {
+    "name": "System Settings",
+    "path": "/System/Applications/System Settings.app"
+  },
+  {
+    "name": "Google Chrome",
+    "path": "/Applications/Nix Apps/Google Chrome.app"
+  },
+  {
+    "name": "Firefox",
+    "path": "/Applications/Nix Apps/Firefox.app"
+  },
+  {
+    "name": "Safari",
+    "path": "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"
+  },
+  {
+    "name": "Photos",
+    "path": "/System/Applications/Photos.app"
+  },
+  {
+    "name": "Zoho Meeting",
+    "path": "/Applications/Zoho Meeting.app"
+  },
+  {
+    "name": "Microsoft Outlook",
+    "path": "/Applications/Microsoft Outlook.app"
+  },
+  {
+    "name": "Slack",
+    "path": "/Applications/Nix Apps/Slack.app"
+  },
+  {
+    "name": "Microsoft Teams",
+    "path": "/Applications/Microsoft Teams.app"
+  },
+  {
+    "name": "Visual Studio Code",
+    "path": "/Applications/Nix Apps/Visual Studio Code.app"
+  },
+  {
+    "name": "Claude",
+    "path": "/Applications/Claude.app"
+  },
+  {
+    "name": "Codex",
+    "path": "/Applications/Codex.app"
+  },
+  {
+    "name": "Zed",
+    "path": "/Applications/Nix Apps/Zed.app"
+  },
+  {
+    "name": "Android Studio",
+    "path": "/Applications/Android Studio.app"
+  },
+  {
+    "name": "Xcode",
+    "path": "/Applications/Xcode.app"
+  },
+  {
+    "name": "Docker Desktop",
+    "path": "/Applications/Docker.app/Contents/MacOS/Docker Desktop.app"
+  },
+  {
+    "name": "GitKraken",
+    "path": "/Applications/Nix Apps/GitKraken.app"
+  },
+  {
+    "name": "Messages",
+    "path": "/System/Applications/Messages.app"
+  },
+  {
+    "name": "Signal",
+    "path": "/Applications/Nix Apps/Signal.app"
+  },
+  {
+    "name": "WhatsApp",
+    "path": "/Applications/Nix Apps/WhatsApp.app"
+  },
+  {
+    "name": "Rambox",
+    "path": "/Applications/Rambox.app"
+  },
+  {
+    "name": "Postman",
+    "path": "/Applications/Nix Apps/Postman.app"
+  },
+  {
+    "name": "Wondershare PDFelement",
+    "path": "/Applications/Wondershare PDFelement.app"
+  },
+  {
+    "name": "iPhone Mirroring",
+    "path": "/System/Applications/iPhone Mirroring.app"
+  },
+  {
+    "name": "Spotify",
+    "path": "/Applications/Nix Apps/Spotify.app"
+  },
+  {
+    "name": "Activity Monitor",
+    "path": "/System/Applications/Utilities/Activity Monitor.app"
+  },
+  {
+    "name": "Araxis Merge",
+    "path": "/Applications/Araxis Merge.app"
+  },
+  {
+    "name": "Ariane",
+    "path": "/Applications/Ariane.app"
+  },
+  {
+    "name": "Mole",
+    "path": "/Applications/Mole.app"
+  }
+]

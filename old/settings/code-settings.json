@@ -1,0 +1,23 @@
+{
+  "redhat.telemetry.enabled": false,
+  "remote.autoForwardPortsSource": "hybrid",
+  "terminal.integrated.scrollback": 99999999999,
+  "explorer.confirmDragAndDrop": false,
+  "makefile.configureOnOpen": false,
+  "editor.minimap.enabled": false,
+  "markdownlint.config": {},
+  "markdownlint.run": "onSave",
+  "python.languageServer": "Default",
+  "docker.extension.dockerEngineAvailabilityPrompt": false,
+  "extensions.ignoreRecommendations": true,
+  "[html]": {
+    "editor.suggest.insertMode": "replace"
+  },
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "terminal.integrated.suggest.enabled": false,
+  "workbench.settings.applyToAllProfiles": [
+    "terminal.integrated.suggest.enabled"
+  ],
+  "python.defaultInterpreterPath": "python3",
+  "dart.flutterSdkPath": "@FLUTTER@"
+}

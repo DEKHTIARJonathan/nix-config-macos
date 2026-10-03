@@ -1,0 +1,272 @@
+[
+  {
+    "browser": "Brave",
+    "id": "aeblfdkhhhdcdjpifhhbdiojplfjncoa",
+    "name": "1Password \u2013 Password Manager",
+    "version": "8.12.36.40"
+  },
+  {
+    "browser": "Brave",
+    "id": "jplgfhpmjnbigmhklmmbgecoobifkmpa",
+    "name": "Proton VPN: Fast & Secure",
+    "version": "1.3.6"
+  },
+  {
+    "browser": "Brave",
+    "id": "dhdgffkkebhmkfjojejmpbldmpobfkfo",
+    "name": "Tampermonkey",
+    "version": "5.5.0"
+  },
+  {
+    "browser": "Brave",
+    "id": "fjoaledfpmneenckfbpdfhkmimnjocfa",
+    "name": "VPN for Chrome: NordVPN proxy protection",
+    "version": "6.0.1"
+  },
+  {
+    "browser": "Brave",
+    "id": "lmjnegcaeklhafolokijcfjliaokphfk",
+    "name": "Video Download Helper",
+    "version": "10.5.49.2"
+  },
+  {
+    "browser": "Chrome",
+    "id": "aeblfdkhhhdcdjpifhhbdiojplfjncoa",
+    "name": "1Password \u2013 Password Manager",
+    "version": "8.12.37.1"
+  },
+  {
+    "browser": "Chrome",
+    "id": "kagjkiiecagemklhmhkabbalfpbianbe",
+    "name": "AI Exporter - Save ChatGPT, Claude and Gemini chats to PDF, MD and more",
+    "version": "4.5.0"
+  },
+  {
+    "browser": "Chrome",
+    "id": "bhlhnicpbhignbdhedgjhgdocnmhomnp",
+    "name": "ColorZilla",
+    "version": "4.1"
+  },
+  {
+    "browser": "Chrome",
+    "id": "ghbmnnjooekpmoecnnnilnnbdlolhkhi",
+    "name": "Google Docs Offline",
+    "version": "1.110.1"
+  },
+  {
+    "browser": "Chrome",
+    "id": "aapbdbdomjkkjkaonfhkkikfgjllcleb",
+    "name": "Google Translate",
+    "version": "2.0.17"
+  },
+  {
+    "browser": "Chrome",
+    "id": "pkehgijcmpdhfbdbbnkijodmdjhbjlgp",
+    "name": "Privacy Badger",
+    "version": "2026.9.15"
+  },
+  {
+    "browser": "Chrome",
+    "id": "ghmbeldphafepmbegfdlkpapadhbakde",
+    "name": "Proton Pass: Free Password Manager",
+    "version": "1.40.2"
+  },
+  {
+    "browser": "Chrome",
+    "id": "jplgfhpmjnbigmhklmmbgecoobifkmpa",
+    "name": "Proton VPN: Fast & Secure",
+    "version": "1.3.6"
+  },
+  {
+    "browser": "Chrome",
+    "id": "ijejnggjjphlenbhmjhhgcdpehhacaal",
+    "name": "Screen Recorder & Screenshot App for Chrome | Scrnli",
+    "version": "4.3.9"
+  },
+  {
+    "browser": "Chrome",
+    "id": "laameccjpleogmfhilmffpdbiibgbekf",
+    "name": "Tab Suspender",
+    "version": "1.0.4"
+  },
+  {
+    "browser": "Chrome",
+    "id": "fiabciakcmgepblmdkmemdbbkilneeeh",
+    "name": "Tab Suspender",
+    "version": "2.0.12"
+  },
+  {
+    "browser": "Chrome",
+    "id": "lmjnegcaeklhafolokijcfjliaokphfk",
+    "name": "Video Download Helper",
+    "version": "10.5.49.2"
+  },
+  {
+    "browser": "Chrome",
+    "id": "ddkjiahejlhfcafbddmgiahcphecmpfh",
+    "name": "uBlock Origin Lite",
+    "version": "2026.926.2202"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{d634138d-c276-4fc8-924b-40a0ea21d284}",
+    "name": "1Password \u2013 Password Manager",
+    "version": "8.12.32.33"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{aff8af88-06a9-4eee-b383-3af08c47b8c8}",
+    "name": "Capital One Shopping: Save Now",
+    "version": "0.1.1219"
+  },
+  {
+    "browser": "Firefox",
+    "id": "ccna@philippesabourin.com",
+    "name": "Credit Card Nicknames for Amazon",
+    "version": "1.0.14"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{41f9e51d-35e4-4b29-af66-422ff81c8b41}",
+    "name": "Disable JavaScript",
+    "version": "2.3.2resigned1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{5f884915-160e-4276-a216-770a753a3abe}",
+    "name": "Distract Me Not",
+    "version": "2.8.3"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{4d5b7a5e-5232-9e45-97f4-f8e1ca2626e5}",
+    "name": "Eno\u00ae from Capital One\u00ae",
+    "version": "6.0.0"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{36bdf805-c6f2-4f41-94d2-9b646342c1dc}",
+    "name": "Export Cookies",
+    "version": "0.3.2"
+  },
+  {
+    "browser": "Firefox",
+    "id": "chrome-gnome-shell@gnome.org",
+    "name": "GNOME Shell integration",
+    "version": "12.1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{b588f8ac-dbdf-4397-bcd7-3d29be2f17d7}",
+    "name": "GitHub Code Folding",
+    "version": "0.1.2resigned1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "github-repo-size@mattelrah.com",
+    "name": "Github Repo Size",
+    "version": "1.7.0"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{e65b64ad-4343-44eb-8163-1f83ad706344}",
+    "name": "Githunt",
+    "version": "1.6.2"
+  },
+  {
+    "browser": "Firefox",
+    "id": "translator@zoli.bod",
+    "name": "Google Translator for Firefox",
+    "version": "3.0.3.4resigned1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "newtab@mozilla.org",
+    "name": "New Tab",
+    "version": "154.4.20260708.42619"
+  },
+  {
+    "browser": "Firefox",
+    "id": "nordvpnproxy@nordvpn.com",
+    "name": "NordVPN - a VPN proxy extension for Firefox",
+    "version": "5.2.2"
+  },
+  {
+    "browser": "Firefox",
+    "id": "PopupWindow@ettoolong",
+    "name": "Popup window",
+    "version": "0.1.3"
+  },
+  {
+    "browser": "Firefox",
+    "id": "jid1-MnnxcxisBPnSXQ@jetpack",
+    "name": "Privacy Badger",
+    "version": "2026.9.15"
+  },
+  {
+    "browser": "Firefox",
+    "id": "morisdov@windowviewportresizer",
+    "name": "Resize Window & Viewport",
+    "version": "1.0.7resigned1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{8196dd58-b7e8-4705-8ef5-de28ecf312bb}",
+    "name": "Session Manager",
+    "version": "1.0.2"
+  },
+  {
+    "browser": "Firefox",
+    "id": "Tab-Session-Manager@sienori",
+    "name": "Tab Session Manager",
+    "version": "7.4.0"
+  },
+  {
+    "browser": "Firefox",
+    "id": "@github-readme-toc",
+    "name": "Table of Contents for GitHub",
+    "version": "0.2.6resigned1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "jid1-93WyvpgvxzGATw@jetpack",
+    "name": "To Google Translate",
+    "version": "4.3.1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{a6c4a591-f1b2-4f03-b3ff-767e5bedf4e7}",
+    "name": "User-Agent Switcher and Manager",
+    "version": "0.7.1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{b9db16a4-6edc-47ec-a1f4-b86292ed211d}",
+    "name": "Video DownloadHelper",
+    "version": "9.5.0.2"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{4d567245-e70d-466a-bb2f-390fc7fb25c2}",
+    "name": "Want My RSS",
+    "version": "0.38"
+  },
+  {
+    "browser": "Firefox",
+    "id": "WebAppMode@ettoolong",
+    "name": "Web App Mode",
+    "version": "0.0.9"
+  },
+  {
+    "browser": "Firefox",
+    "id": "{c45c406e-ab73-11d8-be73-000a95be3b12}",
+    "name": "Web Developer",
+    "version": "3.0.1"
+  },
+  {
+    "browser": "Firefox",
+    "id": "uBlock0@raymondhill.net",
+    "name": "uBlock Origin",
+    "version": "1.73.0"
+  }
+]

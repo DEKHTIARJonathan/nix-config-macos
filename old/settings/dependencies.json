@@ -1,0 +1,332 @@
+[
+  {
+    "name": "ada-url",
+    "version": "4.0.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "bdw-gc",
+    "version": "8.2.12",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "brotli",
+    "version": "1.2.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "c-ares",
+    "version": "1.34.8",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "ca-certificates",
+    "version": "2026-08-13",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "cairo",
+    "version": "1.18.4",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "dav1d",
+    "version": "1.5.4",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "fmt",
+    "version": "12.2.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "fontconfig",
+    "version": "2.18.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "freetype",
+    "version": "2.14.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "gettext",
+    "version": "1.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "giflib",
+    "version": "6.1.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "glib",
+    "version": "2.88.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "gmp",
+    "version": "6.3.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "gradle-completion",
+    "version": "9.6.1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "graphite2",
+    "version": "1.3.15",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "harfbuzz",
+    "version": "14.3.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "hdrhistogram_c",
+    "version": "0.11.10",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "icu4c@78",
+    "version": "78.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "jpeg-turbo",
+    "version": "3.2.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "json-c",
+    "version": "0.19",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "lame",
+    "version": "4.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libffi",
+    "version": "3.7.1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libnghttp2",
+    "version": "1.70.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libnghttp3",
+    "version": "1.18.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libngtcp2",
+    "version": "1.25.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libpaper",
+    "version": "2.2.8",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libpng",
+    "version": "1.6.58",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libtiff",
+    "version": "4.7.2",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libunistring",
+    "version": "1.4.2",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libuv",
+    "version": "1.52.1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libvmaf",
+    "version": "3.2.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libvpx",
+    "version": "1.16.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libx11",
+    "version": "1.8.13",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libxau",
+    "version": "1.0.12",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libxcb",
+    "version": "1.17.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libxdmcp",
+    "version": "1.1.5",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libxext",
+    "version": "1.3.7",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "libxrender",
+    "version": "0.9.12",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "little-cms2",
+    "version": "2.19",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "llhttp",
+    "version": "9.4.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "lz4",
+    "version": "1.10.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "lzo",
+    "version": "2.10",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "merve",
+    "version": "1.2.2_1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "mpg123",
+    "version": "1.33.7",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "nbytes",
+    "version": "0.1.4",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "openjdk",
+    "version": "26.0.2",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "openssl@3",
+    "version": "3.6.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "openssl@4",
+    "version": "4.0.2",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "opus",
+    "version": "1.6.1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "pcre2",
+    "version": "10.47_1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "pixman",
+    "version": "0.46.4",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "readline",
+    "version": "8.3.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "sdl2-compat",
+    "version": "2.32.70",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "sdl3",
+    "version": "3.4.14",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "simdjson",
+    "version": "4.6.6",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "simdutf",
+    "version": "9.0.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "sqlite",
+    "version": "3.53.4",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "svt-av1",
+    "version": "4.2.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "uvwasi",
+    "version": "0.0.23",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "webp",
+    "version": "1.6.0",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "x264",
+    "version": "r3222",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "x265",
+    "version": "4.2",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "xorgproto",
+    "version": "2025.1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "xz",
+    "version": "5.8.3",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  },
+  {
+    "name": "zstd",
+    "version": "1.5.7_1",
+    "source": "Resolved by their parent packages; no separate global Nix declaration."
+  }
+]

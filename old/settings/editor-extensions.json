@@ -1,0 +1,452 @@
+[
+  {
+    "id": "1yib.rust-bundle",
+    "editor": "Code",
+    "version": "1.0.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "awei-sumaho.apple-container-manager",
+    "editor": "Code",
+    "version": "0.9.5",
+    "nixAttribute": false
+  },
+  {
+    "id": "bbenoist.nix",
+    "editor": "Code",
+    "version": "1.0.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "charliermarsh.ruff",
+    "editor": "Code",
+    "version": "2026.84.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "dustypomerleau.rust-syntax",
+    "editor": "Code",
+    "version": "0.6.1",
+    "nixAttribute": false
+  },
+  {
+    "id": "juggernautjp.less-toml",
+    "editor": "Code",
+    "version": "0.6.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "leighlondon.eml",
+    "editor": "Code",
+    "version": "0.4.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "leonhard-s.python-sphinx-highlight",
+    "editor": "Code",
+    "version": "0.3.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "mikestead.dotenv",
+    "editor": "Code",
+    "version": "1.0.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-azuretools.vscode-containers",
+    "editor": "Code",
+    "version": "2.5.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-azuretools.vscode-docker",
+    "editor": "Code",
+    "version": "2.0.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.debugpy",
+    "editor": "Code",
+    "version": "2026.6.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.python",
+    "editor": "Code",
+    "version": "2026.4.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.vscode-pylance",
+    "editor": "Code",
+    "version": "2025.9.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.vscode-python-envs",
+    "editor": "Code",
+    "version": "1.38.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-containers",
+    "editor": "Code",
+    "version": "0.469.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-ssh",
+    "editor": "Code",
+    "version": "0.128.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-ssh-edit",
+    "editor": "Code",
+    "version": "0.87.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-wsl",
+    "editor": "Code",
+    "version": "0.104.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.vscode-remote-extensionpack",
+    "editor": "Code",
+    "version": "0.26.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.cpptools",
+    "editor": "Code",
+    "version": "1.34.4",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.makefile-tools",
+    "editor": "Code",
+    "version": "0.12.17",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.remote-explorer",
+    "editor": "Code",
+    "version": "0.5.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.remote-server",
+    "editor": "Code",
+    "version": "1.5.3",
+    "nixAttribute": false
+  },
+  {
+    "id": "redhat.java",
+    "editor": "Code",
+    "version": "1.56.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "rodolphebarbanneau.python-docstring-highlighter",
+    "editor": "Code",
+    "version": "0.2.4",
+    "nixAttribute": false
+  },
+  {
+    "id": "rust-lang.rust-analyzer",
+    "editor": "Code",
+    "version": "0.3.3065",
+    "nixAttribute": true
+  },
+  {
+    "id": "tamasfe.even-better-toml",
+    "editor": "Code",
+    "version": "0.21.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-gradle",
+    "editor": "Code",
+    "version": "3.18.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-debug",
+    "editor": "Code",
+    "version": "0.59.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-dependency",
+    "editor": "Code",
+    "version": "0.27.6",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-pack",
+    "editor": "Code",
+    "version": "0.31.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-test",
+    "editor": "Code",
+    "version": "0.46.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-maven",
+    "editor": "Code",
+    "version": "0.45.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "webnative.webnative",
+    "editor": "Code",
+    "version": "2.2.16",
+    "nixAttribute": false
+  },
+  {
+    "id": "yzhang.markdown-all-in-one",
+    "editor": "Code",
+    "version": "3.6.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "zainchen.json",
+    "editor": "Code",
+    "version": "2.0.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "anysphere.cursorpyright",
+    "editor": "Cursor",
+    "version": "1.0.12",
+    "nixAttribute": false
+  },
+  {
+    "id": "anysphere.remote-containers",
+    "editor": "Cursor",
+    "version": "1.0.37",
+    "nixAttribute": false
+  },
+  {
+    "id": "charliermarsh.ruff",
+    "editor": "Cursor",
+    "version": "2026.56.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "docker.docker",
+    "editor": "Cursor",
+    "version": "0.18.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "eamodio.gitlens",
+    "editor": "Cursor",
+    "version": "18.2.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "github.vscode-github-actions",
+    "editor": "Cursor",
+    "version": "0.32.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "juggernautjp.less-toml",
+    "editor": "Cursor",
+    "version": "0.6.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "leighlondon.eml",
+    "editor": "Cursor",
+    "version": "0.4.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "leonhard-s.python-sphinx-highlight",
+    "editor": "Cursor",
+    "version": "0.3.0",
+    "nixAttribute": false
+  },
+  {
+    "id": "ms-azuretools.vscode-containers",
+    "editor": "Cursor",
+    "version": "2.4.5",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-azuretools.vscode-docker",
+    "editor": "Cursor",
+    "version": "2.0.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.debugpy",
+    "editor": "Cursor",
+    "version": "2026.6.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-python.python",
+    "editor": "Cursor",
+    "version": "2025.6.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-toolsai.jupyter-keymap",
+    "editor": "Cursor",
+    "version": "1.1.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-ssh",
+    "editor": "Cursor",
+    "version": "0.113.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-ssh-edit",
+    "editor": "Cursor",
+    "version": "0.87.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.remote-wsl",
+    "editor": "Cursor",
+    "version": "0.81.8",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode-remote.vscode-remote-extensionpack",
+    "editor": "Cursor",
+    "version": "0.26.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.cpptools",
+    "editor": "Cursor",
+    "version": "1.23.6",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.makefile-tools",
+    "editor": "Cursor",
+    "version": "0.12.17",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.remote-explorer",
+    "editor": "Cursor",
+    "version": "0.5.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "ms-vscode.remote-server",
+    "editor": "Cursor",
+    "version": "1.5.2",
+    "nixAttribute": false
+  },
+  {
+    "id": "redhat.java",
+    "editor": "Cursor",
+    "version": "1.55.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "rodolphebarbanneau.python-docstring-highlighter",
+    "editor": "Cursor",
+    "version": "0.2.4",
+    "nixAttribute": false
+  },
+  {
+    "id": "rust-lang.rust-analyzer",
+    "editor": "Cursor",
+    "version": "0.3.2955",
+    "nixAttribute": true
+  },
+  {
+    "id": "tamasfe.even-better-toml",
+    "editor": "Cursor",
+    "version": "0.21.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "tauri-apps.tauri-vscode",
+    "editor": "Cursor",
+    "version": "0.2.10",
+    "nixAttribute": true
+  },
+  {
+    "id": "visualstudioexptteam.intellicode-api-usage-examples",
+    "editor": "Cursor",
+    "version": "0.2.9",
+    "nixAttribute": true
+  },
+  {
+    "id": "visualstudioexptteam.vscodeintellicode",
+    "editor": "Cursor",
+    "version": "1.3.2",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-gradle",
+    "editor": "Cursor",
+    "version": "3.17.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-debug",
+    "editor": "Cursor",
+    "version": "0.59.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-dependency",
+    "editor": "Cursor",
+    "version": "0.27.6",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-pack",
+    "editor": "Cursor",
+    "version": "0.31.1",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-java-test",
+    "editor": "Cursor",
+    "version": "0.45.0",
+    "nixAttribute": true
+  },
+  {
+    "id": "vscjava.vscode-maven",
+    "editor": "Cursor",
+    "version": "0.45.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "webnative.webnative",
+    "editor": "Cursor",
+    "version": "2.2.13",
+    "nixAttribute": false
+  },
+  {
+    "id": "yzhang.markdown-all-in-one",
+    "editor": "Cursor",
+    "version": "3.6.3",
+    "nixAttribute": true
+  },
+  {
+    "id": "zainchen.json",
+    "editor": "Cursor",
+    "version": "2.0.2",
+    "nixAttribute": true
+  }
+]

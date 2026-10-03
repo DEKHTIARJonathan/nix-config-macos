@@ -1,0 +1,1522 @@
+{
+  "audited": "2026-09-29",
+  "nixpkgsRevision": "dc8993a5c130c05a8565579014968a112d416d76",
+  "items": [
+    {
+      "name": "1Password for Safari",
+      "installed": "8.12.37",
+      "provider": "mas",
+      "package": 1569813296,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id1569813296"
+    },
+    {
+      "name": "1Password",
+      "installed": "8.12.36",
+      "provider": "nix",
+      "package": "_1password-gui",
+      "category": "Applications",
+      "notes": "Grant app/browser integration permissions after launch; import vaults by signing in.",
+      "availableVersion": "8.12.21"
+    },
+    {
+      "name": "APMPMetadata",
+      "installed": "1.5",
+      "provider": "mas",
+      "package": 6752358792,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id6752358792"
+    },
+    {
+      "name": "Adobe Photoshop 2025",
+      "installed": "26.0.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install Creative Cloud from Adobe, sign in, then install Photoshop. Restore presets and license separately.",
+      "url": "https://www.adobe.com/products/photoshop.html"
+    },
+    {
+      "name": "Viewer",
+      "installed": "2.1.3",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install Agisoft Viewer from the vendor; Metashape Professional is a separate application.",
+      "url": "https://www.agisoft.com/downloads/installer/"
+    },
+    {
+      "name": "AltTab",
+      "installed": "11.4.3",
+      "provider": "nix",
+      "package": "alt-tab-macos",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "10.12.0"
+    },
+    {
+      "name": "Android Studio",
+      "installed": "2025.3",
+      "provider": "cask",
+      "package": "android-studio",
+      "category": "Applications",
+      "notes": "26.05 android-studio supports Linux, not this macOS app. Keep its SDK writable.",
+      "availableVersion": "2026.1.4.8,quail4-patch1",
+      "url": "https://formulae.brew.sh/cask/android-studio"
+    },
+    {
+      "name": "AnkerWork",
+      "installed": "3.0.4",
+      "provider": "cask",
+      "package": "ankerwork",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "3.0.4",
+      "url": "https://formulae.brew.sh/cask/ankerwork"
+    },
+    {
+      "name": "Apple Configurator",
+      "installed": "2.20",
+      "provider": "mas",
+      "package": 1037126344,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id1037126344"
+    },
+    {
+      "name": "Araxis Merge",
+      "installed": "2024.6001",
+      "provider": "cask",
+      "package": "araxis-merge",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "2026.1",
+      "url": "https://formulae.brew.sh/cask/araxis-merge"
+    },
+    {
+      "name": "Ariane",
+      "installed": "26.4.1",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Obtain the vendor macOS installer and restore application preferences and survey data."
+    },
+    {
+      "name": "Audacity",
+      "installed": "3.7.0.0",
+      "provider": "nix",
+      "package": "audacity",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "3.7.7"
+    },
+    {
+      "name": "Bazecor",
+      "installed": "1.8.3",
+      "provider": "cask",
+      "package": "bazecor",
+      "category": "Applications",
+      "notes": "Nix package is Linux-only. Export keyboard layers separately.",
+      "availableVersion": "1.10.0",
+      "url": "https://formulae.brew.sh/cask/bazecor"
+    },
+    {
+      "name": "Brave Browser",
+      "installed": "152.1.94.121",
+      "provider": "nix",
+      "package": "brave",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.96.59"
+    },
+    {
+      "name": "Claude",
+      "installed": "1.44121.4",
+      "provider": "cask",
+      "package": "claude",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "2.9939.4,a166d8a7c640e65ad825ebfb99d74ccbb9c8940d",
+      "url": "https://formulae.brew.sh/cask/claude"
+    },
+    {
+      "name": "Codex",
+      "installed": "26.810.52044",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install the desktop app from its official distribution. pkgs.codex is the CLI. The codex-app cask is deprecated and older than this installed app.",
+      "url": "https://openai.com/codex/"
+    },
+    {
+      "name": "Concept2 Utility",
+      "installed": "7.18",
+      "provider": "cask",
+      "package": "concept2-utility",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "7.18.00",
+      "url": "https://formulae.brew.sh/cask/concept2-utility"
+    },
+    {
+      "name": "Cursor",
+      "installed": "3.9.16",
+      "provider": "nix",
+      "package": "code-cursor",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "3.5.17"
+    },
+    {
+      "name": "DecoPlanner",
+      "installed": "4.6.5",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Obtain the vendor macOS installer and activate your license.",
+      "url": "https://www.gue.com/decoplanner"
+    },
+    {
+      "name": "Developer",
+      "installed": "11.1",
+      "provider": "mas",
+      "package": 640199958,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id640199958"
+    },
+    {
+      "name": "Docker",
+      "installed": "4.91.0",
+      "provider": "cask",
+      "package": "docker-desktop",
+      "category": "Applications",
+      "notes": "Docker owns its CLI, Compose, credential helpers and Kubernetes integration; do not install competing copies.",
+      "availableVersion": "4.93.0,240920",
+      "url": "https://formulae.brew.sh/cask/docker-desktop"
+    },
+    {
+      "name": "Evernote",
+      "installed": "10.114.2",
+      "provider": "cask",
+      "package": "evernote",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "10.105.4,20240910164757,a2e60a8d876a07eded5d212fa56ba45214114ad0",
+      "url": "https://formulae.brew.sh/cask/evernote"
+    },
+    {
+      "name": "Firefox",
+      "installed": "152.0.5",
+      "provider": "nix",
+      "package": "firefox-bin",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "156.0.1"
+    },
+    {
+      "name": "Fortuna",
+      "installed": "0.4.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Obtain the original signed release; no matching 26.05 package or Homebrew cask found."
+    },
+    {
+      "name": "FrameForge",
+      "installed": "1.0.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install a project release, or follow the project build instructions. Source repository found locally; access may be required.",
+      "url": "https://github.com/DEKHTIARJonathan/FrameForge"
+    },
+    {
+      "name": "GLKVM",
+      "installed": "1.4.0",
+      "provider": "cask",
+      "package": "glkvm",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "1.5.0,1782704518562,release1",
+      "url": "https://formulae.brew.sh/cask/glkvm"
+    },
+    {
+      "name": "Garmin BaseCamp",
+      "installed": "4.8.13",
+      "provider": "cask",
+      "package": "garmin-basecamp",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "4.8.13",
+      "url": "https://formulae.brew.sh/cask/garmin-basecamp"
+    },
+    {
+      "name": "Garmin MapInstall",
+      "installed": "4.3.6",
+      "provider": "bundled",
+      "package": "garmin-basecamp",
+      "category": "Applications",
+      "notes": "Installed by the BaseCamp package; do not add a second installer."
+    },
+    {
+      "name": "Garmin MapManager",
+      "installed": "3.1.3",
+      "provider": "bundled",
+      "package": "garmin-basecamp",
+      "category": "Applications",
+      "notes": "Installed by the BaseCamp package; do not add a second installer."
+    },
+    {
+      "name": "GitKraken",
+      "installed": "12.5.0",
+      "provider": "nix",
+      "package": "gitkraken",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "12.1.1"
+    },
+    {
+      "name": "GoPro Quik",
+      "installed": "2.2.0",
+      "provider": "mas",
+      "package": 561350520,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id561350520"
+    },
+    {
+      "name": "Google Chrome",
+      "installed": "154.0.8037.92",
+      "provider": "nix",
+      "package": "google-chrome",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "154.0.8037.58"
+    },
+    {
+      "name": "Google Earth Pro",
+      "installed": "7.3",
+      "provider": "cask",
+      "package": "google-earth-pro",
+      "category": "Applications",
+      "notes": "Nix package is Linux-only.",
+      "availableVersion": "7.3.7.1327",
+      "url": "https://formulae.brew.sh/cask/google-earth-pro"
+    },
+    {
+      "name": "HandBrake",
+      "installed": "1.10.2",
+      "provider": "cask",
+      "package": "handbrake-app",
+      "category": "Applications",
+      "notes": "Nix package is marked broken on Darwin.",
+      "availableVersion": "1.11.2",
+      "url": "https://formulae.brew.sh/cask/handbrake-app"
+    },
+    {
+      "name": "Hidden Bar",
+      "installed": "1.10",
+      "provider": "nix",
+      "package": "hidden-bar",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.10"
+    },
+    {
+      "name": "Insta360 Studio",
+      "installed": "5.9.2",
+      "provider": "cask",
+      "package": "insta360-studio",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "6.0.5,release_insta360,RC_build14,_20260914_170949_signed_1789378030265,06db645109da4b238b629f847dda1aba",
+      "url": "https://formulae.brew.sh/cask/insta360-studio"
+    },
+    {
+      "name": "Keynote Creator Studio",
+      "installed": "15.3.1",
+      "provider": "mas",
+      "package": 361285480,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id361285480"
+    },
+    {
+      "name": "LM Studio",
+      "installed": "0.4.12+1",
+      "provider": "nix",
+      "package": "lmstudio",
+      "category": "Applications",
+      "notes": "No x86_64-darwin package or current Intel cask. Intel profile omits this app explicitly.",
+      "systems": [
+        "aarch64-darwin"
+      ],
+      "availableVersion": "0.4.15-2"
+    },
+    {
+      "name": "Mac Mouse Fix",
+      "installed": "3.0.8",
+      "provider": "cask",
+      "package": "mac-mouse-fix",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "3.1.0",
+      "url": "https://formulae.brew.sh/cask/mac-mouse-fix"
+    },
+    {
+      "name": "MeshLab2025.07",
+      "installed": "2025.07",
+      "provider": "nix",
+      "package": "meshlab",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "2025.07"
+    },
+    {
+      "name": "MetashapePro",
+      "installed": "2.1.3",
+      "provider": "cask",
+      "package": "metashapepro",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "2.3.2",
+      "url": "https://formulae.brew.sh/cask/metashapepro"
+    },
+    {
+      "name": "Microsoft Excel",
+      "installed": "16.113.2",
+      "provider": "cask",
+      "package": "microsoft-excel",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "16.113.26092012",
+      "url": "https://formulae.brew.sh/cask/microsoft-excel"
+    },
+    {
+      "name": "Microsoft OneNote",
+      "installed": "16.113.2",
+      "provider": "cask",
+      "package": "microsoft-onenote",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "16.113.26092012",
+      "url": "https://formulae.brew.sh/cask/microsoft-onenote"
+    },
+    {
+      "name": "Microsoft Outlook",
+      "installed": "16.113.2",
+      "provider": "cask",
+      "package": "microsoft-outlook",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "16.113.26091740",
+      "url": "https://formulae.brew.sh/cask/microsoft-outlook"
+    },
+    {
+      "name": "Microsoft PowerPoint",
+      "installed": "16.113.3",
+      "provider": "cask",
+      "package": "microsoft-powerpoint",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "16.113.26092012",
+      "url": "https://formulae.brew.sh/cask/microsoft-powerpoint"
+    },
+    {
+      "name": "Microsoft Teams",
+      "installed": "26246.1709.5146.8945",
+      "provider": "cask",
+      "package": "microsoft-teams",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "26225.1708.5124.9749",
+      "url": "https://formulae.brew.sh/cask/microsoft-teams"
+    },
+    {
+      "name": "Microsoft Word",
+      "installed": "16.113.2",
+      "provider": "cask",
+      "package": "microsoft-word",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "16.113.26092012",
+      "url": "https://formulae.brew.sh/cask/microsoft-word"
+    },
+    {
+      "name": "Mole",
+      "installed": "1.15.0",
+      "provider": "cask",
+      "package": "mole-app",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "1.16.0",
+      "url": "https://formulae.brew.sh/cask/mole-app"
+    },
+    {
+      "name": "Moom",
+      "installed": "4.5.1",
+      "provider": "cask",
+      "package": "moom",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "4.6.0",
+      "url": "https://formulae.brew.sh/cask/moom"
+    },
+    {
+      "name": "NordVPN",
+      "installed": "10.11.0",
+      "provider": "cask",
+      "package": "nordvpn",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "10.12.0",
+      "url": "https://formulae.brew.sh/cask/nordvpn"
+    },
+    {
+      "name": "Notion",
+      "installed": "7.21.0",
+      "provider": "nix",
+      "package": "notion-app",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "4.24.0"
+    },
+    {
+      "name": "Obsidian",
+      "installed": "1.12.7",
+      "provider": "nix",
+      "package": "obsidian",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.13.7"
+    },
+    {
+      "name": "OneDrive",
+      "installed": "26.153.0809",
+      "provider": "cask",
+      "package": "onedrive",
+      "category": "Applications",
+      "notes": "Nix onedrive is a Linux CLI, not the installed Mac client.",
+      "availableVersion": "26.153.0809.0004",
+      "url": "https://formulae.brew.sh/cask/onedrive"
+    },
+    {
+      "name": "Orchard",
+      "installed": "2.4.3",
+      "provider": "cask",
+      "package": "orchard",
+      "category": "Applications",
+      "notes": "Native Apple Containers GUI; macOS 26+ and Apple Silicon. Uses the Homebrew container runtime. pkgs.orchard is an unrelated Tart orchestrator.",
+      "availableVersion": "2.4.3",
+      "url": "https://github.com/andrew-waters/orchard",
+      "systems": [
+        "aarch64-darwin"
+      ]
+    },
+    {
+      "name": "Personal Assistant",
+      "installed": "1.2.9",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Use the original application distributor; confirm current download availability."
+    },
+    {
+      "name": "Plaud",
+      "installed": "1.0.10",
+      "provider": "cask",
+      "package": "plaud",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "1.3.11",
+      "url": "https://formulae.brew.sh/cask/plaud"
+    },
+    {
+      "name": "Postman",
+      "installed": "12.11.3",
+      "provider": "nix",
+      "package": "postman",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "11.94.0"
+    },
+    {
+      "name": "ProtonVPN",
+      "installed": "6.5.1",
+      "provider": "cask",
+      "package": "protonvpn",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "6.5.1",
+      "url": "https://formulae.brew.sh/cask/protonvpn"
+    },
+    {
+      "name": "IDLE",
+      "installed": "3.12.4",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Nix Python with tkinter provides IDLE tooling; python.org is needed for the original macOS app bundle.",
+      "url": "https://www.python.org/downloads/macos/"
+    },
+    {
+      "name": "Python Launcher",
+      "installed": "3.12.4",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "python.org provides this macOS launcher bundle; the Nix Python package does not recreate it.",
+      "url": "https://www.python.org/downloads/macos/"
+    },
+    {
+      "name": "QGIS",
+      "installed": "4.0.0",
+      "provider": "nix",
+      "package": "qgis",
+      "category": "Applications",
+      "notes": "Nix on Apple Silicon. Intel uses the QGIS cask because the 26.05 Arrow dependency is marked broken there. Restore plugins and projects separately.",
+      "availableVersion": "4.0.3",
+      "systems": [
+        "aarch64-darwin"
+      ]
+    },
+    {
+      "name": "Rambox",
+      "installed": "2.7.1",
+      "provider": "cask",
+      "package": "rambox",
+      "category": "Applications",
+      "notes": "Nix package is Linux-only.",
+      "availableVersion": "2.7.1",
+      "url": "https://formulae.brew.sh/cask/rambox"
+    },
+    {
+      "name": "Raycast",
+      "installed": "1.104.30",
+      "provider": "nix",
+      "package": "raycast",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.104.17"
+    },
+    {
+      "name": "Safari",
+      "installed": "27.0",
+      "provider": "macos",
+      "package": "",
+      "category": "Applications",
+      "notes": "Supplied and updated by macOS."
+    },
+    {
+      "name": "Screen Studio",
+      "installed": "3.5.1-4051",
+      "provider": "cask",
+      "package": "screen-studio",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "3.7.5-4595",
+      "url": "https://formulae.brew.sh/cask/screen-studio"
+    },
+    {
+      "name": "Shadow PC",
+      "installed": "9.9.10457",
+      "provider": "cask",
+      "package": "shadow",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "9.9.10481",
+      "url": "https://formulae.brew.sh/cask/shadow"
+    },
+    {
+      "name": "Signal",
+      "installed": "8.28.0",
+      "provider": "nix",
+      "package": "signal-desktop",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "8.25.0"
+    },
+    {
+      "name": "Slack",
+      "installed": "4.52.162",
+      "provider": "nix",
+      "package": "slack",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "4.49.89"
+    },
+    {
+      "name": "SpeleoDB Compass Sidecar",
+      "installed": "26.7.26",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install the matching project release and restore the application data separately.",
+      "url": "https://github.com/OpenSpeleo/speleodb_compass_sidecar"
+    },
+    {
+      "name": "Spotify",
+      "installed": "1.3.0.277",
+      "provider": "nix",
+      "package": "spotify",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.2.92.147"
+    },
+    {
+      "name": "Tailscale",
+      "installed": "1.96.5",
+      "provider": "cask",
+      "package": "tailscale-app",
+      "category": "Applications",
+      "notes": "Use the signed GUI and system extension; pkgs.tailscale is a different CLI/service installation.",
+      "availableVersion": "1.102.4",
+      "url": "https://formulae.brew.sh/cask/tailscale-app"
+    },
+    {
+      "name": "Telegram",
+      "installed": "12.2",
+      "provider": "cask",
+      "package": "telegram",
+      "category": "Applications",
+      "notes": "Keep the native Telegram for macOS client; telegram-desktop is a different application.",
+      "availableVersion": "12.10,282985",
+      "url": "https://formulae.brew.sh/cask/telegram"
+    },
+    {
+      "name": "TestFlight",
+      "installed": "4.4.0",
+      "provider": "mas",
+      "package": 899247664,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id899247664"
+    },
+    {
+      "name": "The Unarchiver",
+      "installed": "4.3.9",
+      "provider": "cask",
+      "package": "the-unarchiver",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "4.3.9,147,1742287964",
+      "url": "https://formulae.brew.sh/cask/the-unarchiver"
+    },
+    {
+      "name": "TitanMesh",
+      "installed": "1.0.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install a project release or build from source; restore identities and signing material privately.",
+      "url": "https://github.com/DEKHTIARJonathan/TitanMesh"
+    },
+    {
+      "name": "Tor Browser",
+      "installed": "14.0.6",
+      "provider": "cask",
+      "package": "tor-browser",
+      "category": "Applications",
+      "notes": "26.05 tor-browser has Linux sources only.",
+      "availableVersion": "15.0.23",
+      "url": "https://formulae.brew.sh/cask/tor-browser"
+    },
+    {
+      "name": "Transporter",
+      "installed": "1.4.5",
+      "provider": "mas",
+      "package": 1450874784,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id1450874784"
+    },
+    {
+      "name": "VLC",
+      "installed": "3.0.21",
+      "provider": "nix",
+      "package": "vlc-bin",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "3.0.23"
+    },
+    {
+      "name": "Virtual Desktop Streamer",
+      "installed": "1.34.12",
+      "provider": "cask",
+      "package": "virtual-desktop-streamer",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "1.34.22",
+      "url": "https://formulae.brew.sh/cask/virtual-desktop-streamer"
+    },
+    {
+      "name": "Visual Studio Code",
+      "installed": "1.139.1",
+      "provider": "nix",
+      "package": "vscode",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.119.0"
+    },
+    {
+      "name": "WhatsApp",
+      "installed": "26.38.20",
+      "provider": "nix",
+      "package": "whatsapp-for-mac",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "2.26.19.17"
+    },
+    {
+      "name": "Windows App",
+      "installed": "11.4.1",
+      "provider": "mas",
+      "package": 1295203466,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id1295203466"
+    },
+    {
+      "name": "Wine Stable",
+      "installed": "11.0_1",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Homebrew wine-stable is disabled for Gatekeeper failures. Use a supported upstream distribution if available; Rosetta is required on ARM. No automatic security bypass.",
+      "url": "https://github.com/Gcenx/macOS_Wine_builds/releases"
+    },
+    {
+      "name": "Wondershare PDFelement",
+      "installed": "12.1.28",
+      "provider": "mas",
+      "package": 1470732135,
+      "category": "Applications",
+      "notes": "Requires App Store sign-in/acquisition; current store version is not pinned by Nix.",
+      "url": "https://apps.apple.com/app/id1470732135"
+    },
+    {
+      "name": "Xcode",
+      "installed": "27.0",
+      "provider": "mas",
+      "package": 497799835,
+      "category": "Applications",
+      "notes": "ARM: App Store. Intel: manually install Xcode 26 from Apple Developer downloads; Xcode 27 requires Apple Silicon.",
+      "systems": [
+        "aarch64-darwin"
+      ],
+      "url": "https://apps.apple.com/app/id497799835"
+    },
+    {
+      "name": "YubiKey Manager",
+      "installed": "1.2.5",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Legacy GUI, removed from nixpkgs. Do not substitute the CLI or Authenticator without noting the different interface.",
+      "url": "https://www.yubico.com/support/download/yubikey-manager/"
+    },
+    {
+      "name": "Yubico Authenticator",
+      "installed": "7.3.3",
+      "provider": "cask",
+      "package": "yubico-authenticator",
+      "category": "Applications",
+      "notes": "Nix yubioath-flutter is Linux-only.",
+      "availableVersion": "7.4.1",
+      "url": "https://formulae.brew.sh/cask/yubico-authenticator"
+    },
+    {
+      "name": "Zed",
+      "installed": "1.12.0",
+      "provider": "nix",
+      "package": "zed-editor",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "1.3.6"
+    },
+    {
+      "name": "Zoho Meeting",
+      "installed": "4.1.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Applications",
+      "notes": "Install the vendor macOS application; sign in and grant microphone/camera permissions.",
+      "url": "https://www.zoho.com/meeting/desktop-app.html"
+    },
+    {
+      "name": "balenaEtcher",
+      "installed": "2.1.4",
+      "provider": "cask",
+      "package": "balenaetcher",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate.",
+      "availableVersion": "2.1.7",
+      "url": "https://formulae.brew.sh/cask/balenaetcher"
+    },
+    {
+      "name": "net.downloadhelper.coapp",
+      "installed": "2.0.19",
+      "provider": "cask",
+      "package": "netdownloadhelpercoapp",
+      "category": "Applications",
+      "notes": "No equivalent native Darwin package selected; vendor updates and licenses remain separate. Homebrew marks this cask deprecated: discontinued.",
+      "availableVersion": "2.0.19",
+      "url": "https://formulae.brew.sh/cask/netdownloadhelpercoapp"
+    },
+    {
+      "name": "pgAdmin 4",
+      "installed": "9.5",
+      "provider": "cask",
+      "package": "pgadmin4",
+      "category": "Applications",
+      "notes": "Keep the native desktop bundle; the Nix package provides a different Python deployment.",
+      "availableVersion": "9.18",
+      "url": "https://formulae.brew.sh/cask/pgadmin4"
+    },
+    {
+      "name": "zoom.us",
+      "installed": "7.0.0 (77593)",
+      "provider": "nix",
+      "package": "zoom-us",
+      "category": "Applications",
+      "notes": "Update through the Nix lockfile; app is managed under /Applications/Nix Apps.",
+      "availableVersion": "7.1.5.84650"
+    },
+    {
+      "name": "a2ps",
+      "installed": "4.15.8",
+      "provider": "nix",
+      "package": "a2ps",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "4.15.7"
+    },
+    {
+      "name": "Bun",
+      "installed": "1.3.14",
+      "provider": "nix",
+      "package": "bun",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "1.3.13"
+    },
+    {
+      "name": "CMake",
+      "installed": "4.4.2",
+      "provider": "nix",
+      "package": "cmake",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "4.1.6"
+    },
+    {
+      "name": "FFmpeg",
+      "installed": "8.1.2",
+      "provider": "nix",
+      "package": "ffmpeg_8",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "8.1.2"
+    },
+    {
+      "name": "GitHub CLI",
+      "installed": "2.97.0",
+      "provider": "nix",
+      "package": "gh",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "2.101.0"
+    },
+    {
+      "name": "Git LFS",
+      "installed": "3.7.1",
+      "provider": "nix",
+      "package": "git-lfs",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "3.7.1"
+    },
+    {
+      "name": "Gradle",
+      "installed": "9.7.0",
+      "provider": "nix",
+      "package": "gradle_9",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "9.4.1"
+    },
+    {
+      "name": "iperf3",
+      "installed": "3.21",
+      "provider": "nix",
+      "package": "iperf3",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "3.20"
+    },
+    {
+      "name": "Jujutsu",
+      "installed": "0.44.0",
+      "provider": "nix",
+      "package": "jujutsu",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.41.0"
+    },
+    {
+      "name": "OpenMP",
+      "installed": "22.1.8",
+      "provider": "nix",
+      "package": "llvmPackages.openmp",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "21.1.8"
+    },
+    {
+      "name": "NASM",
+      "installed": "3.02",
+      "provider": "nix",
+      "package": "nasm",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "3.02"
+    },
+    {
+      "name": "Node.js / npm",
+      "installed": "26.7.0 / 11.19.0",
+      "provider": "nix",
+      "package": "nodejs_26",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "26.10.0"
+    },
+    {
+      "name": "pnpm",
+      "installed": "11.1.3",
+      "provider": "nix",
+      "package": "pnpm_11",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "11.27.0"
+    },
+    {
+      "name": "Corepack",
+      "installed": "0.34.6",
+      "provider": "nix",
+      "package": "corepack",
+      "category": "Developer tools",
+      "notes": "Lower path priority than the explicit pnpm package; do not run corepack enable against the Nix store.",
+      "availableVersion": "0.36.0"
+    },
+    {
+      "name": "Python",
+      "installed": "3.12.4",
+      "provider": "nix",
+      "package": "python312",
+      "category": "Developer tools",
+      "notes": "Includes pip, packaging and tkinter. Use uv/venvs for projects; never pip-install into the Nix store.",
+      "availableVersion": "3.12.14"
+    },
+    {
+      "name": "uv",
+      "installed": "0.12.17",
+      "provider": "nix",
+      "package": "uv",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.11.21"
+    },
+    {
+      "name": "mise",
+      "installed": "2026.5.10",
+      "provider": "nix",
+      "package": "mise",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "2026.5.12"
+    },
+    {
+      "name": "ShellCheck",
+      "installed": "0.11.0",
+      "provider": "nix",
+      "package": "shellcheck",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.11.0"
+    },
+    {
+      "name": "Rustup",
+      "installed": "1.29.0",
+      "provider": "nix",
+      "package": "rustup",
+      "category": "Developer tools",
+      "notes": "Nix owns rustup; initialize Rust 1.98.0, components and targets separately.",
+      "availableVersion": "1.29.0"
+    },
+    {
+      "name": "cargo-audit",
+      "installed": "0.22.2",
+      "provider": "nix",
+      "package": "cargo-audit",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.22.1"
+    },
+    {
+      "name": "cargo-binstall",
+      "installed": "1.21.1",
+      "provider": "nix",
+      "package": "cargo-binstall",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "1.19.1"
+    },
+    {
+      "name": "cargo-deny",
+      "installed": "0.20.2",
+      "provider": "nix",
+      "package": "cargo-deny",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.19.6"
+    },
+    {
+      "name": "cargo-edit",
+      "installed": "0.13.7",
+      "provider": "nix",
+      "package": "cargo-edit",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.13.10"
+    },
+    {
+      "name": "cargo-machete",
+      "installed": "0.9.2",
+      "provider": "nix",
+      "package": "cargo-machete",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.9.2"
+    },
+    {
+      "name": "cargo-nextest",
+      "installed": "0.9.143",
+      "provider": "nix",
+      "package": "cargo-nextest",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.9.136"
+    },
+    {
+      "name": "cargo-outdated",
+      "installed": "0.19.0",
+      "provider": "nix",
+      "package": "cargo-outdated",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.19.0"
+    },
+    {
+      "name": "cargo-update",
+      "installed": "18.2.0",
+      "provider": "nix",
+      "package": "cargo-update",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "20.0.0"
+    },
+    {
+      "name": "cargo-wizard",
+      "installed": "0.2.3",
+      "provider": "nix",
+      "package": "cargo-wizard",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.2.3"
+    },
+    {
+      "name": "Tauri CLI",
+      "installed": "2.10.0",
+      "provider": "nix",
+      "package": "cargo-tauri",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "2.11.0"
+    },
+    {
+      "name": "prek",
+      "installed": "0.4.14",
+      "provider": "nix",
+      "package": "prek",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.3.11"
+    },
+    {
+      "name": "Trunk",
+      "installed": "0.21.14",
+      "provider": "nix",
+      "package": "trunk",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.21.14"
+    },
+    {
+      "name": "wasm-bindgen CLI",
+      "installed": "0.2.123",
+      "provider": "nix",
+      "package": "wasm-bindgen-cli",
+      "category": "Developer tools",
+      "notes": "0.2.123 is not packaged at the audited revision; the default is 0.2.121. Match each project Cargo.lock when building WebAssembly.",
+      "availableVersion": "0.2.121"
+    },
+    {
+      "name": "wasm-pack",
+      "installed": "0.15.0",
+      "provider": "nix",
+      "package": "wasm-pack",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.15.0"
+    },
+    {
+      "name": "kind",
+      "installed": "standalone binary",
+      "provider": "nix",
+      "package": "kind",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.31.0"
+    },
+    {
+      "name": "Podman",
+      "installed": "5.3.2",
+      "provider": "nix",
+      "package": "podman",
+      "category": "Developer tools",
+      "notes": "Initialize the VM explicitly with podman machine init/start; no VM or daemon is created by activation.",
+      "availableVersion": "5.8.7"
+    },
+    {
+      "name": "Railway CLI",
+      "installed": "4.16.1",
+      "provider": "nix",
+      "package": "railway",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "4.36.1"
+    },
+    {
+      "name": "JSON Schema CLI",
+      "installed": "0.46.3",
+      "provider": "nix",
+      "package": "jsonschema-cli",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.46.6"
+    },
+    {
+      "name": "Codex CLI",
+      "installed": "0.158.0",
+      "provider": "nix",
+      "package": "codex",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.146.0"
+    },
+    {
+      "name": "Claude Code",
+      "installed": "2.1.177",
+      "provider": "nix",
+      "package": "claude-code",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "2.1.223"
+    },
+    {
+      "name": "npm-check-updates",
+      "installed": "22.2.0",
+      "provider": "nix",
+      "package": "npm-check-updates",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "19.3.2"
+    },
+    {
+      "name": "Ionic CLI",
+      "installed": "7.2.1",
+      "provider": "nix",
+      "package": "ionic-cli",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "7.2.1"
+    },
+    {
+      "name": "Pi coding agent",
+      "installed": "0.70.6",
+      "provider": "nix",
+      "package": "pi-coding-agent",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "0.75.4"
+    },
+    {
+      "name": "Flutter / Dart",
+      "installed": "3.35.6 / 3.9.2",
+      "provider": "nix",
+      "package": "flutter",
+      "category": "Developer tools",
+      "notes": "Use the version pinned by 26.05; executable paths change to Nix profiles.",
+      "availableVersion": "3.41.9"
+    },
+    {
+      "name": "Android SDK command-line tools",
+      "installed": "15859902",
+      "provider": "cask",
+      "package": "android-commandlinetools",
+      "category": "Developer tools",
+      "notes": "Keep SDK packages and licenses in a writable user SDK directory.",
+      "availableVersion": "15859902",
+      "url": "https://formulae.brew.sh/cask/android-commandlinetools"
+    },
+    {
+      "name": "Android platform tools",
+      "installed": "37.0.1",
+      "provider": "cask",
+      "package": "android-platform-tools",
+      "category": "Developer tools",
+      "notes": "Keep SDK packages and licenses in a writable user SDK directory.",
+      "availableVersion": "37.0.1",
+      "url": "https://formulae.brew.sh/cask/android-platform-tools"
+    },
+    {
+      "name": "herdr",
+      "installed": "0.9.1",
+      "provider": "brew",
+      "package": "herdr",
+      "category": "Developer tools",
+      "notes": "Formula 0.9.2 verified; Intel has no bottle in this snapshot and may build from source.",
+      "availableVersion": "0.9.2",
+      "url": "https://formulae.brew.sh/formula/herdr"
+    },
+    {
+      "name": "roborev",
+      "installed": "0.55.0",
+      "provider": "brew",
+      "package": "kenn-io/tap/roborev",
+      "category": "Developer tools",
+      "notes": "Tap supplies both Mac architectures. Initialize hooks only in repositories where wanted.",
+      "availableVersion": "0.69.0",
+      "url": "https://github.com/kenn-io/homebrew-tap"
+    },
+    {
+      "name": "Railpack",
+      "installed": "0.0.55",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Use the upstream installer or release binary; absent from audited nixpkgs.",
+      "url": "https://railpack.com/getting-started"
+    },
+    {
+      "name": "create-tauri-app",
+      "installed": "4.7.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "cargo install --locked create-tauri-app --version 4.7.0",
+      "url": "https://crates.io/crates/create-tauri-app"
+    },
+    {
+      "name": "unirepo-cli",
+      "installed": "0.6.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "npm install --global --prefix \"$HOME/.local\" unirepo-cli@0.6.0",
+      "url": "https://www.npmjs.com/package/unirepo-cli"
+    },
+    {
+      "name": "Conda",
+      "installed": "26.5.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "mise install conda:conda@26.5.0; activate only where required.",
+      "url": "https://mise.jdx.dev/"
+    },
+    {
+      "name": "Rust toolchain",
+      "installed": "1.98.0",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Use scripts/setup-development.sh rust; cross targets do not provide foreign OS linkers.",
+      "url": "https://rustup.rs/"
+    },
+    {
+      "name": "Android SDK",
+      "installed": "36.1 / build-tools 36.1.0 / NDK 28.2.13676358",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Use scripts/setup-development.sh android; accept SDK licenses interactively.",
+      "url": "https://developer.android.com/studio"
+    },
+    {
+      "name": "GStreamer.framework",
+      "installed": "1.28.6",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Homebrew cask is disabled for Gatekeeper failures. Use a supported vendor framework installer. Nix libraries do not recreate the system framework.",
+      "url": "https://gstreamer.freedesktop.org/download/"
+    },
+    {
+      "name": "Oracle Java browser plugin",
+      "installed": "installed framework",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Legacy browser plugin/control panel; a Nix JDK is not an equivalent. Reinstall only from a supported vendor distribution.",
+      "url": "https://www.java.com/"
+    },
+    {
+      "name": "WireGuard helpers",
+      "installed": "GLKVM bundled",
+      "provider": "manual",
+      "package": "",
+      "category": "Developer tools",
+      "notes": "Installed by GLKVM; no separate competing Nix daemon."
+    },
+    {
+      "name": "MesloLGS NF",
+      "installed": "four installed styles",
+      "provider": "nix",
+      "package": "meslo-lgs-nf",
+      "category": "Fonts",
+      "notes": "Powerlevel10k font; includes regular, bold and italic variants.",
+      "availableVersion": "unstable-2023-04-03"
+    },
+    {
+      "name": "Open Sans",
+      "installed": "variable width/weight fonts",
+      "provider": "nix",
+      "package": "open-sans",
+      "category": "Fonts",
+      "notes": "26.05 ships version 1.11; not the same variable font files. Preserve original files privately if exact typography matters.",
+      "availableVersion": "1.11"
+    },
+    {
+      "name": "R\u00d8DE fonts and Arial Unicode",
+      "installed": "installed vendor fonts",
+      "provider": "manual",
+      "package": "",
+      "category": "Fonts",
+      "notes": "Restore from licensed vendor/Office installers; do not redistribute font binaries."
+    },
+    {
+      "name": "RodeUnify",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "VirtualDesktopSpeakers",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "VirtualDesktopMicrophone",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "OculusRemoteDesktopASP",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "ParrotAudioPlugin",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "ZoomAudioDevice",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "MSTeamsAudioDevice",
+      "installed": "installed audio driver",
+      "provider": "manual",
+      "package": "",
+      "category": "Device components",
+      "notes": "Restore through the owning vendor application/driver installer and approve requested macOS permissions."
+    },
+    {
+      "name": "Ruby / Bundler",
+      "installed": "macOS Ruby 2.6.10 / Bundler 1.17.2",
+      "provider": "nix",
+      "package": "ruby",
+      "category": "Developer tools",
+      "notes": "Use Nix Ruby for user gems, leaving Apple system Ruby untouched. Project Gemfiles pin their own dependencies.",
+      "availableVersion": "3.4.9"
+    },
+    {
+      "name": "QGIS (Intel)",
+      "installed": "4.0.0",
+      "provider": "cask",
+      "package": "qgis",
+      "category": "Applications",
+      "notes": "Intel fallback for the broken Nix Arrow dependency. Current cask version is not lockfile-pinned.",
+      "availableVersion": "4.2.3",
+      "systems": [
+        "x86_64-darwin"
+      ],
+      "url": "https://formulae.brew.sh/cask/qgis"
+    },
+    {
+      "name": "Java Development Kit",
+      "installed": "OpenJDK 26.0.2",
+      "provider": "nix",
+      "package": "jdk25",
+      "availableVersion": "25.0.3",
+      "category": "Developer tools",
+      "notes": "26.05 provides JDK 25, not the observed JDK 26. JAVA_HOME is configured for Android sdkmanager and Java tools; Gradle may use its own Nix runtime."
+    },
+    {
+      "name": "Apple container runtime",
+      "installed": "1.5.0",
+      "provider": "brew",
+      "package": "container",
+      "category": "Developer tools",
+      "systems": [
+        "aarch64-darwin"
+      ],
+      "availableVersion": "1.5.0 (Nix: 0.12.3)",
+      "url": "https://github.com/apple/container",
+      "notes": "26.05 pkgs.container exists for ARM but is 0.12.3, below Orchard 2.x requirements. Use the current Homebrew runtime with Orchard; run container system start explicitly."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "redhat.telemetry.enabled": false,
+  "remote.autoForwardPortsSource": "hybrid",
+  "terminal.integrated.scrollback": 99999999999,
+  "explorer.confirmDragAndDrop": false,
+  "makefile.configureOnOpen": false,
+  "editor.minimap.enabled": false,
+  "markdownlint.config": {},
+  "markdownlint.run": "onSave",
+  "python.languageServer": "None",
+  "window.systemColorTheme": "dark",
+  "workbench.activityBar.orientation": "vertical",
+  "cursor.composer.shouldAllowCustomModes": true,
+  "cursor.composer.usageSummaryDisplay": "always",
+  "cursor.general.disableHttp2": true,
+  "window.autoDetectColorScheme": false
+}

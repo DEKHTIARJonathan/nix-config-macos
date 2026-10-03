@@ -1,0 +1,312 @@
+[
+  {
+    "name": "CFPropertyList",
+    "version": "2.3.6",
+    "executables": []
+  },
+  {
+    "name": "addressable",
+    "version": "2.8.8",
+    "executables": []
+  },
+  {
+    "name": "atomos",
+    "version": "0.1.3",
+    "executables": []
+  },
+  {
+    "name": "base64",
+    "version": "0.3.0",
+    "executables": []
+  },
+  {
+    "name": "bigdecimal",
+    "version": "4.0.1",
+    "executables": []
+  },
+  {
+    "name": "claide",
+    "version": "1.1.0",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-deintegrate",
+    "version": "1.0.5",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-downloader",
+    "version": "2.1",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-plugins",
+    "version": "1.0.0",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-search",
+    "version": "1.0.1",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-trunk",
+    "version": "1.6.0",
+    "executables": []
+  },
+  {
+    "name": "cocoapods-try",
+    "version": "1.2.0",
+    "executables": []
+  },
+  {
+    "name": "colored2",
+    "version": "3.1.2",
+    "executables": []
+  },
+  {
+    "name": "csv",
+    "version": "3.3.5",
+    "executables": []
+  },
+  {
+    "name": "date",
+    "version": "3.5.1",
+    "executables": []
+  },
+  {
+    "name": "dbm",
+    "version": "1.1.0",
+    "executables": []
+  },
+  {
+    "name": "did_you_mean",
+    "version": "2.0.0",
+    "executables": []
+  },
+  {
+    "name": "escape",
+    "version": "0.0.4",
+    "executables": []
+  },
+  {
+    "name": "etc",
+    "version": "1.4.6",
+    "executables": []
+  },
+  {
+    "name": "fcntl",
+    "version": "1.3.0",
+    "executables": []
+  },
+  {
+    "name": "fileutils",
+    "version": "1.8.0",
+    "executables": []
+  },
+  {
+    "name": "forwardable",
+    "version": "1.4.0",
+    "executables": []
+  },
+  {
+    "name": "fourflusher",
+    "version": "2.3.1",
+    "executables": []
+  },
+  {
+    "name": "gh_inspector",
+    "version": "1.1.3",
+    "executables": []
+  },
+  {
+    "name": "io-console",
+    "version": "0.8.2",
+    "executables": []
+  },
+  {
+    "name": "ipaddr",
+    "version": "1.2.8",
+    "executables": []
+  },
+  {
+    "name": "libxml-ruby",
+    "version": "5.0.5",
+    "executables": []
+  },
+  {
+    "name": "logger",
+    "version": "1.7.0",
+    "executables": []
+  },
+  {
+    "name": "matrix",
+    "version": "0.4.3",
+    "executables": []
+  },
+  {
+    "name": "mini_portile2",
+    "version": "2.8.9",
+    "executables": []
+  },
+  {
+    "name": "minitest",
+    "version": "5.11.3",
+    "executables": []
+  },
+  {
+    "name": "molinillo",
+    "version": "0.8.0",
+    "executables": []
+  },
+  {
+    "name": "mutex_m",
+    "version": "0.3.0",
+    "executables": []
+  },
+  {
+    "name": "nanaimo",
+    "version": "0.4.0",
+    "executables": []
+  },
+  {
+    "name": "nap",
+    "version": "1.1.0",
+    "executables": []
+  },
+  {
+    "name": "net-telnet",
+    "version": "0.2.0",
+    "executables": []
+  },
+  {
+    "name": "netrc",
+    "version": "0.11.0",
+    "executables": []
+  },
+  {
+    "name": "nkf",
+    "version": "0.2.0",
+    "executables": []
+  },
+  {
+    "name": "nokogiri",
+    "version": "1.13.8",
+    "executables": [
+      "nokogiri"
+    ]
+  },
+  {
+    "name": "ostruct",
+    "version": "0.6.3",
+    "executables": []
+  },
+  {
+    "name": "power_assert",
+    "version": "3.0.1",
+    "executables": []
+  },
+  {
+    "name": "prettyprint",
+    "version": "0.2.0",
+    "executables": []
+  },
+  {
+    "name": "prime",
+    "version": "0.1.4",
+    "executables": []
+  },
+  {
+    "name": "public_suffix",
+    "version": "4.0.7",
+    "executables": []
+  },
+  {
+    "name": "racc",
+    "version": "1.8.1",
+    "executables": [
+      "racc"
+    ]
+  },
+  {
+    "name": "rake",
+    "version": "13.3.1",
+    "executables": [
+      "rake"
+    ]
+  },
+  {
+    "name": "rexml",
+    "version": "3.4.4",
+    "executables": []
+  },
+  {
+    "name": "rss",
+    "version": "0.3.2",
+    "executables": []
+  },
+  {
+    "name": "ruby-macho",
+    "version": "2.5.1",
+    "executables": []
+  },
+  {
+    "name": "shell",
+    "version": "0.8.1",
+    "executables": []
+  },
+  {
+    "name": "singleton",
+    "version": "0.3.0",
+    "executables": []
+  },
+  {
+    "name": "sqlite3",
+    "version": "1.3.13",
+    "executables": []
+  },
+  {
+    "name": "strscan",
+    "version": "3.1.7",
+    "executables": []
+  },
+  {
+    "name": "test-unit",
+    "version": "3.7.7",
+    "executables": [
+      "test-unit"
+    ]
+  },
+  {
+    "name": "thwait",
+    "version": "0.2.0",
+    "executables": []
+  },
+  {
+    "name": "tsort",
+    "version": "0.2.0",
+    "executables": []
+  },
+  {
+    "name": "webrick",
+    "version": "1.9.2",
+    "executables": []
+  },
+  {
+    "name": "xcodeproj",
+    "version": "1.27.0",
+    "executables": [
+      "xcodeproj"
+    ]
+  },
+  {
+    "name": "xmlrpc",
+    "version": "0.3.3",
+    "executables": []
+  },
+  {
+    "name": "zlib",
+    "version": "3.2.2",
+    "executables": []
+  }
+]

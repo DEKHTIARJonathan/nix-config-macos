@@ -1,0 +1,36 @@
+name: Check
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prek:
+    name: Prek
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install nixfmt
+        run: |
+          /home/linuxbrew/.linuxbrew/bin/brew install nixfmt
+          echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
+      - uses: j178/prek-action@v3.0.0
+        with:
+          extra-args: --all-files
+
+  lockfile:
+    name: Validate lockfile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: cachix/install-nix-action@v31
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: Validate flake.lock
+        run: |
+          test -f flake.lock
+          nix flake metadata --no-update-lock-file
