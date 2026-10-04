@@ -7,7 +7,13 @@ lib.mapAttrs (
   name: app:
   let
     format = app.format or "dmg";
-    extension = if format == "zip-pkg" then "zip" else format;
+    extension =
+      if format == "zip-pkg" then
+        "zip"
+      else if format == "dmg-pkg" then
+        "dmg"
+      else
+        format;
   in
   pkgs.fetchurl {
     inherit (app) url hash;

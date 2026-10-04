@@ -1,10 +1,14 @@
 {
+  config,
   host,
   lib,
   pkgs,
   ...
 }:
 {
+  # This managed laptop protects /etc/pam.d. Keep macOS authentication intact.
+  security.pam.services.sudo_local.enable = false;
+
   assertions = [
     {
       assertion = host.username != "CHANGE_ME" && host.username != "";
@@ -38,6 +42,14 @@
   # paths automatically; no `nix develop` or per-terminal activation needed.
   # Home Manager manages personal Zsh and Git configuration in home.nix.
   programs.zsh.enable = true;
+  programs.zsh.interactiveShellInit = ''
+    fpath=(${config.nix-homebrew.package}/completions/zsh $fpath /opt/homebrew/share/zsh/site-functions)
+  '';
+  # Keep Brew-only tools available without prepending old Brew CLI copies.
+  environment.systemPath = lib.mkAfter [
+    "/opt/homebrew/bin"
+    "/opt/homebrew/sbin"
+  ];
 
   # These packages are installed persistently for the machine's users.
   # Names below are nixpkgs attributes, which can differ from Brew names.
@@ -126,17 +138,6 @@
     # Display directories as trees (with optional color/HTML output)
     tree
 
-    # Utility to hide menu bar items
-    # Nix packages the upstream .app; nix-darwin exposes it in
-    # /Applications/Nix Apps. Open it and enable launch at login in its UI
-    # if desired. See README for removing your previous Homebrew copy.
-    hidden-bar
-
-    # Native app packages; existing profiles and Raycast settings stay writable.
-    google-chrome
-    firefox-bin
-    brave
-    raycast
   ];
 
   fonts.packages = [ pkgs.meslo-lgs-nf ];
@@ -144,6 +145,8 @@
   # Homebrew installation management. It remains available for future
   # macOS applications that are missing or unsuitable in nixpkgs.
   nix-homebrew = {
+    enableZshIntegration = false;
+    enableBashIntegration = false;
     enable = true;
     user = host.username;
 
@@ -161,14 +164,16 @@
     mutableTaps = true;
   };
 
-  # Package management through nix-darwin's Homebrew Bundle integration.
-  # All supplied packages have native Nix equivalents, so these are empty.
-  # Add future formulae/casks here instead of also installing Nix copies.
+  # Native apps and frequently updated CLIs maintained outside the Nix store.
   homebrew = {
     enable = true;
 
-    brews = [ ];
-    casks = [ ];
+    brews = [ "railway" ];
+    casks = [
+      "hiddenbar"
+      "codex"
+      "claude-code"
+    ];
 
     onActivation = {
       # Migration mode: do not uninstall packages absent from these lists.

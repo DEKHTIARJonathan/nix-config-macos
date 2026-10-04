@@ -21,6 +21,7 @@ lib.mapAttrs (
       "hash"
       "enable"
       "removeQuarantine"
+      "removeFinderInfo"
       "downloadName"
       "preserveXattrs"
     ]

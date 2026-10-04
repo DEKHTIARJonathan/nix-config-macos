@@ -103,10 +103,10 @@ class RestoreTests(unittest.TestCase):
         source = Path(self.temporary.name) / "source"
         source.mkdir()
         applications = Path(self.temporary.name) / "Applications"
-        managed = applications / "Nix Apps/Example App.app"
+        managed = applications / "Example App.app"
         managed.mkdir(parents=True)
-        original = applications / "Example App.app"
-        original.mkdir()
+        original = Path(self.temporary.name) / "old/Example App.app"
+        original.mkdir(parents=True)
         system_app = Path(self.temporary.name) / "System App.app"
         system_app.mkdir()
         items = [

@@ -18,16 +18,17 @@ everyday tools remain available without entering a development shell.
 | `scripts/`              | User settings restoration, editor setup, developer-tools verification |
 | `android.nix`           | Native Nix Android tools and Java runtime                             |
 | `dmg-apps.nix`          | Shared inventory: app versions, URLs, hashes, and formats             |
-| `macos-apps.nix`        | Installs app bundles and exposes PKGs for manual installation         |
-| `pkgs/mk-macos-app.nix` | Shared DMG, ZIP, PKG, and ZIP-containing-PKG builder                  |
+| `macos-apps.nix`        | Installs missing writable native apps and stages PKGs                 |
+| `pkgs/mk-macos-app.nix` | Shared DMG/ZIP app and embedded PKG builder                           |
 | `pkgs/app-sources.nix`  | Fixed-output downloads from the inventory                             |
 | `pkgs/macos-apps.nix`   | Enabled Apple Silicon app packages                                    |
 | `flake.lock`            | Generated on your Mac; exact input revisions                          |
 
 Your original 23 package entries have native Nix representations. Chrome,
 Firefox, Brave, Raycast, and the personal environment described below are also
-managed by Nix. Homebrew is configured for future additions, with empty
-formula/cask lists and automatic removal disabled.
+declared here. CLI tools and system configuration are managed by Nix; GUI apps
+are writable native installations. Homebrew manages Hidden Bar, Codex CLI,
+Claude Code, and Railway CLI, with automatic removal disabled.
 
 ## Migration on this Mac, in order
 
@@ -137,15 +138,20 @@ This is the step that changes the system. The bootstrap launcher comes from the
 matching release branch; the system configuration uses your local flake and
 lock. Activation configures shell initialization, installs the persistent Nix
 package profile, manages the Nix daemon, adopts existing native Homebrew, and
-installs the app bundles in `/Applications/Nix Apps`. It also activates Home
+installs missing app bundles in `/Applications`. Existing apps are preserved,
+including versions installed by their own updaters. It also activates Home
 Manager, applies desktop preferences, and performs the first-time personal
 settings restoration described below.
 
 Existing Homebrew packages remain installed because `cleanup = "none"`;
-automatic Brew updates and upgrades are disabled. Existing applications outside
-`Nix Apps` are left in place. The four PKG products are only staged for manual
-installation. [nix-homebrew](https://github.com/zhaofengli/nix-homebrew)
+automatic Brew updates and upgrades are disabled. Existing applications are left
+in place. The six PKG products are staged for explicit installation through
+Apple’s Installer. [nix-homebrew](https://github.com/zhaofengli/nix-homebrew)
 provides the existing-installation adoption via `autoMigrate = true`.
+
+PAM authentication files remain managed by macOS
+(`security.pam.services.sudo_local.enable = false`), because this laptop
+protects `/etc/pam.d`.
 
 If activation reports a conflicting existing `/etc` file, inspect and preserve
 the specifically named file, then follow the message and rerun the same command.
@@ -168,7 +174,7 @@ sdkmanager --list_installed
 printf 'ANDROID_HOME=%s\nJAVA_HOME=%s\n' "$ANDROID_HOME" "$JAVA_HOME"
 brew list --versions
 brew services list
-open '/Applications/Nix Apps'
+open '/Applications'
 ```
 
 Both feature checks should include `flakes` and `nix-command` without extra
@@ -178,13 +184,22 @@ wins, inspect `.zprofile` and `.zshrc` for later `brew shellenv` calls, PATH
 assignments, aliases, or version-manager initialization. Keep Nix's system
 profile before duplicate Brew commands when you want the Nix versions to run.
 
-Quit an old app before launching its exact copy from `Nix Apps`. Check your
-settings and normal workflows, then update Dock shortcuts and login items. For
-example, after quitting the old Signal instance:
+GUI apps use their normal `/Applications` locations and remain writable. To
+explicitly reinstall pinned versions, use the native installer command:
 
 ```bash
-open '/Applications/Nix Apps/Signal.app'
+mac-config-install-apps --only signal zed --replace-existing
 ```
+
+Replacement requests quit running apps gracefully and stop if an app remains
+open. Each old bundle is archived and verified as a timestamped `.zip.bckp`
+under `~/.local/state/nix-macos-config/apps` before replacement. Extended
+attributes and internal symlinks are preserved. The backup directory must be on
+the same filesystem as `/Applications` because it also holds the original
+temporarily for atomic rename recovery. App settings are not deleted. Extract a
+backup with
+`ditto -x -k '/path/to/Example.app.TIMESTAMP.zip.bckp' '/path/to/recovery'`;
+quit the app before restoring the recovered bundle to `/Applications`.
 
 For Android projects, check the SDK components and IDE/project SDK paths before
 removing the old SDK; see [Android SDK maintenance](#android-sdk-maintenance).
@@ -197,7 +212,8 @@ Follow [Removing previous installations](#removing-previous-installations)
 below. There is no required mass-uninstall step. Keep Homebrew itself: this
 configuration intentionally manages it for packages that need it.
 
-Keep existing NordVPN, Tailscale, Insta360 Studio, and 1Password installations.
+Keep existing NordVPN, Tailscale, Insta360 Studio, 1Password, RØDECaster, and
+Google Earth Pro installations until their native installer is deliberately run.
 Nix only stages their PKGs; activation does not adopt, reinstall, or control the
 versions of those installed products. When you actually want to install or
 update one, open only its installer, for example:
@@ -206,10 +222,10 @@ update one, open only its installer, for example:
 open /run/current-system/sw/share/macos-pkgs/tailscale.pkg
 ```
 
-The other staged files are `nordvpn.pkg`, `insta360-studio.pkg`, and
-`onepassword.pkg` in the same directory. Apple's Installer handles choices and
-administrator authorization. See
-[PKG installation and updates](#pkg-installation-and-updates).
+The other staged files are `nordvpn.pkg`, `insta360-studio.pkg`,
+`onepassword.pkg`, `rodecaster-app.pkg`, and `google-earth-pro.pkg` in the same
+directory. Apple's Installer handles choices and administrator authorization.
+See [PKG installation and updates](#pkg-installation-and-updates).
 
 ### 7. Use the normal rebuild command afterward
 
@@ -265,7 +281,7 @@ already includes a lock.
 | tree                     | `pkgs.tree`                                        |
 | android-commandlinetools | `pkgs.androidenv.composeAndroidPackages` SDK       |
 | android-platform-tools   | Same composed SDK, including adb and fastboot      |
-| hiddenbar                | `pkgs.hidden-bar`                                  |
+| hiddenbar                | Homebrew cask `hiddenbar`                          |
 
 Both Android entries are included in one SDK package.
 
@@ -294,8 +310,8 @@ Home Manager owns global Git configuration and shell dotfiles; make changes in
 `home.nix` and `settings/git.json`, or use `~/.zshrc.local` for extra shell
 customizations. Use repository-local Git settings for LFS filters and project
 overrides. GitHub credentials and Neovim settings remain user-managed. Open
-`/Applications/Nix Apps/Hidden Bar.app` and configure launch at login in the
-application if desired.
+`/Applications/Hidden Bar.app` and configure launch at login in the application
+if desired.
 
 ## Personal environment restoration
 
@@ -335,9 +351,9 @@ On the first Home Manager activation, after applications are installed:
 - Missing VS Code/Zed settings files are seeded. Existing files and symlinks,
   including dangling symlinks, are preserved.
 - The captured 33-entry Dock order is restored. Managed apps resolve to
-  `/Applications/Nix Apps`, with existing original locations as fallback.
-  Missing apps are reported and skipped; folder stacks and other preferences are
-  preserved. Apps in the Dock snapshot are not implicitly installed.
+  `/Applications`, with existing original locations as fallback. Missing apps
+  are reported and skipped; folder stacks and other preferences are preserved.
+  Apps in the Dock snapshot are not implicitly installed.
 - The 13 captured Terminal profiles are merged with existing profiles. **Basic
   (Shift-Enter)** is selected for default/startup windows, with its MesloLGS NF
   11-point font and captured key mappings. Shell selection and Secure Keyboard
@@ -388,30 +404,51 @@ mac-config-setup-editors all --verify
 ```
 
 `code` and `zed` can replace `all` to select one editor. VS Code installs
-missing IDs through its managed app CLI and reports failures. Zed uses
+missing IDs through its native app CLI and reports failures. Zed uses
 `auto_install_extensions` on launch. The explicit Zed setup command backs up and
 merges that key into existing JSON/JSONC settings, preserving other values;
 comments are normalized when a merge is needed. It refuses to write through
 symlinks. Verification exits nonzero while any requested extension is missing.
 Routine activation never runs marketplace installation commands.
 
-### Browsers and Raycast
+### Native applications and updates
 
-These app versions come from the current nixpkgs lock:
+`dmg-apps.nix` pins vendor downloads by SHA-256, including Chrome, Firefox,
+Brave, Raycast, Android Studio, Docker Desktop, Google Earth Pro, and RØDECaster
+App. Chrome, Brave, Docker, and RØDECaster use mutable vendor endpoints:
+changing their hash/version is an explicit bootstrap update, independent of
+`flake.lock`. The archive filename is not assumed to be the installed app's
+version.
 
-| Application   | Nix version   | Existing app at capture |
-| ------------- | ------------- | ----------------------- |
-| Google Chrome | 154.0.8037.93 | 154.0.8037.97           |
-| Firefox       | 157.0         | 152.0.5                 |
-| Brave         | 1.96.59       | 154.1.96.61             |
-| Raycast       | 1.104.17      | 1.104.31                |
+DMG/ZIP app bundles live directly in `/Applications`, owned by the installing
+user and writable so their built-in updaters can run. Vendor PKGs determine
+their own ownership and update behavior. Ordinary rebuilds install only missing
+DMG/ZIP apps and never downgrade self-updated copies. `mac-config-install-apps`
+uses Apple's `hdiutil` and `ditto`, preserving extended attributes and vendor
+signatures. Zed's seeded settings enable its automatic updates. Existing editor
+settings remain preserved unless explicitly restored or edited.
 
-The Nix apps live in `/Applications/Nix Apps`; previous copies remain in
-`/Applications` until deliberately removed. The locked Chrome, Brave, and
-Raycast releases are older than the currently installed copies. Verify profile
-compatibility before migrating to those versions. Browser profiles, logins, and
-extensions remain user-managed. Raycast settings and plugins are configured by
-hand; no Raycast database or export is captured or imported.
+Browser profiles, logins, extensions, Docker data, and Android SDKs remain
+user-managed. Raycast settings and plugins are configured by hand; no Raycast
+export is captured in the repository. Local migration backups may contain app
+profiles and must remain private.
+
+Hidden Bar stays a Homebrew cask. Codex CLI and Claude Code use the `codex` and
+`claude-code` casks; Railway CLI uses the `railway` formula. These are separate
+from the Codex and Claude desktop apps. Claude's package-manager auto-update is
+enabled with `CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE=1`. Homebrew’s shell
+initialization is disabled so it cannot put legacy Brew tools ahead of Nix;
+Brew-only CLIs remain available later in PATH. Other Homebrew updates are
+explicit:
+
+```sh
+brew upgrade --cask codex
+brew upgrade railway
+```
+
+Existing credentials are retained. Avoid installing duplicate npm copies of
+these CLIs. Other npm global packages need a writable user prefix when using
+Nix's Node installation.
 
 ### Xcode and Apple developer tools
 
@@ -441,10 +478,13 @@ nix build --no-update-lock-file --no-link .#darwinConfigurations.mac.system
 The settings tests use temporary homes and mocked preferences. They cover repeat
 activation, existing files/symlinks, backups, failure retries, Dock path
 resolution, binary Terminal profiles, extension setup failures, and developer
-tool diagnostics. The same portable tests run in CI. Runtime GUI verification is
-performed after activation: open a new shell, check aliases and Git values,
-launch the editors/browsers, verify extensions, and check Dock/Terminal
-behavior.
+tool diagnostics. The portable tests run in CI and are supplemented on macOS by
+a native archive round-trip test, covering extended attributes, permissions, and
+symlinks. App installer tests also cover preserved self-updates, concurrent
+installation, backup failures, failed replacement, attribute failures, and
+mounted-image cleanup. Runtime GUI verification is performed after activation:
+open a new shell, check aliases and Git values, launch the editors/browsers,
+verify extensions, and check Dock/Terminal behavior.
 
 ## Android SDK maintenance
 
@@ -474,15 +514,17 @@ time to avoid mismatched adb binaries and SDK paths.
 
 `dmg-apps.nix` is the shared inventory for all downloaded applications.
 `macos-apps.nix` consumes it during system configuration, and the same packages
-are exposed as flake outputs. Architecture-specific entries are automatically
-excluded on incompatible hosts.
+are exposed as flake outputs. The host targets Apple Silicon. Google Earth Pro
+is an explicitly allowed Intel application and requires Rosetta 2 (already
+installed on this laptop).
 
 | Format          | Build behavior                                | Activation behavior                    |
 | --------------- | --------------------------------------------- | -------------------------------------- |
-| `dmg` (default) | Extract HFS/APFS image, copy the named `.app` | Install in `/Applications/Nix Apps`    |
-| `zip`           | Extract ZIP, copy the named `.app`            | Install in `/Applications/Nix Apps`    |
+| `dmg` (default) | Extract HFS/APFS image, copy the named `.app` | Install in `/Applications`             |
+| `zip`           | Extract ZIP, copy the named `.app`            | Install in `/Applications`             |
 | `pkg`           | Stage the complete, unmodified installer      | Expose it for manual installation      |
 | `zip-pkg`       | Extract ZIP and require exactly one PKG       | Expose the PKG for manual installation |
+| `dmg-pkg`       | Extract DMG and require exactly one PKG       | Expose the PKG for manual installation |
 
 Every download uses `fetchurl` and a fixed SHA-256 hash. Building prepares files
 in the Nix store; it never runs a vendor installer, launches an app, or changes
@@ -492,8 +534,8 @@ extended attributes require the native activation copy described below for VLC;
 the Nix store cannot preserve those attributes.
 
 Add an entry to `dmg-apps.nix`; no additional module edits are needed. Use an
-Apple Silicon or universal macOS download; all app packages target Apple
-Silicon:
+Apple Silicon or universal macOS download where available. The host remains
+Apple Silicon even for explicitly permitted Intel apps:
 
 ```nix
 example = {
@@ -501,17 +543,16 @@ example = {
   url = "https://example.com/Example-1.2.3.dmg";
   hash = lib.fakeHash;
   appName = "Example.app";
-  # format = "zip";  # Default: "dmg"; also "pkg" or "zip-pkg".
+  # format = "zip";  # Default: "dmg"; also "pkg", "zip-pkg", or "dmg-pkg".
   # appPath = "Subdirectory/Example.app";  # Default: appName.
   # dmgExtractor = "7zz";  # For APFS DMGs; default: "undmg" (HFS).
-  # preserveXattrs = true;  # DMGs requiring native copying at activation.
   # downloadName = "example-latest.dmg";  # Stable store filename for a mutable URL.
   # enable = false;  # Exclude an entry without deleting it.
 };
 ```
 
-PKGs are always staged for manual installation. ZIPs containing multiple PKGs
-are rejected instead of selecting an arbitrary installer.
+PKGs are always staged for manual installation. Archives containing multiple
+PKGs are rejected instead of selecting an arbitrary installer.
 
 To update an app, change its version/URL, set `hash = lib.fakeHash;`, and build
 its download. Copy the `got: sha256-...` value from Nix's mismatch error into
@@ -544,9 +585,16 @@ open result/share/macos-pkgs/nordvpn.pkg
 
 After activation, staged installers are also available under
 `/run/current-system/sw/share/macos-pkgs/`. The supplied 1Password ZIP contains
-only a downloader, so the inventory uses the vendor's complete PKG. Insta360's
-ZIP is unpacked to expose its PKG. HandBrake and Zed download pages are resolved
-to their underlying versioned GitHub DMGs.
+only a downloader, so the inventory uses the vendor's complete PKG. Insta360 and
+RØDECaster ZIPs are unpacked to expose their PKGs; RØDECaster requires its
+vendor installer for driver components. Google Earth Pro’s Intel DMG contains a
+signed PKG, which is staged the same way. HandBrake and Zed download pages are
+resolved to their underlying versioned GitHub DMGs.
+
+Keep application rollback copies in ZIP archives ending in `.zip.bckp`, not only
+unpacked app directories. Vendor cleanup scripts and Apple Installer relocation
+can discover and modify unpacked backup apps. Keep configuration backups
+separately as `.bckp` files.
 
 Native installers may add services, drivers, system extensions, or other files
 outside the Nix store. They may stop running apps, request permissions, or
@@ -555,27 +603,25 @@ reverse them. Removing a PKG entry does not uninstall the product; use its
 vendor's uninstall procedure. Nix rollback does not guarantee a supported vendor
 downgrade. PKG-installed apps may also update themselves outside Nix.
 
-Apps copied into `Nix Apps` are read-only and should be updated through Nix.
+Native app copies are writable and may update themselves. Nix records the
+bootstrap download, not the version currently installed by a native updater.
 
 ### Bundles with signatures in extended attributes
 
-VLC sets `preserveXattrs = true` because its `plugins.dat` signature is stored
-in filesystem extended attributes, which the Nix store does not retain. For this
-entry, activation mounts the pinned DMG read-only, copies the app with Apple's
-`ditto --rsrc --extattr`, restores its read-only permissions, and detaches the
-image. This preserves the original signature without re-signing or bypassing
-Gatekeeper. The ordinary package build still validates the download and bundle
-layout; its store copy always lacks these attributes. The copy in
-`/Applications/Nix Apps` receives them during activation. The source DMG stays
-referenced by the activation script and can be reused.
+All native DMG installations mount the verified image read-only and copy the app
+with `ditto --rsrc --extattr`. This preserves signatures stored in extended
+attributes, including VLC's `plugins.dat`. Store-built `.app` artifacts are
+useful for extraction checks but are not the deployed copies: the Nix store
+cannot retain those extended attributes. Installed bundles retain user write
+permission for native updates.
 
 ### OpenSpeleo apps
 
 The three OpenSpeleo entries set `removeQuarantine = true`. Activation removes
-only the quarantine attribute from those specific copies in `Nix Apps`. No
-system-wide Gatekeeper setting is changed, and vendor signatures are not
-replaced or treated as trusted. The source hash pins the exact downloaded bytes.
-macOS can still require explicit user approval for an untrusted app.
+only the quarantine attribute from those specific native copies. No system-wide
+Gatekeeper setting is changed, and vendor signatures are not replaced or treated
+as trusted. The source hash pins the exact downloaded bytes. macOS can still
+require explicit user approval for an untrusted app.
 
 ## Removing previous installations
 
@@ -603,26 +649,14 @@ dependency removal, bulk uninstall loops, and `brew autoremove` during the
 initial migration. Declaring a CLI package in Nix does not recreate a Brew
 service's configuration or data.
 
-For a Brew cask with a tested Nix app replacement, quit the old application and
-remove its old login item, then uninstall its cask using the exact name from
-`brew list --cask`. For example, if Hidden Bar came from Brew:
+Keep Hidden Bar's Homebrew cask registration: it is the declared installation.
+Native apps use their existing `/Applications` paths, so do not delete those
+bundles as “old copies” after migration. Explicit replacement already preserves
+the former bundle in a verified `.zip.bckp` archive. Do not use cask `--zap` or
+app-cleanup utilities because they delete settings and app data.
 
-```bash
-brew uninstall --cask hiddenbar
-open '/Applications/Nix Apps/Hidden Bar.app'
-```
-
-Reconfigure its login behavior in the Nix copy. Avoid `--zap` or app-cleanup
-utilities: they can delete settings and other application data. See the
-[Homebrew uninstall reference](https://docs.brew.sh/Manpage#uninstall-remove-rm-options-installed_formula-installed_cask-).
-For an app installed manually, move only the old `/Applications/Name.app` bundle
-to the Trash in Finder after testing its replacement. Keep its files in
-`~/Library` and its Keychain entries. Update Dock shortcuts and login items to
-the Nix copy. Old and new copies can otherwise both appear in app searches.
-
-Do not uninstall the four PKG products just because their installers are now
-declared in Nix: they have no Nix-managed installed-app replacement. Keep their
-existing Brew registrations too if applicable.
+The six PKG products use vendor installation and uninstall procedures. Staging
+their installers in Nix does not replace those procedures or their services.
 
 Only after updating Android SDK paths, declaring any project-required SDK
 components, and verifying your Android workflows, remove the old casks if they
@@ -674,12 +708,11 @@ here; manage Brew updates separately when you start using its package lists.
 
 ## Verification status and references
 
-All 19 inventory packages were built on Apple Silicon using the checked-in lock.
-Downloads were first built with fake hashes, then rebuilt with the hashes
-reported by Nix; the corrected builds reused the cached downloads. HFS and APFS
-DMGs, direct PKGs, and Insta360's ZIP containing a PKG were verified. The full
-Apple Silicon system also built successfully. No apps have been activated and no
-PKG installer has been executed as part of this change.
+The inventory is checked on Apple Silicon using the checked-in lock. Downloads
+are pinned by their verified SHA-256 hashes. HFS and APFS DMGs, direct PKGs, and
+Insta360's ZIP containing a PKG were verified. The full Apple Silicon system
+also built successfully. Runtime deployment and verification are recorded
+separately in the private migration backup directory.
 
 The supplied HandBrake and Zed links were HTML pages, so their versioned release
 assets are used. The supplied 1Password ZIP contains only its downloader; the

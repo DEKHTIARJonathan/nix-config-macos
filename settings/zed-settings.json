@@ -1,6 +1,6 @@
 {
   "disable_ai": false,
-  "auto_update": false,
+  "auto_update": true,
   "project_panel": {
     "dock": "left"
   },

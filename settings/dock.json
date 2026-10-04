@@ -87,7 +87,7 @@
   {
     "name": "Android Studio",
     "path": "/Applications/Android Studio.app",
-    "managed": false
+    "managed": true
   },
   {
     "name": "Xcode",

@@ -73,7 +73,7 @@ def dock_entries(items, applications=Path("/Applications")):
         original = Path(item["path"])
         candidates = [original]
         if item["managed"]:
-            candidates.insert(0, applications / "Nix Apps" / original.name)
+            candidates.insert(0, applications / original.name)
         selected = next((path for path in candidates if path.exists()), None)
         if selected is None:
             print(f"Skipping missing app: {item['name']} ({original})")

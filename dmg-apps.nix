@@ -3,6 +3,54 @@
 # and build again to verify the download and installation layout.
 { lib }:
 {
+  google-earth-pro = {
+    # Explicit Intel exception: the Apple Silicon host needs Rosetta 2.
+    version = "7.3.7.1327";
+    format = "dmg-pkg";
+    downloadName = "google-earth-pro-intel.dmg";
+    url = "https://dl.google.com/earth/client/advanced/current/GoogleEarthProMac-Intel.dmg";
+    hash = "sha256-IN8PSSfzEvjUfmApS5p3/WDkS+YUdqWB+5GVwCm6CJM=";
+    appName = "Google Earth Pro.app";
+  };
+  android-studio = {
+    version = "2026.2.1.8";
+    url = "https://edgedl.me.gvt1.com/android/studio/install/2026.2.1.8/android-studio-rabbit1-mac_arm.dmg";
+    hash = "sha256-FtSg+KUkE7UYafwY1b3N+c7NOGFc17t88U1RuZ0v71Q=";
+    appName = "Android Studio.app";
+  };
+  chrome = {
+    version = "154.0.8037.98";
+    downloadName = "googlechrome.dmg";
+    url = "https://dl.google.com/tag/s/appguid%3DCOM.GOOGLE.CHROME%26iid%3D%7BA28A17CD-130C-A433-15D3-6C506FCA1744%7D%26brand%3DGGRO/chrome/mac/universal/stable/googlechrome.dmg";
+    hash = "sha256-7gLzm6L/ravtkTWCggjEzH5DuuGLCL+0Ie0AIvkrnd0=";
+    appName = "Google Chrome.app";
+  };
+  docker-desktop = {
+    version = "4.93.0";
+    downloadName = "docker-desktop.dmg";
+    url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
+    hash = "sha256-vwYvRTNMcRvS/C7UelWI0FD7uVC+OuOqSsmCbwStTbo=";
+    appName = "Docker.app";
+  };
+  firefox = {
+    version = "157.0";
+    downloadName = "Firefox-20157.0.dmg";
+    url = "https://download-installer.cdn.mozilla.net/pub/firefox/releases/157.0/mac/en-US/Firefox%20157.0.dmg";
+    hash = "sha256-322MebYSa88ky3Drq5NxkWpmICji1wbkYtQy54/fOWw=";
+    appName = "Firefox.app";
+  };
+  brave = {
+    # Vendor helper bundles carry FinderInfo that fails strict signature checks.
+    removeFinderInfo = true;
+    dmgExtractor = "7zz";
+    # The signed updater links MacOS/ksadmin to ../Helpers/ksadmin inside its bundle.
+    allowParentSymlinks = true;
+    version = "154.1.96.61";
+    downloadName = "brave-browser.dmg";
+    url = "https://referrals.brave.com/latest/BRV010/Brave-Browser.dmg";
+    hash = "sha256-e7kmXHIZlubEtjgfQ7it49nN6cNKnsNhsWlrxWbjgW0=";
+    appName = "Brave Browser.app";
+  };
   ariane = {
     version = "26.4.1";
     url = "https://github.com/Ariane-s-Line/Ariane-Release/releases/download/26.4.1/Ariane-26.4.1-MACOS-M-SERIES-AARCH64.dmg";
@@ -70,6 +118,20 @@
     url = "https://rambox.app/api/download?os=mac&package=dmg";
     hash = "sha256-UfBP2LVBcQUw1pwSrQc5NIN0ZTVk/sCM0Zt2EldhL+s=";
     appName = "Rambox.app";
+  };
+  raycast = {
+    version = "2.6.2.0";
+    url = "https://x-r2.raycast-releases.com/Raycast_2.6.2.0_49937c9d92_arm64.dmg";
+    hash = "sha256-FeS7qiK/LEOXg/Js49M/Na+pphgIARIZdGmqXBj0xdw=";
+    appName = "Raycast.app";
+  };
+  rodecaster-app = {
+    version = "2.0.114";
+    format = "zip-pkg";
+    downloadName = "rodecaster-app.zip";
+    url = "https://update.rode.com/rc-app/RODECaster_App_MACOS.zip";
+    hash = "sha256-+3fenJZN/aH8wgKSC6VmTQoL3pgJASK6uuWGDpbnwh4=";
+    appName = "RODECaster App.app";
   };
   signal = {
     version = "8.29.0";

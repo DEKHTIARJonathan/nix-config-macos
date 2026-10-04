@@ -31,6 +31,9 @@ class ZshTests(unittest.TestCase):
                         "ZDOTDIR": directory,
                         "PATH": f"{project}:/run/current-system/sw/bin:/usr/bin:/bin",
                         "TERM": "dumb",
+                        # Even -d reads /etc/zshenv. Isolate these HM unit tests
+                        # from the real host's newly activated Darwin bootstrap.
+                        "__ETC_ZSHENV_SOURCED": "1",
                     }
                     if nix_shell:
                         environment["IN_NIX_SHELL"] = "impure"

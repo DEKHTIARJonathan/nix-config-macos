@@ -24,6 +24,7 @@ in
     username = host.username;
     homeDirectory = host.homeDirectory or "/Users/${host.username}";
     stateVersion = "26.05";
+    sessionVariables.CLAUDE_CODE_PACKAGE_MANAGER_AUTO_UPDATE = "1";
     packages = [
       restore
       editors
@@ -67,9 +68,9 @@ in
       }
     ];
     shellAliases = {
-      code = "'/Applications/Nix Apps/Visual Studio Code.app/Contents/Resources/app/bin/code'";
-      vscode = "'/Applications/Nix Apps/Visual Studio Code.app/Contents/Resources/app/bin/code'";
-      zed = "'/Applications/Nix Apps/Zed.app/Contents/MacOS/cli'";
+      code = "'/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'";
+      vscode = "'/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'";
+      zed = "'/Applications/Zed.app/Contents/MacOS/cli'";
     };
     # Keep inherited project tools ahead of Cargo and fallback Nix paths.
     # nix-darwin establishes the default tool order for login shells.

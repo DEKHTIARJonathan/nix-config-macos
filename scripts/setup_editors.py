@@ -12,7 +12,7 @@ import json5
 from restore_settings import atomic_write, backup_path, seed_editors
 
 
-CODE = Path("/Applications/Nix Apps/Visual Studio Code.app/Contents/Resources/app/bin/code")
+CODE = Path("/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code")
 
 
 def setup_code(extensions, cli=CODE, runner=subprocess.run):
