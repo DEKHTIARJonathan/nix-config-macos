@@ -12,6 +12,10 @@ everyday tools remain available without entering a development shell.
 | `host.nix`              | Account, Apple Silicon platform, Nix ownership, compatibility version |
 | `flake.nix`             | Inputs and the configuration named `mac`                              |
 | `configuration.nix`     | Persistent packages, shell integration, Homebrew management           |
+| `home.nix`              | Home Manager: Zsh, Git, writable settings seeding, restore commands   |
+| `desktop.nix`           | Captured appearance, locale, Dock, and trackpad preferences           |
+| `settings/`             | Live Mac settings snapshot, profiles, and extension inventories       |
+| `scripts/`              | User settings restoration, editor setup, developer-tools verification |
 | `android.nix`           | Native Nix Android tools and Java runtime                             |
 | `dmg-apps.nix`          | Shared inventory: app versions, URLs, hashes, and formats             |
 | `macos-apps.nix`        | Installs app bundles and exposes PKGs for manual installation         |
@@ -20,9 +24,10 @@ everyday tools remain available without entering a development shell.
 | `pkgs/macos-apps.nix`   | Enabled Apple Silicon app packages                                    |
 | `flake.lock`            | Generated on your Mac; exact input revisions                          |
 
-Your original package descriptions are preserved inline. All 23 inventory
-entries have native Nix representations. Homebrew is configured for future
-additions, with empty formula/cask lists and automatic removal disabled.
+Your original 23 package entries have native Nix representations. Chrome,
+Firefox, Brave, Raycast, and the personal environment described below are also
+managed by Nix. Homebrew is configured for future additions, with empty
+formula/cask lists and automatic removal disabled.
 
 ## Migration on this Mac, in order
 
@@ -114,9 +119,8 @@ Homebrew. The full build already passed during review; repeating it normally
 reuses the Nix store. Keep the existing `flake.lock`. Do not run
 `nix flake update` as part of the initial migration.
 
-All required files in this checkout are already tracked by Git. No staging or
-commit is needed to use your working-tree edits. When adding new files later,
-remember that Git-backed flakes exclude untracked files.
+Git-backed flakes exclude untracked files. Add new configuration files to Git
+before building; edits to already tracked files need no commit to take effect.
 
 ### 4. Activate nix-darwin for the first time
 
@@ -133,7 +137,9 @@ This is the step that changes the system. The bootstrap launcher comes from the
 matching release branch; the system configuration uses your local flake and
 lock. Activation configures shell initialization, installs the persistent Nix
 package profile, manages the Nix daemon, adopts existing native Homebrew, and
-installs the app bundles in `/Applications/Nix Apps`.
+installs the app bundles in `/Applications/Nix Apps`. It also activates Home
+Manager, applies desktop preferences, and performs the first-time personal
+settings restoration described below.
 
 Existing Homebrew packages remain installed because `cleanup = "none"`;
 automatic Brew updates and upgrades are disabled. Existing applications outside
@@ -268,7 +274,8 @@ Both Android entries are included in one SDK package.
 If Git LFS is not already configured:
 
 ```bash
-git lfs install
+# From a repository that needs LFS:
+git lfs install --local
 ```
 
 If Rustup has no default toolchain yet:
@@ -283,10 +290,161 @@ those downloaded toolchains. Update them using `rustup update`, or let project
 the Nix installation. A fully Nix-declared compiler can be added later in a
 project flake or through a Rust toolchain overlay.
 
-Keep Git identity, GitHub credentials, Neovim settings, and shell dotfiles as
-they are during migration. This inventory does not specify their contents. Open
+Home Manager owns global Git configuration and shell dotfiles; make changes in
+`home.nix` and `settings/git.json`, or use `~/.zshrc.local` for extra shell
+customizations. Use repository-local Git settings for LFS filters and project
+overrides. GitHub credentials and Neovim settings remain user-managed. Open
 `/Applications/Nix Apps/Hidden Bar.app` and configure launch at login in the
 application if desired.
+
+## Personal environment restoration
+
+The settings were captured directly from this Mac on 2026-10-04. `old/` is a
+historical reference and is not imported. Home Manager follows the existing
+nixpkgs input; adding it updates the lockfile without updating the other inputs.
+Keep `home.stateVersion = "26.05"` when updating packages.
+
+Home Manager manages Zsh, Oh My Zsh's Git plugin, Powerlevel10k, and the current
+prompt configuration. MesloLGS NF is installed for the prompt and Terminal.
+`code` and `vscode` launch VS Code; `zed` launches Zed. Login shells use
+nix-darwin's default tool order; subshells preserve inherited project
+toolchains. Existing Cargo initialization and the Python 3.12 framework path are
+retained conditionally; no extra Python/Flutter toolchain or old Android/Java
+environment is restored.
+
+The captured global Git settings include Jonathan Dekhtiar's name/email, an
+empty signing key, disabled commit signing, disabled forced annotated-tag
+signing, and disabled ignored-file advice. Review the identity before adapting
+this configuration to another account.
+
+Existing managed dotfiles are backed up with `.before-nix` on adoption. If a
+backup already exists, Home Manager stops instead of replacing it; move that
+backup aside before retrying. Home Manager's generated Git and shell files are
+managed by Nix, while editor settings stay writable.
+
+### Preferences and first activation
+
+Every rebuild applies Dark appearance, `en-US`/`en_US`, automatic capitalization
+and period substitution, and captured trackpad preferences (including speed
+`0.875`, tap-to-click, tap-to-drag, gestures, and click thresholds). Dock
+preferences are autohide enabled, delay `0.0`, animation modifier `0.25`, bottom
+placement, size 64, and no recent applications.
+
+On the first Home Manager activation, after applications are installed:
+
+- Missing VS Code/Zed settings files are seeded. Existing files and symlinks,
+  including dangling symlinks, are preserved.
+- The captured 33-entry Dock order is restored. Managed apps resolve to
+  `/Applications/Nix Apps`, with existing original locations as fallback.
+  Missing apps are reported and skipped; folder stacks and other preferences are
+  preserved. Apps in the Dock snapshot are not implicitly installed.
+- The 13 captured Terminal profiles are merged with existing profiles. **Basic
+  (Shift-Enter)** is selected for default/startup windows, with its MesloLGS NF
+  11-point font and captured key mappings. Shell selection and Secure Keyboard
+  Entry preferences are restored. Existing sessions stay open; reopen Terminal
+  to reload its preferences.
+
+Dock and Terminal each have their own completion marker under
+`~/.local/state/nix-macos-config`. Subsequent activations preserve changes to
+Dock order and Terminal profiles. Failed operations remain eligible for retry.
+Missing Dock apps do not block restoration; explicitly rerun it after installing
+them. Preference backups are binary plists in the private `backups/` directory
+under that state directory. Explicit editor restores also back up replaced
+files.
+
+After activation, these commands run as your user (never with `sudo`):
+
+```sh
+mac-config-restore all --dry-run
+mac-config-restore dock
+mac-config-restore terminal
+mac-config-restore editors                 # Seed only missing files
+mac-config-restore editors --replace-existing  # Back up and replace editor files
+```
+
+The underlying `scripts/restore_settings.py` also supports `--source`, `--home`,
+and `--once`; Home Manager invokes `all --once` and respects activation dry
+runs. Restore commands deliberately reapply captured preferences unless `--once`
+is specified. Nix rollback does not undo writable preferences; retain the
+backups.
+
+### Editors and extensions
+
+VS Code and Zed keep their captured preferences in writable user files. There
+were no user shortcut, snippet, task, or additional profile files to restore.
+The Flutter SDK path, explicit Python interpreter path, temporary Postman
+instruction files, and version-specific Continue extension schema reference were
+omitted as requested. The `.github/instructions` setting is retained.
+
+The inventory records 37 VS Code extensions and nine Zed extensions: Dockerfile,
+Git Firefly, HTML, Log, Make, Nix, reStructuredText, Ruby, and TOML. Observed
+versions are an audit snapshot, not marketplace pins. Existing extensions are
+not downgraded or removed.
+
+```sh
+mac-config-setup-editors all
+# Open Zed so it can download the requested extensions, then:
+mac-config-setup-editors all --verify
+```
+
+`code` and `zed` can replace `all` to select one editor. VS Code installs
+missing IDs through its managed app CLI and reports failures. Zed uses
+`auto_install_extensions` on launch. The explicit Zed setup command backs up and
+merges that key into existing JSON/JSONC settings, preserving other values;
+comments are normalized when a merge is needed. It refuses to write through
+symlinks. Verification exits nonzero while any requested extension is missing.
+Routine activation never runs marketplace installation commands.
+
+### Browsers and Raycast
+
+These app versions come from the current nixpkgs lock:
+
+| Application   | Nix version   | Existing app at capture |
+| ------------- | ------------- | ----------------------- |
+| Google Chrome | 154.0.8037.93 | 154.0.8037.97           |
+| Firefox       | 157.0         | 152.0.5                 |
+| Brave         | 1.96.59       | 154.1.96.61             |
+| Raycast       | 1.104.17      | 1.104.31                |
+
+The Nix apps live in `/Applications/Nix Apps`; previous copies remain in
+`/Applications` until deliberately removed. The locked Chrome, Brave, and
+Raycast releases are older than the currently installed copies. Verify profile
+compatibility before migrating to those versions. Browser profiles, logins, and
+extensions remain user-managed. Raycast settings and plugins are configured by
+hand; no Raycast database or export is captured or imported.
+
+### Xcode and Apple developer tools
+
+```sh
+mac-config-verify-development-tools
+# Before activation, using an existing Python:
+python3 scripts/verify_development_tools.py
+```
+
+This read-only check verifies full Xcode selection, its version and first-launch
+readiness, the Command Line Tools receipt and files, clang, and macOS SDK
+resolution. It returns nonzero with diagnostics for missing/incomplete tools; it
+never installs tools, changes `xcode-select`, or accepts licenses.
+
+On this Mac, Xcode **27.0 (27A266a)** is selected, Command Line Tools **27.0**
+are installed, and clang and the macOS SDK resolve. However,
+`xcodebuild -checkFirstLaunchStatus` returns a failure. Open Xcode to complete
+its requested first-launch setup, then rerun the verifier.
+
+### Settings validation
+
+```sh
+nix build --no-update-lock-file --no-link .#checks.aarch64-darwin.settings
+nix build --no-update-lock-file --no-link .#darwinConfigurations.mac.system
+```
+
+The settings tests use temporary homes and mocked preferences. They cover repeat
+activation, existing files/symlinks, backups, failure retries, Dock path
+resolution, binary Terminal profiles, extension setup failures, and developer
+tool diagnostics. The same portable tests run in CI. Runtime GUI verification is
+performed after activation: open a new shell, check aliases and Git values,
+launch the editors/browsers, verify extensions, and check Dock/Terminal
+behavior.
 
 ## Android SDK maintenance
 

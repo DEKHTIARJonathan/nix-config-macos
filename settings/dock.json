@@ -1,0 +1,167 @@
+[
+  {
+    "name": "Apps",
+    "path": "/System/Applications/Apps.app",
+    "managed": false
+  },
+  {
+    "name": "1Password",
+    "path": "/Applications/1Password.app",
+    "managed": false
+  },
+  {
+    "name": "App Store",
+    "path": "/System/Applications/App Store.app",
+    "managed": false
+  },
+  {
+    "name": "Music",
+    "path": "/System/Applications/Music.app",
+    "managed": false
+  },
+  {
+    "name": "System Settings",
+    "path": "/System/Applications/System Settings.app",
+    "managed": false
+  },
+  {
+    "name": "Google Chrome",
+    "path": "/Applications/Google Chrome.app",
+    "managed": true
+  },
+  {
+    "name": "Firefox",
+    "path": "/Applications/Firefox.app",
+    "managed": true
+  },
+  {
+    "name": "Safari",
+    "path": "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app",
+    "managed": false
+  },
+  {
+    "name": "Photos",
+    "path": "/System/Applications/Photos.app",
+    "managed": false
+  },
+  {
+    "name": "Zoho Meeting",
+    "path": "/Applications/Zoho Meeting.app",
+    "managed": false
+  },
+  {
+    "name": "Microsoft Outlook",
+    "path": "/Applications/Microsoft Outlook.app",
+    "managed": false
+  },
+  {
+    "name": "Slack",
+    "path": "/Applications/Slack.app",
+    "managed": false
+  },
+  {
+    "name": "Microsoft Teams",
+    "path": "/Applications/Microsoft Teams.app",
+    "managed": false
+  },
+  {
+    "name": "Visual Studio Code",
+    "path": "/Applications/Visual Studio Code.app",
+    "managed": true
+  },
+  {
+    "name": "Claude",
+    "path": "/Applications/Claude.app",
+    "managed": false
+  },
+  {
+    "name": "Codex",
+    "path": "/Applications/Codex.app",
+    "managed": false
+  },
+  {
+    "name": "Zed",
+    "path": "/Applications/Zed.app",
+    "managed": true
+  },
+  {
+    "name": "Android Studio",
+    "path": "/Applications/Android Studio.app",
+    "managed": false
+  },
+  {
+    "name": "Xcode",
+    "path": "/Applications/Xcode.app",
+    "managed": false
+  },
+  {
+    "name": "Docker Desktop",
+    "path": "/Applications/Docker.app/Contents/MacOS/Docker Desktop.app",
+    "managed": false
+  },
+  {
+    "name": "GitKraken",
+    "path": "/Applications/GitKraken.app",
+    "managed": true
+  },
+  {
+    "name": "Messages",
+    "path": "/System/Applications/Messages.app",
+    "managed": false
+  },
+  {
+    "name": "Signal",
+    "path": "/Applications/Signal.app",
+    "managed": true
+  },
+  {
+    "name": "WhatsApp",
+    "path": "/Applications/WhatsApp.app",
+    "managed": false
+  },
+  {
+    "name": "Rambox",
+    "path": "/Applications/Rambox.app",
+    "managed": true
+  },
+  {
+    "name": "Postman",
+    "path": "/Applications/Postman.app",
+    "managed": false
+  },
+  {
+    "name": "Wondershare PDFelement",
+    "path": "/Applications/Wondershare PDFelement.app",
+    "managed": false
+  },
+  {
+    "name": "iPhone Mirroring",
+    "path": "/System/Applications/iPhone Mirroring.app",
+    "managed": false
+  },
+  {
+    "name": "Spotify",
+    "path": "/Applications/Spotify.app",
+    "managed": false
+  },
+  {
+    "name": "Activity Monitor",
+    "path": "/System/Applications/Utilities/Activity Monitor.app",
+    "managed": false
+  },
+  {
+    "name": "Araxis Merge",
+    "path": "/Applications/Araxis Merge.app",
+    "managed": false
+  },
+  {
+    "name": "Ariane",
+    "path": "/Applications/Ariane.app",
+    "managed": true
+  },
+  {
+    "name": "Mole",
+    "path": "/Applications/Mole.app",
+    "managed": true
+  }
+]

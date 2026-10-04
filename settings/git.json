@@ -1,0 +1,16 @@
+{
+  "user": {
+    "name": "Jonathan Dekhtiar",
+    "email": "jonathan@dekhtiar.com",
+    "signingkey": ""
+  },
+  "commit": {
+    "gpgSign": false
+  },
+  "tag": {
+    "forceSignAnnotated": false
+  },
+  "advice": {
+    "addIgnoredFile": false
+  }
+}

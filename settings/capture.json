@@ -1,0 +1,22 @@
+{
+  "captured": "2026-10-04",
+  "source": "Live Mac; old/ was not used as a settings source",
+  "shell_sources": {
+    ".zshrc": "f40a8e869f2fde5c60541c99871a6af4dcc94f0f714821ab9e402af6be6a9bcc",
+    ".zprofile": "413f3453d02c4d86701abccf52312bcf0e4a0fb4eb37275b39888e4f09496848",
+    ".zshenv": "787ab203279ada7ab10fd7c252f9b414ef4185d632ca2a9d2d38307cd8cca606",
+    ".p10k.zsh": "7bce69a4a5d9e7ae08469a52b75dec23945c06e005456edb4817c80a02c8cb5b"
+  },
+  "editor_extras": {
+    "code_keybindings": false,
+    "zed_keymap": false,
+    "snippets_tasks_profiles": false
+  },
+  "excluded_editor_references": [
+    "dart.flutterSdkPath",
+    "python.defaultInterpreterPath",
+    "yaml.schemas (version-specific Continue extension path)",
+    "chat.instructionsFilesLocations: /tmp/Postman entries"
+  ],
+  "raycast": "Install app only; settings and extensions remain manually managed"
+}

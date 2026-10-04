@@ -1,0 +1,61 @@
+{
+  "global": {
+    "AppleInterfaceStyle": "Dark",
+    "NSAutomaticCapitalizationEnabled": true,
+    "NSAutomaticPeriodSubstitutionEnabled": true,
+    "com.apple.trackpad.scaling": 0.875
+  },
+  "dock": {
+    "autohide": true,
+    "autohide-delay": 0.0,
+    "autohide-time-modifier": 0.25,
+    "orientation": "bottom",
+    "tilesize": 64,
+    "show-recents": false
+  },
+  "custom": {
+    "NSGlobalDomain": {
+      "AppleLanguages": [
+        "en-US"
+      ],
+      "AppleLocale": "en_US"
+    },
+    "com.apple.AppleMultitouchTrackpad": {
+      "USBMouseStopsTrackpad": 0,
+      "ActuateDetents": 1,
+      "SecondClickThreshold": 1,
+      "TrackpadHorizScroll": 1,
+      "FirstClickThreshold": 1,
+      "TrackpadFiveFingerPinchGesture": 2,
+      "ForceSuppressed": false,
+      "TrackpadScroll": true,
+      "TrackpadHandResting": true
+    },
+    "com.apple.driver.AppleBluetoothMultitouch.trackpad": {
+      "USBMouseStopsTrackpad": 0,
+      "TrackpadHorizScroll": 1,
+      "TrackpadScroll": true,
+      "TrackpadFiveFingerPinchGesture": 2,
+      "TrackpadHandResting": true
+    }
+  },
+  "trackpad": {
+    "Clicking": true,
+    "Dragging": true,
+    "TrackpadRightClick": true,
+    "TrackpadThreeFingerDrag": false,
+    "TrackpadThreeFingerTapGesture": 0,
+    "DragLock": false,
+    "TrackpadCornerSecondaryClick": 0,
+    "TrackpadFourFingerHorizSwipeGesture": 2,
+    "TrackpadFourFingerPinchGesture": 2,
+    "TrackpadFourFingerVertSwipeGesture": 2,
+    "TrackpadMomentumScroll": true,
+    "TrackpadPinch": true,
+    "TrackpadRotate": true,
+    "TrackpadThreeFingerHorizSwipeGesture": 2,
+    "TrackpadThreeFingerVertSwipeGesture": 2,
+    "TrackpadTwoFingerDoubleTapGesture": true,
+    "TrackpadTwoFingerFromRightEdgeSwipeGesture": 3
+  }
+}

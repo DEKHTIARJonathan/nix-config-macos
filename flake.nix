@@ -15,6 +15,11 @@
     # Manages the Homebrew installation itself. The homebrew options in
     # configuration.nix manage its formulae and casks separately.
     nix-homebrew.url = "github:zhaofengli/nix-homebrew";
+
+    home-manager = {
+      url = "github:nix-community/home-manager/release-26.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   # `nix flake lock` creates flake.lock with the exact input revisions.
@@ -25,6 +30,7 @@
       self,
       nix-darwin,
       nix-homebrew,
+      home-manager,
       ...
     }:
     let
@@ -40,13 +46,46 @@
 
         modules = [
           nix-homebrew.darwinModules.nix-homebrew
+          home-manager.darwinModules.home-manager
+          {
+            home-manager = {
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              backupFileExtension = "before-nix";
+              extraSpecialArgs = { inherit host; };
+              users.${host.username} = import ./home.nix;
+            };
+          }
           ./configuration.nix
           ./android.nix
           ./macos-apps.nix
+          ./desktop.nix
         ];
       };
 
       # Build one app with `nix build .#signal`; `.src` builds just its download.
       packages.${host.system} = appPackages;
+
+      checks.${host.system}.settings =
+        let
+          pkgs = self.darwinConfigurations.mac.pkgs;
+          python = pkgs.python3.withPackages (ps: [ ps.json5 ]);
+          home = self.darwinConfigurations.mac.config.home-manager.users.${host.username};
+        in
+        pkgs.runCommand "mac-config-settings-tests"
+          {
+            nativeBuildInputs = [ python ];
+            ZSH_ENV_FILE = "${home.home-files}/.zshenv";
+            ZSH_RC_FILE = "${home.home-files}/.zshrc";
+            ZSH_HOME_DIRECTORY = home.home.homeDirectory;
+            ZSH_TEST_BIN = "${pkgs.zsh}/bin/zsh";
+          }
+          ''
+            cp -R ${./scripts} scripts
+            cp -R ${./settings} settings
+            cp -R ${./tests} tests
+            python3 -B -m unittest discover -s tests -v
+            touch "$out"
+          '';
     };
 }

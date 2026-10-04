@@ -1,0 +1,105 @@
+{
+  config,
+  lib,
+  pkgs,
+  host,
+  ...
+}:
+let
+  python = pkgs.python3.withPackages (ps: [ ps.json5 ]);
+  restore = pkgs.writeShellScriptBin "mac-config-restore" ''
+    exec ${python}/bin/python3 ${./scripts}/restore_settings.py \
+      --source ${./settings} --home ${lib.escapeShellArg config.home.homeDirectory} "$@"
+  '';
+  editors = pkgs.writeShellScriptBin "mac-config-setup-editors" ''
+    exec ${python}/bin/python3 ${./scripts}/setup_editors.py \
+      --source ${./settings} --home ${lib.escapeShellArg config.home.homeDirectory} "$@"
+  '';
+  verifyTools = pkgs.writeShellScriptBin "mac-config-verify-development-tools" ''
+    exec ${python}/bin/python3 ${./scripts}/verify_development_tools.py "$@"
+  '';
+in
+{
+  home = {
+    username = host.username;
+    homeDirectory = host.homeDirectory or "/Users/${host.username}";
+    stateVersion = "26.05";
+    packages = [
+      restore
+      editors
+      verifyTools
+    ];
+    file.".p10k.zsh".source = ./settings/p10k.zsh;
+    activation.restoreSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      run ${restore}/bin/mac-config-restore all --once
+    '';
+  };
+
+  programs.git = {
+    enable = true;
+    settings = builtins.fromJSON (builtins.readFile ./settings/git.json);
+  };
+
+  # Home Manager now defaults to XDG Git configuration. Adopt the existing
+  # ~/.gitconfig itself so it cannot override the captured settings afterward.
+  xdg.configFile."git/config".target = "${config.home.homeDirectory}/.gitconfig";
+
+  programs.zsh = {
+    enable = true;
+    dotDir = config.home.homeDirectory;
+    oh-my-zsh = {
+      enable = true;
+      plugins = [ "git" ];
+    };
+    # Preserve the live Oh My Zsh history behavior rather than HM's defaults.
+    history = {
+      size = 50000;
+      save = 10000;
+      append = true;
+      extended = true;
+      expireDuplicatesFirst = true;
+    };
+    plugins = [
+      {
+        name = "powerlevel10k";
+        src = pkgs.zsh-powerlevel10k;
+        file = "share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      }
+    ];
+    shellAliases = {
+      code = "'/Applications/Nix Apps/Visual Studio Code.app/Contents/Resources/app/bin/code'";
+      vscode = "'/Applications/Nix Apps/Visual Studio Code.app/Contents/Resources/app/bin/code'";
+      zed = "'/Applications/Nix Apps/Zed.app/Contents/MacOS/cli'";
+    };
+    # Keep inherited project tools ahead of Cargo and fallback Nix paths.
+    # nix-darwin establishes the default tool order for login shells.
+    envExtra = ''
+      () {
+        local -a inherited_path=("''${path[@]}")
+        [[ ! -f "$HOME/.cargo/env" ]] || source "$HOME/.cargo/env"
+        path=("''${inherited_path[@]}" "''${path[@]}" /run/current-system/sw/bin /etc/profiles/per-user/${lib.escapeShellArg host.username}/bin)
+        typeset -gU path
+      }
+    '';
+    profileExtra = ''
+      # Retain the locally installed Python framework when it exists.
+      if [[ -d /Library/Frameworks/Python.framework/Versions/3.12/bin ]]; then
+        path+=(/Library/Frameworks/Python.framework/Versions/3.12/bin)
+      fi
+    '';
+    initContent = lib.mkMerge [
+      (lib.mkOrder 500 ''
+        if [[ -r "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh" ]]; then
+          source "''${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-''${(%):-%n}.zsh"
+        fi
+      '')
+      (lib.mkOrder 1500 ''
+        [[ ! -f "$HOME/.p10k.zsh" ]] || source "$HOME/.p10k.zsh"
+        # Add local tools without overriding an inherited development environment.
+        path+=("$HOME/.local/bin")
+        typeset -U path
+        [[ ! -f "$HOME/.zshrc.local" ]] || source "$HOME/.zshrc.local"
+      '')
+    ];
+  };
+}

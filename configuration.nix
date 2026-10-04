@@ -36,8 +36,7 @@
 
   # macOS's default shell. System initialization loads the persistent Nix
   # paths automatically; no `nix develop` or per-terminal activation needed.
-  # Personal ~/.zshrc configuration continues to load normally. A custom
-  # PATH assignment there should extend $PATH rather than discard it.
+  # Home Manager manages personal Zsh and Git configuration in home.nix.
   programs.zsh.enable = true;
 
   # These packages are installed persistently for the machine's users.
@@ -65,11 +64,11 @@
     gh
 
     # Distributed revision control system
-    # Installs Git without replacing your existing ~/.gitconfig.
+    # Home Manager restores the captured global Git settings.
     git
 
     # Git extension for versioning large files
-    # Run `git lfs install` once as your user to configure Git's LFS filters.
+    # Run `git lfs install --local` in repositories that need LFS filters.
     git-lfs
 
     # Open-source build automation tool based on the Groovy and Kotlin DSL
@@ -132,7 +131,15 @@
     # /Applications/Nix Apps. Open it and enable launch at login in its UI
     # if desired. See README for removing your previous Homebrew copy.
     hidden-bar
+
+    # Native app packages; existing profiles and Raycast settings stay writable.
+    google-chrome
+    firefox-bin
+    brave
+    raycast
   ];
+
+  fonts.packages = [ pkgs.meslo-lgs-nf ];
 
   # Homebrew installation management. It remains available for future
   # macOS applications that are missing or unsuitable in nixpkgs.
