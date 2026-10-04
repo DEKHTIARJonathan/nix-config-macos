@@ -62,7 +62,7 @@ in
     # Both variables intentionally point at the same SDK.
     ANDROID_SDK_ROOT = androidSdkRoot;
 
-    JAVA_HOME = pkgs.jdk17.home;
+    JAVA_HOME = "${pkgs.jdk17.home}";
   };
 
   # IMPORTANT: the Nix SDK is read-only. Add components above and rebuild;

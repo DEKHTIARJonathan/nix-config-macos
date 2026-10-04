@@ -31,6 +31,7 @@
     }:
     let
       host = import ./host.nix;
+      appPackages = import ./pkgs/macos-apps.nix { pkgs = self.darwinConfigurations.mac.pkgs; };
     in
     {
       # "mac" is a configuration name, not your computer's hostname.
@@ -43,7 +44,11 @@
           nix-homebrew.darwinModules.nix-homebrew
           ./configuration.nix
           ./android.nix
+          ./macos-apps.nix
         ];
       };
+
+      # Build one app with `nix build .#signal`; `.src` builds just its download.
+      packages.${host.system} = appPackages;
     };
 }
