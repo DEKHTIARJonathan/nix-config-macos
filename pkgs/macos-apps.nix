@@ -1,14 +1,13 @@
 { pkgs }:
+assert pkgs.lib.assertMsg (
+  pkgs.stdenv.hostPlatform.system == "aarch64-darwin"
+) "macOS app packages support Apple Silicon only.";
 let
   inherit (pkgs) lib;
   inventory = import ../dmg-apps.nix { inherit lib; };
   sources = import ./app-sources.nix { inherit pkgs; };
   mkApp = pkgs.callPackage ./mk-macos-app.nix { };
-  supported = lib.filterAttrs (
-    _: app:
-    (app.enable or true)
-    && builtins.elem pkgs.stdenv.hostPlatform.system (app.platforms or lib.platforms.darwin)
-  ) inventory;
+  enabled = lib.filterAttrs (_: app: app.enable or true) inventory;
 in
 lib.mapAttrs (
   name: app:
@@ -26,4 +25,4 @@ lib.mapAttrs (
       "preserveXattrs"
     ]
   )
-) supported
+) enabled

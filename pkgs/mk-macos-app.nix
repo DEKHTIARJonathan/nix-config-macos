@@ -13,7 +13,6 @@
   format ? "dmg",
   appPath ? appName,
   dmgExtractor ? "undmg",
-  platforms ? lib.platforms.darwin,
 }:
 assert lib.assertMsg (builtins.elem format [
   "dmg"
@@ -95,7 +94,7 @@ stdenvNoCC.mkDerivation (
 
     passthru = { inherit appName format isInstaller; };
     meta = {
-      inherit platforms;
+      platforms = [ "aarch64-darwin" ];
       sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
   }

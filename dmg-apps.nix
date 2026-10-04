@@ -2,16 +2,12 @@
 # Set hash = lib.fakeHash when updating; build, copy Nix's reported hash,
 # and build again to verify the download and installation layout.
 { lib }:
-let
-  arm = [ "aarch64-darwin" ];
-in
 {
   ariane = {
     version = "26.4.1";
     url = "https://github.com/Ariane-s-Line/Ariane-Release/releases/download/26.4.1/Ariane-26.4.1-MACOS-M-SERIES-AARCH64.dmg";
     hash = "sha256-E1tDRd4jwGt6CnBcVcFSsV05OOosLbfanTRT05TGbBg=";
     appName = "Ariane.app";
-    platforms = arm;
   };
   mole = {
     dmgExtractor = "7zz";
@@ -25,7 +21,6 @@ in
     url = "https://github.com/Dygmalab/Bazecor/releases/download/v1.10.0/Bazecor-1.10.0-arm64.dmg";
     hash = "sha256-Ah7J42TWPE+z2QDxI8S1Us0gs1bYRxpWiX1cgI4Vqkg=";
     appName = "Bazecor.app";
-    platforms = arm;
   };
   titanmesh = {
     version = "1.0.0";
@@ -40,7 +35,6 @@ in
     hash = "sha256-kPLC3B/m8XtOWmO6cb3s4oYHW9ZnK45kuk0fqEYYUSI=";
     appName = "SpeleoDB Compass Sidecar.app";
     removeQuarantine = true;
-    platforms = arm;
   };
   frameforge = {
     dmgExtractor = "7zz";
@@ -49,7 +43,6 @@ in
     hash = "sha256-Qj+hjvq7GxCjFhg1ICfpH8s3iyAkxqbvuzVK7+2CCNM=";
     appName = "FrameForge.app";
     removeQuarantine = true;
-    platforms = arm;
   };
   gl-kvm = {
     dmgExtractor = "7zz";
@@ -100,7 +93,6 @@ in
     url = "https://github.com/zed-industries/zed/releases/download/v1.22.0/Zed-aarch64.dmg";
     hash = "sha256-taWmmE8x/vE4cmigdrCRlUSiiFDFz3zX9r9p5gEZf90=";
     appName = "Zed.app";
-    platforms = arm;
   };
   vscode = {
     version = "1.140.0";
@@ -108,14 +100,12 @@ in
     url = "https://vscode.download.prss.microsoft.com/dbazure/download/stable/07f806f999227108933c2e30515b26eecc1fda74/VSCode-darwin-arm64.dmg";
     hash = "sha256-Wcx3EotORVHaDJfwQ3/WHT0LK8R9gMO5KchZNoo5odM=";
     appName = "Visual Studio Code.app";
-    platforms = arm;
   };
   gitkraken = {
     version = "12.6.0";
     url = "https://release.gitkraken.dev/gkd/production/normal/darwin/arm64/12.6.0/3K6vJ86wvnBNQdR1D23qN80JvdP/installGitKraken.dmg";
     hash = "sha256-1TEOAmnLHJR7wZFQBN+5jmbKJGsCR2nRj7t50KlrTRc=";
     appName = "GitKraken.app";
-    platforms = arm;
   };
   onepassword = {
     version = "8.12.38";

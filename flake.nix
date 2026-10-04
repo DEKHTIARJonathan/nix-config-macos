@@ -1,11 +1,9 @@
 {
-  description = "macOS utilities and applications, managed with nix-darwin";
+  description = "Apple Silicon macOS utilities and applications, managed with nix-darwin";
 
   inputs = {
     # Matching stable release branches keep nixpkgs and nix-darwin compatible.
-    # The Darwin branch includes macOS build fixes. 26.05 supports both
-    # Apple Silicon and Intel; do not move an Intel Mac to a branch that
-    # has dropped x86_64-darwin support.
+    # The Darwin branch includes macOS build fixes.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
 
     nix-darwin = {

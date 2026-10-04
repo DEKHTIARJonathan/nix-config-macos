@@ -3,9 +3,7 @@
   # REQUIRED: replace with the output of `id -un` on your Mac.
   username = "jonathan";
 
-  # Apple Silicon (M1/M2/M3/etc.): aarch64-darwin.
-  # Intel: x86_64-darwin. Run `uname -m` to check your architecture.
-  # Use the native architecture even if your terminal runs under Rosetta.
+  # Apple Silicon only. Keep this value when adapting to another Mac.
   system = "aarch64-darwin";
 
   # true: nix-darwin manages upstream Nix and its daemon/configuration.

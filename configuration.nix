@@ -11,11 +11,8 @@
       message = "Set username in host.nix to your existing macOS account name (id -un).";
     }
     {
-      assertion = builtins.elem host.system [
-        "aarch64-darwin"
-        "x86_64-darwin"
-      ];
-      message = "Set system in host.nix to aarch64-darwin or x86_64-darwin.";
+      assertion = host.system == "aarch64-darwin";
+      message = "This configuration supports Apple Silicon only; set system in host.nix to aarch64-darwin.";
     }
   ];
 
@@ -147,9 +144,7 @@
     # nix-homebrew manages Homebrew's own files; it is more than a PATH edit.
     autoMigrate = true;
 
-    # One native Homebrew installation is enough for the supplied inventory.
-    # On Apple Silicon, enable this only if you need a separate Intel brew
-    # installation; install Rosetta first. Intel Macs leave this false.
+    # Manage only the native Apple Silicon Homebrew installation.
     enableRosetta = false;
 
     # Keep existing/custom taps usable during migration. Consequently their

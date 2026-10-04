@@ -1,24 +1,24 @@
 # macOS Nix configuration
 
-This is a nix-darwin configuration for your supplied package inventory. NixOS is
-the Linux distribution; nix-darwin provides the corresponding system
-configuration layer on macOS. Your everyday tools remain available without
-entering a development shell.
+This is an Apple Silicon-only nix-darwin configuration for your supplied package
+inventory. Intel Macs are not supported. NixOS is the Linux distribution;
+nix-darwin provides the corresponding system configuration layer on macOS. Your
+everyday tools remain available without entering a development shell.
 
 ## Files
 
-| File                    | Purpose                                                         |
-| ----------------------- | --------------------------------------------------------------- |
-| `host.nix`              | Account, CPU architecture, Nix ownership, compatibility version |
-| `flake.nix`             | Inputs and the configuration named `mac`                        |
-| `configuration.nix`     | Persistent packages, shell integration, Homebrew management     |
-| `android.nix`           | Native Nix Android tools and Java runtime                       |
-| `dmg-apps.nix`          | Shared inventory: app versions, URLs, hashes, and formats       |
-| `macos-apps.nix`        | Installs app bundles and exposes PKGs for manual installation   |
-| `pkgs/mk-macos-app.nix` | Shared DMG, ZIP, PKG, and ZIP-containing-PKG builder            |
-| `pkgs/app-sources.nix`  | Fixed-output downloads from the inventory                       |
-| `pkgs/macos-apps.nix`   | Packages for the selected architecture                          |
-| `flake.lock`            | Generated on your Mac; exact input revisions                    |
+| File                    | Purpose                                                               |
+| ----------------------- | --------------------------------------------------------------------- |
+| `host.nix`              | Account, Apple Silicon platform, Nix ownership, compatibility version |
+| `flake.nix`             | Inputs and the configuration named `mac`                              |
+| `configuration.nix`     | Persistent packages, shell integration, Homebrew management           |
+| `android.nix`           | Native Nix Android tools and Java runtime                             |
+| `dmg-apps.nix`          | Shared inventory: app versions, URLs, hashes, and formats             |
+| `macos-apps.nix`        | Installs app bundles and exposes PKGs for manual installation         |
+| `pkgs/mk-macos-app.nix` | Shared DMG, ZIP, PKG, and ZIP-containing-PKG builder                  |
+| `pkgs/app-sources.nix`  | Fixed-output downloads from the inventory                             |
+| `pkgs/macos-apps.nix`   | Enabled Apple Silicon app packages                                    |
+| `flake.lock`            | Generated on your Mac; exact input revisions                          |
 
 Your original package descriptions are preserved inline. All 23 inventory
 entries have native Nix representations. Homebrew is configured for future
@@ -221,16 +221,16 @@ updates.
 
 Install Nix first if `nix --version` fails; follow the current
 [nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin#prerequisites).
-Change the checkout path and `host.nix` to match that Mac's account and native
-architecture. Use `manageNix = false` for Determinate Nix, which manages its own
-daemon; keep user-level flakes enabled and follow that distribution's guidance
-for root's configuration. With `manageNix = false`, this flake does not set
-system-wide Nix options. The installer and the Nix distribution are distinct.
+Use an Apple Silicon Mac, change the checkout path and account in `host.nix`,
+and keep `system = "aarch64-darwin"`. Use `manageNix = false` for Determinate
+Nix, which manages its own daemon; keep user-level flakes enabled and follow
+that distribution's guidance for root's configuration. With `manageNix = false`,
+this flake does not set system-wide Nix options. The installer and the Nix
+distribution are distinct.
 
 For an existing nix-darwin installation, merge modules and preserve its
 `stateVersion`. This configuration targets matching stable 26.05 branches and
-already includes a lock. Before upgrading an Intel Mac, check the new release's
-architecture support.
+already includes a lock.
 
 ## Complete inventory mapping
 
@@ -333,7 +333,9 @@ binaries and resources without patching or re-signing. Signatures stored in
 extended attributes require the native activation copy described below for VLC;
 the Nix store cannot preserve those attributes.
 
-Add an entry to `dmg-apps.nix`; no additional module edits are needed:
+Add an entry to `dmg-apps.nix`; no additional module edits are needed. Use an
+Apple Silicon or universal macOS download; all app packages target Apple
+Silicon:
 
 ```nix
 example = {
@@ -342,7 +344,6 @@ example = {
   hash = lib.fakeHash;
   appName = "Example.app";
   # format = "zip";  # Default: "dmg"; also "pkg" or "zip-pkg".
-  # platforms = [ "aarch64-darwin" ];  # Default: both Mac architectures.
   # appPath = "Subdirectory/Example.app";  # Default: appName.
   # dmgExtractor = "7zz";  # For APFS DMGs; default: "undmg" (HFS).
   # preserveXattrs = true;  # DMGs requiring native copying at activation.
@@ -519,9 +520,8 @@ All 19 inventory packages were built on Apple Silicon using the checked-in lock.
 Downloads were first built with fake hashes, then rebuilt with the hashes
 reported by Nix; the corrected builds reused the cached downloads. HFS and APFS
 DMGs, direct PKGs, and Insta360's ZIP containing a PKG were verified. The full
-Apple Silicon system also built successfully; Intel architecture filtering was
-evaluated separately. No apps have been activated and no PKG installer has been
-executed as part of this change.
+Apple Silicon system also built successfully. No apps have been activated and no
+PKG installer has been executed as part of this change.
 
 The supplied HandBrake and Zed links were HTML pages, so their versioned release
 assets are used. The supplied 1Password ZIP contains only its downloader; the
