@@ -5,7 +5,7 @@
   ...
 }:
 let
-  inventory = import ./dmg-apps.nix { inherit lib; };
+  inventory = import ./mac-apps.nix { inherit lib; };
   sources = import ./pkgs/app-sources.nix { inherit pkgs; };
   packages = import ./pkgs/macos-apps.nix { inherit pkgs; };
   installers = lib.filterAttrs (_: package: package.isInstaller) packages;
@@ -26,15 +26,32 @@ let
     exec ${pkgs.python3}/bin/python3 ${./scripts/install_native_apps.py} \
       --manifest ${manifest} "$@"
   '';
+  installerManifest = pkgs.writeText "native-macos-pkgs.json" (
+    builtins.toJSON (
+      lib.mapAttrs (name: package: {
+        inherit (inventory.${name}) appName;
+        source = "${package}/share/macos-pkgs/${name}.pkg";
+      }) installers
+    )
+  );
+  installPkgs = pkgs.writeShellScriptBin "mac-config-install-pkgs" ''
+    exec ${pkgs.python3}/bin/python3 ${./scripts/install_native_pkgs.py} \
+      --manifest ${installerManifest} "$@"
+  '';
 in
 {
-  # Nix stages installers and pins downloads; installed GUI apps stay writable.
-  environment.systemPackages = [ installApps ] ++ builtins.attrValues installers;
+  # Downloads are pinned; native installers and app copies run at activation.
+  environment.systemPackages = [
+    installApps
+    installPkgs
+  ]
+  ++ builtins.attrValues installers;
   environment.pathsToLink = [ "/share/macos-pkgs" ];
 
   # Install missing apps before Home Manager restores Dock entries. Preserve
   # existing apps, including self-updated versions, on subsequent rebuilds.
   system.activationScripts.postActivation.text = lib.mkBefore ''
+    ${installPkgs}/bin/mac-config-install-pkgs
     launchctl asuser "$(id -u ${lib.escapeShellArg host.username})" \
       sudo -u ${lib.escapeShellArg host.username} --set-home \
       ${installApps}/bin/mac-config-install-apps

@@ -4,7 +4,7 @@ assert pkgs.lib.assertMsg (
 ) "macOS app packages support Apple Silicon only.";
 let
   inherit (pkgs) lib;
-  inventory = import ../dmg-apps.nix { inherit lib; };
+  inventory = import ../mac-apps.nix { inherit lib; };
   sources = import ./app-sources.nix { inherit pkgs; };
   mkApp = pkgs.callPackage ./mk-macos-app.nix { };
   enabled = lib.filterAttrs (_: app: app.enable or true) inventory;

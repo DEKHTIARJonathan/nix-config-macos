@@ -29,7 +29,7 @@
     version = "4.93.0";
     downloadName = "docker-desktop.dmg";
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
-    hash = "sha256-vwYvRTNMcRvS/C7UelWI0FD7uVC+OuOqSsmCbwStTbo=";
+    hash = "sha256-AhR+TVWf9B4dnXvmOlVBATQCNwZMe23yNFSKoRHr8Ew=";
     appName = "Docker.app";
   };
   firefox = {
@@ -176,7 +176,7 @@
     # The supplied ZIP contains only a downloader. This is the full installer
     # recommended for managed deployments by support.1password.com.
     url = "https://downloads.1password.com/mac/1Password.pkg";
-    hash = "sha256-ZZmDh5Stl13qbuZ4gMIcmiGG//ITGndgnrB1nZi1Mek=";
+    hash = "sha256-kCuAIcMIGF8w6SqGoxEypZpNcWgczt7WtS2Q7Hq5s1M=";
     appName = "1Password.app";
   };
   nordvpn = {

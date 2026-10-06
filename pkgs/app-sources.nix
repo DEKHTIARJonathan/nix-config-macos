@@ -1,7 +1,7 @@
 { pkgs }:
 let
   inherit (pkgs) lib;
-  inventory = import ../dmg-apps.nix { inherit lib; };
+  inventory = import ../mac-apps.nix { inherit lib; };
 in
 lib.mapAttrs (
   name: app:

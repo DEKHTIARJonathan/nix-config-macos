@@ -58,7 +58,7 @@
           }
           ./configuration.nix
           ./android.nix
-          ./macos-apps.nix
+          ./app-installation.nix
           ./desktop.nix
         ];
       };

@@ -168,7 +168,10 @@
   homebrew = {
     enable = true;
 
-    brews = [ "railway" ];
+    brews = [
+      "railway"
+      "herdr"
+    ];
     casks = [
       "hiddenbar"
       "codex"
