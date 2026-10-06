@@ -2,6 +2,7 @@
 
 import copy
 import json
+import os
 from pathlib import Path
 import plistlib
 import subprocess
@@ -31,6 +32,52 @@ class FakePreferences:
             raise RuntimeError("Simulated preference failure")
         self.values.setdefault(domain, {}).update(copy.deepcopy(updates))
         self.writes += 1
+
+
+@unittest.skipUnless(os.environ.get("PRE_ACTIVATION_FILE"), "Generated activation script is supplied by the Nix check")
+class RosettaActivationTests(unittest.TestCase):
+    def test_installation_skip_verification_and_failure_propagation(self):
+        script = Path(os.environ["PRE_ACTIVATION_FILE"]).read_text()
+        # Replace absolute Apple commands before execution: these tests never
+        # install software or depend on the host's actual Rosetta state.
+        script = script.replace("/usr/bin/arch", "mock_arch")
+        script = script.replace("/usr/sbin/softwareupdate", "mock_softwareupdate")
+        harness = '''
+            set -e
+            rosetta_ready=$ROSETTA_READY
+            mock_arch() {
+                printf 'probe %s\\n' "$*" >> "$ROSETTA_LOG"
+                test "$rosetta_ready" = 1
+            }
+            mock_softwareupdate() {
+                printf 'install %s\\n' "$*" >> "$ROSETTA_LOG"
+                if test "$ROSETTA_INSTALL_FAILS" = 1; then return 42; fi
+                rosetta_ready=$ROSETTA_INSTALL_WORKS
+            }
+        '''
+        cases = [
+            # ready, installer fails, installation works, success, probes, installs
+            (True, False, False, True, 2, 0),
+            (False, False, True, True, 3, 1),
+            (False, True, False, False, 1, 1),
+            (False, False, False, False, 2, 1),
+        ]
+        for ready, fails, works, success, probes, installs in cases:
+            with self.subTest(ready=ready, fails=fails, works=works), tempfile.TemporaryDirectory() as directory:
+                log = Path(directory) / "commands.log"
+                result = subprocess.run(
+                    ["/bin/sh", "-c", harness + script + script + '\nprintf "activation continued\\n"\n'],
+                    env={"PATH": os.defpath, "ROSETTA_LOG": str(log),
+                         "ROSETTA_READY": str(int(ready)), "ROSETTA_INSTALL_FAILS": str(int(fails)),
+                         "ROSETTA_INSTALL_WORKS": str(int(works))},
+                    capture_output=True, text=True,
+                )
+                self.assertEqual(result.returncode == 0, success, result.stderr)
+                self.assertEqual("activation continued" in result.stdout, success)
+                commands = log.read_text().splitlines()
+                self.assertEqual(commands.count("probe -x86_64 /usr/bin/true"), probes)
+                self.assertEqual(commands.count("install --install-rosetta --agree-to-license"), installs)
+                self.assertEqual(len(commands), probes + installs)
 
 
 class RestoreTests(unittest.TestCase):

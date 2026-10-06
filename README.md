@@ -274,7 +274,7 @@ already includes a lock.
 | ------------------------ | -------------------------------------------------- |
 | bun                      | `pkgs.bun`                                         |
 | cmake                    | `pkgs.cmake`                                       |
-| coreutils                | `pkgs.coreutils`                                   |
+| coreutils                | Use macOS's built-in utilities                     |
 | ffmpeg                   | `pkgs.ffmpeg`                                      |
 | gh                       | `pkgs.gh`                                          |
 | git                      | `pkgs.git`                                         |
@@ -345,7 +345,10 @@ prompt configuration. MesloLGS NF is installed for the prompt and Terminal.
 nix-darwin's default tool order; subshells preserve inherited project
 toolchains. Existing Cargo initialization and the Python 3.12 framework path are
 retained conditionally; no extra Python/Flutter toolchain or old Android/Java
-environment is restored.
+environment is restored. `~/.cargo/bin` is also included when `~/.cargo/env` is
+absent or does not update PATH, so Cargo-installed tools are available in
+interactive and noninteractive Zsh shells. Inherited project tools retain
+priority, and duplicate paths are removed.
 
 The captured global Git settings include Jonathan Dekhtiar's name/email, an
 empty signing key, disabled commit signing, disabled forced annotated-tag
@@ -579,8 +582,16 @@ time to avoid mismatched adb binaries and SDK paths.
 `mac-apps.nix` is the shared inventory for all downloaded applications.
 `app-installation.nix` consumes it during system configuration, and the same
 packages are exposed as flake outputs. The host targets Apple Silicon. Google
-Earth Pro is an explicitly allowed Intel application and requires Rosetta 2
-(already installed on this laptop).
+Earth Pro is an explicitly allowed Intel application and requires Rosetta 2 as
+do some vendor SDK installers. Before other activation steps,
+`configuration.nix` checks Intel execution with
+`/usr/bin/arch -x86_64 /usr/bin/true`. If unavailable, activation runs
+`/usr/sbin/softwareupdate --install-rosetta --agree-to-license` as root and
+verifies Intel execution again. This automatically accepts Apple's Rosetta
+license and may download Rosetta from Apple. A failed installation or failed
+verification stops activation and remains eligible for retry; working Rosetta
+installations are left alone. Evaluation and `make build` do not install it.
+This does not enable Intel Homebrew or change the ARM64 build target.
 
 | Format          | Build behavior                                | Activation behavior                      |
 | --------------- | --------------------------------------------- | ---------------------------------------- |
@@ -792,9 +803,13 @@ Do not enable automatic Homebrew cleanup until all Homebrew-installed items you
 intend to keep are represented in its lists. Keeping `cleanup = "none"` is valid
 indefinitely; it simply allows additional unmanaged Brew packages.
 
-GNU coreutils deserve special attention: the Nix installation exposes GNU
-commands with unprefixed names. Explicit `/bin/ls`, `/bin/cp`, etc. still invoke
-the macOS versions when a script requires their behavior.
+GNU coreutils are intentionally omitted from the global package list so `cp`,
+`ls`, `mv`, `date`, and other basic utilities use macOS's native
+implementations. Their behavior can differ from GNU tools; for example,
+Cerbero's DMG extraction expects Apple's directory-copy behavior. After
+activating this change, open a new shell and check `command -v cp` (expected
+`/bin/cp`). Existing build caches with incorrectly nested extracted files still
+need a separate repair.
 
 ## Normal maintenance
 

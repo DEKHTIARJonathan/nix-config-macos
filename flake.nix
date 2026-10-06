@@ -82,6 +82,7 @@
             ZSH_RC_FILE = "${home.home-files}/.config/zsh/nix-zshrc";
             ZSH_HOME_DIRECTORY = home.home.homeDirectory;
             ZSH_TEST_BIN = "${pkgs.zsh}/bin/zsh";
+            PRE_ACTIVATION_FILE = pkgs.writeText "mac-config-pre-activation.sh" self.darwinConfigurations.mac.config.system.activationScripts.preActivation.text;
           }
           ''
             cp -R ${./scripts} scripts

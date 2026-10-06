@@ -82,6 +82,45 @@ class ZshTests(unittest.TestCase):
                     if interactive:
                         self.assertIn("COMPLETION:_docker", lines)
 
+    def test_cargo_tools_are_available_without_env_setup_and_path_stays_unique(self):
+        for interactive in (False, True):
+            for env_file in (False, True):
+                with self.subTest(interactive=interactive, env_file=env_file), tempfile.TemporaryDirectory() as directory:
+                    home = Path(directory)
+                    write_startup_files(home)
+                    cargo = home / ".cargo/bin"
+                    project = home / "project tools/bin"
+                    for folder in (cargo, project):
+                        folder.mkdir(parents=True)
+                        tool = folder / "cargo-path-test-tool"
+                        tool.write_text("#!/bin/sh\nexit 0\n")
+                        tool.chmod(0o755)
+                    if env_file:
+                        (home / ".cargo/env").write_text('# Existing env file without a PATH update\n')
+                    environment = {
+                        "HOME": directory, "ZDOTDIR": directory,
+                        "PATH": "/usr/bin:/bin", "TERM": "dumb",
+                        "__ETC_ZSHENV_SOURCED": "1",
+                    }
+                    command = ('source "$HOME/.zshenv"; '
+                               'print -r -- "TOOL:$commands[cargo-path-test-tool]"; '
+                               'print -r -- "PATH:$PATH"')
+                    for inherited_project in (False, True):
+                        if inherited_project:
+                            environment["PATH"] = f"{project}:/usr/bin:/bin"
+                        result = subprocess.run(
+                            [os.environ["ZSH_TEST_BIN"], "-dic" if interactive else "-dc", command],
+                            env=environment, capture_output=True, text=True, check=True,
+                        )
+                        lines = result.stdout.splitlines()
+                        expected = project if inherited_project else cargo
+                        self.assertIn(f"TOOL:{expected}/cargo-path-test-tool", lines)
+                        paths = next(line.removeprefix("PATH:").split(":") for line in lines if line.startswith("PATH:"))
+                        self.assertEqual(paths.count(str(cargo)), 1)
+                        self.assertLess(paths.index("/run/current-system/sw/bin"), paths.index(str(cargo)))
+                        if inherited_project:
+                            self.assertEqual(paths[0], str(project))
+
     def test_subshells_preserve_project_toolchain(self):
         for interactive in (False, True):
             for nix_shell in (False, True):

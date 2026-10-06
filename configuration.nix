@@ -24,6 +24,22 @@
   system.primaryUser = host.username;
   system.stateVersion = host.stateVersion;
 
+  # Intel-only vendor installers need Rosetta even when their payload is ARM64.
+  # Probe actual execution support so later switches skip a working installation.
+  system.activationScripts.preActivation.text = ''
+    if ! /usr/bin/arch -x86_64 /usr/bin/true >/dev/null 2>&1; then
+      echo "Installing Rosetta for Intel application compatibility..."
+      if ! /usr/sbin/softwareupdate --install-rosetta --agree-to-license; then
+        echo "Rosetta installation failed; retry activation after resolving the error." >&2
+        exit 1
+      fi
+      if ! /usr/bin/arch -x86_64 /usr/bin/true >/dev/null 2>&1; then
+        echo "Rosetta installation finished, but Intel execution still fails." >&2
+        exit 1
+      fi
+    fi
+  '';
+
   # Describe the EXISTING account for modules that need its home directory.
   # This is not a request to create a new macOS account.
   users.users.${host.username}.home = host.homeDirectory or "/Users/${host.username}";
@@ -55,6 +71,8 @@
   # Names below are nixpkgs attributes, which can differ from Brew names.
   # Package versions come from flake.lock's nixpkgs revision. To change a
   # version, select a versioned attribute or update that input deliberately.
+  # Use macOS's native core utilities (cp, ls, mv, date, etc.). Installing
+  # GNU coreutils here shadows them and can break macOS-specific build scripts.
   environment.systemPackages = with pkgs; [
     # Incredibly fast JavaScript runtime, bundler, test runner, and package manager
     # Installed by Nix: update through this configuration, not `bun upgrade`.
@@ -62,11 +80,6 @@
 
     # Cross-platform make
     cmake
-
-    # GNU File, Shell, and Text utilities
-    # Nix exposes unprefixed names (e.g. ls, cp, date). This differs from
-    # Homebrew's usual g-prefixed setup. /bin/ls still invokes Apple's ls.
-    coreutils
 
     # Play, record, convert, and stream select audio and video codecs
     ffmpeg

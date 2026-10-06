@@ -85,6 +85,8 @@ in
         local -a inherited_path=("''${path[@]}")
         [[ ! -f "$HOME/.cargo/env" ]] || source "$HOME/.cargo/env"
         path=("''${inherited_path[@]}" "''${path[@]}" /run/current-system/sw/bin /etc/profiles/per-user/${lib.escapeShellArg host.username}/bin)
+        # cargo install puts user tools here even without a Rustup env file.
+        path+=("$HOME/.cargo/bin")
         # Docker Desktop owns these CLI and credential-helper symlinks.
         # Keep them available to scripts as well as interactive shells.
         path+=("$HOME/.docker/bin")

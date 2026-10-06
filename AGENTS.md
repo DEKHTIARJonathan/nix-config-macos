@@ -109,6 +109,13 @@ Nix distribution may require `false`; do not change this based only on the name
 of the installer originally used. Preserve the disabled sudo PAM customization
 on this managed Mac.
 
+`configuration.nix` installs Rosetta during system pre-activation only if
+`/usr/bin/arch -x86_64 /usr/bin/true` fails. The user authorized automatic
+`softwareupdate --install-rosetta --agree-to-license` during activation.
+Preserve the post-install execution check and failure propagation. This is
+independent of Intel Homebrew, which remains disabled; builds and evaluation
+must not install Rosetta.
+
 Darwin `stateVersion` and Home Manager `home.stateVersion` are compatibility
 settings, not package versions. Do not increment them during routine upgrades.
 Keep nixpkgs, nix-darwin, and Home Manager release branches compatible, and keep
@@ -138,6 +145,11 @@ already assigned an owner. Homebrew intentionally remains available for the
 selected tools in `configuration.nix`. Preserve `cleanup = "none"`, disabled
 automatic upgrades/updates, and shell integration that keeps fallback Brew paths
 behind the default Nix paths. Do not uninstall old copies during an addition.
+
+Prefer macOS's native core utilities (`cp`, `ls`, `mv`, `date`, etc.). Do not
+add GNU coreutils to the global package list: shadowing Apple's commands can
+break macOS-specific scripts such as Cerbero's DMG extraction. Add tools absent
+from macOS or explicitly required by a project individually.
 
 Nix installs Rustup, while Rustup manages toolchains separately. Do not add a
 competing global Rust compiler or run `rustup self update` against the Nix copy.
