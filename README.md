@@ -111,7 +111,7 @@ edit nix-darwin's generated `/etc/nix/nix.conf`.
 ```bash
 cd /Users/jonathan/git_projects/nix-macos-config
 nix flake metadata --no-update-lock-file
-nix build .#darwinConfigurations.mac.system --no-update-lock-file
+make build
 ```
 
 Stop here if either command fails. The build prepares the complete system and
@@ -125,22 +125,22 @@ before building; edits to already tracked files need no commit to take effect.
 
 ### 4. Activate nix-darwin for the first time
 
-Only after the build succeeds, run the
-[nix-darwin bootstrap command](https://github.com/nix-darwin/nix-darwin#step-2-installing-nix-darwin):
+To build and activate the configuration, run:
 
-```bash
-sudo nix --extra-experimental-features 'nix-command flakes' \
-  run github:nix-darwin/nix-darwin/nix-darwin-26.05#darwin-rebuild -- \
-  switch --flake .#mac --no-update-lock-file
+```sh
+make install
 ```
 
-This is the step that changes the system. The bootstrap launcher comes from the
-matching release branch; the system configuration uses your local flake and
-lock. Activation configures shell initialization, installs the persistent Nix
-package profile, manages the Nix daemon, adopts existing native Homebrew, and
-installs missing app bundles in `/Applications`. Existing apps are preserved,
-including versions installed by their own updaters. It also activates Home
-Manager, applies desktop preferences, and performs the first-time personal
+`make install` first runs `make build` as your user, then uses `sudo` to run
+`darwin-rebuild switch` from the built `result` system. This works before
+`darwin-rebuild` is on PATH and records the system generation for rollbacks. The
+switch step re-evaluates the locked flake and normally reuses the completed
+build. If the build fails, activation does not run. This is the step that
+changes the system. Activation configures shell initialization, installs the
+persistent Nix package profile, manages the Nix daemon, adopts existing native
+Homebrew, and installs missing app bundles in `/Applications`. Existing apps are
+preserved, including versions installed by their own updaters. It also activates
+Home Manager, applies desktop preferences, and performs the first-time personal
 settings restoration described below.
 
 Existing Homebrew packages remain installed because `cleanup = "none"`;
@@ -265,6 +265,7 @@ already includes a lock.
 | gh                       | `pkgs.gh`                                          |
 | git                      | `pkgs.git`                                         |
 | git-lfs                  | `pkgs.git-lfs`                                     |
+| make                     | `pkgs.gnumake`                                     |
 | gradle                   | `pkgs.gradle`                                      |
 | htop                     | `pkgs.htop`                                        |
 | iperf3                   | `pkgs.iperf3`                                      |
@@ -279,6 +280,7 @@ already includes a lock.
 | shellcheck               | `pkgs.shellcheck`                                  |
 | trash                    | `pkgs.darwin.trash` (same upstream implementation) |
 | tree                     | `pkgs.tree`                                        |
+| uv                       | `pkgs.uv`                                          |
 | android-commandlinetools | `pkgs.androidenv.composeAndroidPackages` SDK       |
 | android-platform-tools   | Same composed SDK, including adb and fastboot      |
 | hiddenbar                | Homebrew cask `hiddenbar`                          |
@@ -358,15 +360,27 @@ On the first Home Manager activation, after applications are installed:
   (Shift-Enter)** is selected for default/startup windows, with its MesloLGS NF
   11-point font and captured key mappings. Shell selection and Secure Keyboard
   Entry preferences are restored. Existing sessions stay open; reopen Terminal
-  to reload its preferences.
+  to reload its preferences. **Clear Dark** also uses MesloLGS NF, at 12 points,
+  so Powerlevel10k icons render in windows using that profile.
+
+Powerlevel10k shows the branch and Git/provider icons using the installed
+MesloLGS NF font. Both icons are configured in `settings/p10k.zsh`; setting
+`POWERLEVEL9K_VCS_BRANCH_ICON` or `POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION`
+to an empty value hides the corresponding icon. For other terminals, select
+`MesloLGS NF` in that application's font settings as well.
 
 Dock and Terminal each have their own completion marker under
 `~/.local/state/nix-macos-config`. Subsequent activations preserve changes to
-Dock order and Terminal profiles. Failed operations remain eligible for retry.
-Missing Dock apps do not block restoration; explicitly rerun it after installing
-them. Preference backups are binary plists in the private `backups/` directory
-under that state directory. Explicit editor restores also back up replaced
-files.
+Dock order and Terminal profiles, except for Shift+Return and Shift+keypad
+Enter: every activation sets these two bindings in all Terminal profiles to send
+`ESC [13;2u` (Shift+Enter), allowing Codex CLI to insert a line break while
+plain Enter still submits. This also repairs existing laptops and profiles
+created after the initial deployment. Other key bindings and profile settings
+are preserved. After a binding repair, fully quit and reopen Terminal to load
+it. Failed operations remain eligible for retry. Missing Dock apps do not block
+restoration; explicitly rerun it after installing them. Preference backups are
+binary plists in the private `backups/` directory under that state directory.
+Explicit editor restores also back up replaced files.
 
 After activation, these commands run as your user (never with `sudo`):
 
@@ -386,11 +400,16 @@ backups.
 
 ### Editors and extensions
 
-VS Code and Zed keep their captured preferences in writable user files. There
-were no user shortcut, snippet, task, or additional profile files to restore.
-The Flutter SDK path, explicit Python interpreter path, temporary Postman
-instruction files, and version-specific Continue extension schema reference were
-omitted as requested. The `.github/instructions` setting is retained.
+VS Code and Zed keep their captured preferences in writable user files. There is
+an explicit `terminal.font_family = "MesloLGS NF"` setting in Zed's seed so its
+terminal uses the installed prompt font independently of Apple Terminal.
+Existing editor files are preserved during activation; font repairs on an
+existing installation must also update that key in
+`~/.config/zed/settings.json`. There were no user shortcut, snippet, task, or
+additional profile files to restore. The Flutter SDK path, explicit Python
+interpreter path, temporary Postman instruction files, and version-specific
+Continue extension schema reference were omitted as requested. The
+`.github/instructions` setting is retained.
 
 The inventory records 37 VS Code extensions and nine Zed extensions: Dockerfile,
 Git Firefly, HTML, Log, Make, Nix, reStructuredText, Ruby, and TOML. Observed
@@ -471,9 +490,19 @@ its requested first-launch setup, then rerun the verifier.
 ### Settings validation
 
 ```sh
-nix build --no-update-lock-file --no-link .#checks.aarch64-darwin.settings
-nix build --no-update-lock-file --no-link .#darwinConfigurations.mac.system
+make test
 ```
+
+`make test` requires uv and uses `uv run --with json5==0.13.0` to supply its
+Python dependency and run unittest. Linux CI installs uv with
+`astral-sh/setup-uv` and calls the same `make test` target. No Python override
+or manual virtual environment setup is needed.
+
+For the complete Apple Silicon Nix check, including generated Home Manager Zsh
+files, run `make test-nix`. This uses Nix's packaged Python/json5 inside the
+builder. Both targets use temporary test data; neither builds vendor apps,
+activates the system, or updates the lockfile. The uv run skips tests requiring
+generated Zsh files; platform-specific tests also skip on unsupported hosts.
 
 The settings tests use temporary homes and mocked preferences. They cover repeat
 activation, existing files/symlinks, backups, failure retries, Dock path
@@ -555,9 +584,12 @@ PKGs are staged during the build and run as root during activation when the
 expected app is missing. Archives containing multiple PKGs are rejected instead
 of selecting an arbitrary installer.
 
-To update an app, change its version/URL, set `hash = lib.fakeHash;`, and build
-its download. Copy the `got: sha256-...` value from Nix's mismatch error into
-`hash`, then build the complete package to verify extraction:
+To add or update an app, preserve the exact supplied URL, including generic
+`latest` endpoints, and set `hash = lib.fakeHash;`. Configuration-only edits
+leave that placeholder pending; do not prefetch installers or start downloads
+just to discover hashes. When your normal rebuild reports a hash mismatch, copy
+the exact `got: sha256-...` value into that app's `hash` without changing its
+URL. If explicitly building the app, use this sequence:
 
 ```bash
 # Stage newly added files first when using a Git-backed flake.
@@ -571,7 +603,48 @@ For the existing inventory, substitute an attribute such as `signal`, `ariane`,
 `onepassword`, or `insta360-studio`. App versions/hashes are independent of
 `flake.lock`; `nix flake update` alone does not update them. A mutable `latest`
 URL is still pinned by its hash, but a fresh download will fail if the vendor
-replaces the file. Prefer versioned download URLs when the vendor provides them.
+replaces the file. Keep the supplied URL and resolve that mismatch explicitly;
+do not replace generic endpoints with version-specific redirect targets. See
+[AGENTS.md](AGENTS.md) for the repository workflow.
+
+### Download progress
+
+Run from the repository root:
+
+```sh
+make build   # Build with progress; create result without activating.
+make install # Build, then activate with sudo.
+make test    # Run tests through uv, as CI does.
+make test-nix # Run the complete Apple Silicon Nix settings check.
+make lock    # Update flake.lock to the latest allowed input revisions.
+```
+
+Bare `make` also builds. Build, install, and test preserve `flake.lock`; only
+`make lock` explicitly updates it. `make build` uses the standard
+[nix-output-monitor](https://github.com/maralorn/nix-output-monitor) from the
+locked flake, equivalent to:
+
+```sh
+nix run --no-update-lock-file .#nix-output-monitor -- build .#darwinConfigurations.mac.system --no-update-lock-file
+```
+
+This works before the first system activation and does not depend on shell
+configuration. Nix first obtains the monitor; it then runs the requested build.
+The monitor's own initial download uses the native Nix display.
+
+The download builder converts curl's meter into structured Nix phase updates
+such as `download 42.0%`. The monitor displays these beside each active build,
+with updates limited to twice per second per download. It does not flood the log
+with progress-bar lines. Percentages require a known transfer size; otherwise
+the status says `downloading (size unknown)`. Ordinary curl errors are
+preserved, as are stdout, exit status, fetchurl retries, and Nix hash
+verification. A 100% transfer is not proof of successful hash verification.
+
+Plain `nix build .#darwinConfigurations.mac.system --no-update-lock-file` also
+shows the phase, but its native renderer only has one live status row. The flake
+cannot add rows to that already running client. No shell alias or function is
+installed. The Makefile invokes the monitor explicitly; the Nix executable is
+unchanged.
 
 ### PKG installation and updates
 
@@ -698,13 +771,20 @@ nix build .#darwinConfigurations.mac.system --no-update-lock-file
 sudo darwin-rebuild switch --flake .#mac --no-update-lock-file
 ```
 
-Update input revisions, build for review, then apply:
+Adding a package from an existing nixpkgs input, such as `gnumake`, uses the
+revision already pinned in `flake.lock`; it does not need a lockfile update.
+`make lock` runs `nix flake update`, updating all inputs within their declared
+branches. It creates the lockfile if missing and does not build or activate the
+system. Vendor app hashes remain separate.
+
+Update input revisions, test and build for review, then apply:
 
 ```bash
 cd /Users/jonathan/git_projects/nix-macos-config
-nix flake update
-nix build .#darwinConfigurations.mac.system --no-update-lock-file
-sudo darwin-rebuild switch --flake .#mac --no-update-lock-file
+make lock
+make test
+make build
+make install
 ```
 
 For an externally managed Nix installation without permanently enabled features,

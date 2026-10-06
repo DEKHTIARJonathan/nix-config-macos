@@ -26,6 +26,9 @@
   },
   "ui_font_size": 16,
   "buffer_font_size": 16,
+  "terminal": {
+    "font_family": "MesloLGS NF"
+  },
   "file_scan_exclusions": [],
   "auto_install_extensions": {
     "dockerfile": true,

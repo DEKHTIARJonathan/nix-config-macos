@@ -64,7 +64,10 @@
       };
 
       # Build one app with `nix build .#signal`; `.src` builds just its download.
-      packages.${host.system} = appPackages;
+      packages.${host.system} = appPackages // {
+        # Available on the first build, without installing the system first.
+        inherit (self.darwinConfigurations.mac.pkgs) nix-output-monitor;
+      };
 
       checks.${host.system}.settings =
         let

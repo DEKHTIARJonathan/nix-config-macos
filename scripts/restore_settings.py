@@ -14,6 +14,21 @@ import uuid
 from mac_preferences import Preferences
 
 
+def terminal_keybindings(profiles):
+    """Send CSI-u Shift+Enter instead of an indistinguishable plain Return."""
+    return {
+        name: {
+            **profile,
+            "keyMapBoundKeys": {
+                **profile.get("keyMapBoundKeys", {}),
+                "$000D": "\x1b[13;2u",  # Shift+Return
+                "$0003": "\x1b[13;2u",  # Shift+keypad Enter
+            },
+        }
+        for name, profile in profiles.items()
+    }
+
+
 def state_directory(home):
     return home / ".local/state/nix-macos-config"
 
@@ -92,7 +107,8 @@ def dock_entries(items, applications=Path("/Applications")):
 def restore_desktop(component, source, home, preferences, once=False, dry_run=False,
                     applications=Path("/Applications")):
     marker = state_directory(home) / f"{component}-restored"
-    if once and marker.exists():
+    keep_snapshot = once and marker.exists()
+    if keep_snapshot and component != "terminal":
         print(f"Keeping previously restored {component}")
         return
     domain = {"dock": "com.apple.dock", "terminal": "com.apple.Terminal"}[component]
@@ -103,12 +119,20 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
         if not entries:
             raise RuntimeError("No Dock applications found; preferences and completion marker unchanged")
         updates = {"persistent-apps": entries}
+    elif keep_snapshot:
+        # Profile restoration is one-time, but these two bindings are managed
+        # on every activation, including profiles added after the first switch.
+        profiles = terminal_keybindings(current.get("Window Settings", {}))
+        if profiles == current.get("Window Settings", {}):
+            print("Keeping previously restored terminal; key bindings are current")
+            return
+        updates = {"Window Settings": profiles}
     else:
         updates = plistlib.loads((source / "terminal.plist").read_bytes())
-        updates["Window Settings"] = {
+        updates["Window Settings"] = terminal_keybindings({
             **current.get("Window Settings", {}),
             **updates["Window Settings"],
-        }
+        })
     print(f"{'Would restore' if dry_run else 'Restoring'} {component}")
     if dry_run:
         return

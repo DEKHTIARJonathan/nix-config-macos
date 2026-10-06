@@ -82,12 +82,50 @@ class RestoreTests(unittest.TestCase):
         profile = current["Window Settings"]["Basic (Shift-Enter)"]
         self.assertIsInstance(profile["Font"], bytes)
         self.assertEqual(current["Default Window Settings"], "Basic (Shift-Enter)")
+        for name in ["Basic (Shift-Enter)", "Clear Dark", "Personal"]:
+            keys = current["Window Settings"][name]["keyMapBoundKeys"]
+            self.assertEqual(keys["$000D"], "\x1b[13;2u")
+            self.assertEqual(keys["$0003"], "\x1b[13;2u")
         preferences.values[domain]["Default Window Settings"] = "Personal"
         restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
         self.assertEqual(preferences.writes, 1)
         self.assertEqual(preferences.read(domain)["Default Window Settings"], "Personal")
         restore.restore_desktop("terminal", self.source, self.home, preferences)
         self.assertEqual(preferences.writes, 2)
+
+    def test_terminal_keybindings_migrate_existing_profiles_without_resetting_them(self):
+        domain = "com.apple.Terminal"
+        original = {
+            "Default Window Settings": "Personal",
+            "Window Settings": {
+                "Personal": {"Font": b"custom font", "keyMapBoundKeys": {"F704": "custom"}},
+                "Clear Dark": {"Font": b"modified font", "keyMapBoundKeys": {"$000D": "\r"}},
+            },
+            "unrelated": True,
+        }
+        preferences = FakePreferences({domain: original})
+        marker = restore.state_directory(self.home) / "terminal-restored"
+        marker.parent.mkdir(parents=True)
+        marker.touch()
+        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True, dry_run=True)
+        self.assertEqual(preferences.writes, 0)
+        self.assertFalse((marker.parent / "backups").exists())
+
+        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        current = preferences.read(domain)
+        self.assertEqual(current["Default Window Settings"], "Personal")
+        self.assertEqual(current["unrelated"], True)
+        self.assertEqual(set(current["Window Settings"]), {"Personal", "Clear Dark"})
+        for name, profile in current["Window Settings"].items():
+            self.assertEqual(profile["Font"], original["Window Settings"][name]["Font"])
+            self.assertEqual(profile["keyMapBoundKeys"]["$000D"], "\x1b[13;2u")
+            self.assertEqual(profile["keyMapBoundKeys"]["$0003"], "\x1b[13;2u")
+        self.assertEqual(current["Window Settings"]["Personal"]["keyMapBoundKeys"]["F704"], "custom")
+        backup, = (marker.parent / "backups").iterdir()
+        self.assertEqual(plistlib.loads(backup.read_bytes()), original)
+
+        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        self.assertEqual(preferences.writes, 1)
 
     def test_failed_restore_can_retry_without_completion_marker(self):
         preferences = FakePreferences()

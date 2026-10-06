@@ -83,6 +83,9 @@
     # Run `git lfs install --local` in repositories that need LFS filters.
     git-lfs
 
+    # GNU Make for the repository's build, install, and test targets.
+    gnumake
+
     # Open-source build automation tool based on the Groovy and Kotlin DSL
     # Existing projects should normally use their own ./gradlew wrapper.
     gradle
@@ -138,6 +141,12 @@
     # Display directories as trees (with optional color/HTML output)
     tree
 
+    # Python dependency environments for make test, matching CI.
+    uv
+
+    # Download files over HTTP, HTTPS, and FTP.
+    wget
+
   ];
 
   fonts.packages = [ pkgs.meslo-lgs-nf ];
@@ -171,6 +180,7 @@
     brews = [
       "railway"
       "herdr"
+      "mactop"
     ];
     casks = [
       "hiddenbar"

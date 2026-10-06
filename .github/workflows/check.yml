@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Test without accessing macOS preferences
-        run: |
-          python3 -m venv /tmp/mac-config-tests
-          /tmp/mac-config-tests/bin/pip install json5==0.13.0
-          /tmp/mac-config-tests/bin/python -B -m unittest discover -s tests -v
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          cache-dependency-glob: Makefile
+      - name: Run tests
+        run: make test
 
   prek:
     name: Prek
