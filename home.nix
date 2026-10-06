@@ -31,6 +31,7 @@ in
       verifyTools
     ];
     file.".p10k.zsh".source = ./settings/p10k.zsh;
+    file.".agents/skills/review-agent/SKILL.md".source = ./settings/agent-skills/review-agent/SKILL.md;
     # Keep the entry point writable for application setup (for example Docker).
     # Home Manager still updates the generated shell configuration separately.
     file."./.zshrc".target = ".config/zsh/nix-zshrc";

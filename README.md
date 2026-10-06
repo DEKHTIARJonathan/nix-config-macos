@@ -334,6 +334,13 @@ if desired.
 
 ## Personal environment restoration
 
+Home Manager installs the `review-agent` skill at
+`~/.agents/skills/review-agent/SKILL.md`. Its source is
+`settings/agent-skills/review-agent/SKILL.md`; edit that source and activate to
+update it. The skill requests an adversarial sub-agent review, a corrective plan
+and implementation, full tests, `prek run -a`, and a final commit when invoked.
+Activation only installs the skill; it does not run the review.
+
 The settings were captured directly from this Mac on 2026-10-04. `old/` is a
 historical reference and is not imported. Home Manager follows the existing
 nixpkgs input; adding it updates the lockfile without updating the other inputs.
