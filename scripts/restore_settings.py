@@ -1,4 +1,4 @@
-"""Seed writable editors and restore captured Dock/Terminal preferences."""
+"""Seed writable shell/editor files and restore captured Dock/Terminal preferences."""
 
 import argparse
 from datetime import datetime, timezone
@@ -50,6 +50,35 @@ def atomic_write(path, data):
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
+
+
+def seed_zshrc(home, dry_run=False, *, store=Path("/nix/store")):
+    """Migrate the HM symlink to a writable loader; retain app/user additions."""
+    target = home / ".zshrc"
+    loader = b'source "$HOME/.config/zsh/nix-zshrc"\n'
+    exists = target.exists() or target.is_symlink()
+    managed_link = False
+    if target.is_symlink():
+        link = target.readlink()
+        managed_link = link.parent.parent == store and link.parent.name.endswith("-home-manager-files") and link.name == ".zshrc"
+        if not managed_link:
+            raise RuntimeError(f"Refusing to replace an unmanaged symlink: {target}")
+    current = target.read_bytes() if exists else b""
+    if not managed_link and loader in current.splitlines(keepends=True):
+        print(f"Keeping {target}")
+        return
+    content = b"# Nix settings load first; application setup may edit this writable file.\n" + loader
+    if not managed_link:
+        content += current
+    print(f"{'Would restore' if dry_run else 'Restoring'} writable {target}")
+    if dry_run:
+        return
+    if exists:
+        backup = backup_path(home, "zshrc")
+        # Save content independently of the old Nix generation's lifetime.
+        atomic_write(backup, current)
+        print(f"Backup: {backup}")
+    atomic_write(target, content)
 
 
 def seed_editors(source, home, replace=False, dry_run=False, *, editor=None):
@@ -151,7 +180,7 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("component", choices=["editors", "dock", "terminal", "all"])
+    parser.add_argument("component", choices=["zshrc", "editors", "dock", "terminal", "all"])
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parent.parent / "settings")
     parser.add_argument("--home", type=Path, default=Path.home())
     parser.add_argument("--once", action="store_true", help="Skip previously restored Dock/Terminal preferences")
@@ -166,7 +195,9 @@ def main():
     preferences = None
     for component in components:
         try:
-            if component == "editors":
+            if component == "zshrc":
+                seed_zshrc(args.home, dry_run)
+            elif component == "editors":
                 seed_editors(args.source, args.home, args.replace_existing, dry_run)
             else:
                 if preferences is None:

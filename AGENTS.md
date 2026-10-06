@@ -259,11 +259,18 @@ changes. Removing an inventory entry does not uninstall the native app.
 
 ## Shell, fonts, and Terminal
 
-Home Manager owns Zsh startup files and `.p10k.zsh`. Preserve instant-prompt
-ordering, the Oh My Zsh Git plugin, and the existing Powerlevel10k loading path.
-Keep inherited project toolchains ahead of fallback system paths in subshells.
-Retain conditional Cargo and Python framework initialization. Local user
-extensions belong in `~/.zshrc.local`, not edits to generated store files.
+Home Manager owns the generated Zsh settings and `.p10k.zsh`. The writable
+`~/.zshrc` loads the managed `~/.config/zsh/nix-zshrc`, allowing applications
+such as Docker Desktop to append setup lines. `seed_zshrc()` in
+`scripts/restore_settings.py` backs up and migrates the old managed symlink
+before Home Manager's link cleanup. It preserves regular-file content and
+subsequent app edits, refuses unrelated symlinks, and respects dry runs. Do not
+turn this entry point back into a store symlink or overwrite app additions.
+Preserve instant-prompt ordering, the Oh My Zsh Git plugin, and the existing
+Powerlevel10k loading path. Keep inherited project toolchains ahead of fallback
+system paths in subshells. Retain conditional Cargo and Python framework
+initialization. Local user extensions belong in `~/.zshrc.local`, not edits to
+generated store files.
 
 For broken prompt icons, distinguish three independent layers:
 

@@ -79,7 +79,7 @@
           {
             nativeBuildInputs = [ python ];
             ZSH_ENV_FILE = "${home.home-files}/.zshenv";
-            ZSH_RC_FILE = "${home.home-files}/.zshrc";
+            ZSH_RC_FILE = "${home.home-files}/.config/zsh/nix-zshrc";
             ZSH_HOME_DIRECTORY = home.home.homeDirectory;
             ZSH_TEST_BIN = "${pkgs.zsh}/bin/zsh";
           }

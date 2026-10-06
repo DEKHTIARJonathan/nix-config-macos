@@ -40,6 +40,69 @@ class RestoreTests(unittest.TestCase):
         self.home = Path(self.temporary.name) / "Home with spaces"
         self.source = ROOT / "settings"
 
+    def test_zshrc_migrates_managed_link_without_changing_store_file(self):
+        store = Path(self.temporary.name) / "store"
+        generated = store / "example-home-manager-files/.zshrc"
+        generated.parent.mkdir(parents=True)
+        generated.write_bytes(b"# generated configuration\n")
+        generated.chmod(0o444)
+        self.home.mkdir()
+        target = self.home / ".zshrc"
+        target.symlink_to(generated)
+        restore.seed_zshrc(self.home, store=store)
+        self.assertFalse(target.is_symlink())
+        self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+        self.assertIn(b'source "$HOME/.config/zsh/nix-zshrc"', target.read_bytes())
+        self.assertNotIn(b"# generated configuration", target.read_bytes())
+        self.assertEqual(generated.read_bytes(), b"# generated configuration\n")
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertEqual([p.read_bytes() for p in backups], [generated.read_bytes()])
+        self.assertFalse(backups[0].is_symlink())
+        with target.open("ab") as stream:
+            stream.write(b"# Docker additions\n")
+        previous = target.read_bytes()
+        restore.seed_zshrc(self.home, store=store)
+        self.assertEqual(target.read_bytes(), previous)
+        self.assertEqual(list(backups[0].parent.iterdir()), backups)
+
+    def test_zshrc_adopts_existing_file_and_preserves_content(self):
+        self.home.mkdir()
+        target = self.home / ".zshrc"
+        original = b"# existing user settings\nexport PERSONAL=value\n"
+        target.write_bytes(original)
+        restore.seed_zshrc(self.home)
+        self.assertTrue(target.read_bytes().endswith(original))
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertEqual([p.read_bytes() for p in backups], [original])
+
+    def test_zshrc_preserves_unmanaged_and_dangling_symlinks(self):
+        self.home.mkdir()
+        external = self.home / "external"
+        external.write_bytes(b"unchanged")
+        for destination in (external, self.home / "absent"):
+            with self.subTest(destination=destination):
+                target = self.home / ".zshrc"
+                target.symlink_to(destination)
+                with self.assertRaisesRegex(RuntimeError, "unmanaged symlink"):
+                    restore.seed_zshrc(self.home)
+                self.assertEqual(target.readlink(), destination)
+                self.assertEqual(external.read_bytes(), b"unchanged")
+                self.assertFalse(restore.state_directory(self.home).exists())
+                target.unlink()
+
+    def test_zshrc_dry_run_and_failed_write_are_retryable(self):
+        restore.seed_zshrc(self.home, dry_run=True)
+        self.assertFalse(self.home.exists())
+        self.home.mkdir()
+        target = self.home / ".zshrc"
+        target.write_bytes(b"# existing settings\n")
+        with patch.object(restore.os, "replace", side_effect=OSError("simulated write failure")):
+            with self.assertRaises(OSError):
+                restore.seed_zshrc(self.home)
+        self.assertEqual(target.read_bytes(), b"# existing settings\n")
+        restore.seed_zshrc(self.home)
+        self.assertTrue(target.read_bytes().endswith(b"# existing settings\n"))
+
     def test_editor_seed_preserves_edits_and_broken_symlink(self):
         zed = self.home / ".config/zed/settings.json"
         zed.parent.mkdir(parents=True)

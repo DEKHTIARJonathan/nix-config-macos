@@ -31,6 +31,12 @@ in
       verifyTools
     ];
     file.".p10k.zsh".source = ./settings/p10k.zsh;
+    # Keep the entry point writable for application setup (for example Docker).
+    # Home Manager still updates the generated shell configuration separately.
+    file."./.zshrc".target = ".config/zsh/nix-zshrc";
+    activation.writableZshrc = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
+      run ${restore}/bin/mac-config-restore zshrc
+    '';
     activation.restoreSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${restore}/bin/mac-config-restore all --once
     '';
@@ -79,8 +85,16 @@ in
         local -a inherited_path=("''${path[@]}")
         [[ ! -f "$HOME/.cargo/env" ]] || source "$HOME/.cargo/env"
         path=("''${inherited_path[@]}" "''${path[@]}" /run/current-system/sw/bin /etc/profiles/per-user/${lib.escapeShellArg host.username}/bin)
+        # Docker Desktop owns these CLI and credential-helper symlinks.
+        # Keep them available to scripts as well as interactive shells.
+        path+=("$HOME/.docker/bin")
         typeset -gU path
       }
+      # Register Docker's completions before Oh My Zsh initializes completion.
+      # Make the directory visible to noninteractive completion checks too.
+      fpath+=("$HOME/.docker/completions")
+      typeset -U fpath
+      export FPATH
     '';
     profileExtra = ''
       # Retain the locally installed Python framework when it exists.

@@ -185,6 +185,20 @@ wins, inspect `.zprofile` and `.zshrc` for later `brew shellenv` calls, PATH
 assignments, aliases, or version-manager initialization. Keep Nix's system
 profile before duplicate Brew commands when you want the Nix versions to run.
 
+Docker Desktop owns the Docker CLI and credential helpers in `~/.docker/bin`;
+Home Manager adds that directory to Zsh's PATH, including noninteractive shells.
+Launch Docker Desktop once to complete its setup, then check
+`command -v docker`, `docker version`, and `docker compose version` in a new
+terminal. If the CLI is missing, check Docker Desktop's CLI tools installation
+setting and select the user directory. The engine must be running for server
+commands to work.
+
+Docker Desktop's completion setup writes scripts to `~/.docker/completions`.
+Home Manager includes that directory in `FPATH` before Oh My Zsh initializes
+completion. The writable `~/.zshrc` lets Docker's setup button add its shell
+configuration. Open a new terminal and check `print -r -- ${_comps[docker]}`: it
+should show `_docker` when the completion script is installed.
+
 GUI apps use their normal `/Applications` locations and remain writable. To
 explicitly reinstall pinned versions, use the native installer command:
 
@@ -308,10 +322,13 @@ those downloaded toolchains. Update them using `rustup update`, or let project
 the Nix installation. A fully Nix-declared compiler can be added later in a
 project flake or through a Rust toolchain overlay.
 
-Home Manager owns global Git configuration and shell dotfiles; make changes in
-`home.nix` and `settings/git.json`, or use `~/.zshrc.local` for extra shell
-customizations. Use repository-local Git settings for LFS filters and project
-overrides. GitHub credentials and Neovim settings remain user-managed. Open
+Home Manager owns global Git configuration and the generated shell settings;
+make persistent configuration changes in `home.nix` and `settings/git.json`, or
+use `~/.zshrc.local` for extra shell customizations. `~/.zshrc` is a writable
+entry point that loads `~/.config/zsh/nix-zshrc`; applications can append setup
+lines to it. Rebuilds update the generated file and preserve those additions.
+Use repository-local Git settings for LFS filters and project overrides. GitHub
+credentials and Neovim settings remain user-managed. Open
 `/Applications/Hidden Bar.app` and configure launch at login in the application
 if desired.
 
@@ -338,7 +355,15 @@ this configuration to another account.
 Existing managed dotfiles are backed up with `.before-nix` on adoption. If a
 backup already exists, Home Manager stops instead of replacing it; move that
 backup aside before retrying. Home Manager's generated Git and shell files are
-managed by Nix, while editor settings stay writable.
+managed by Nix, while `.zshrc` and editor settings stay writable. When migrating
+the old Home Manager `.zshrc` symlink, its contents are backed up privately
+under `~/.local/state/nix-macos-config/backups` before replacing it with the
+writable entry point. Existing regular `.zshrc` files retain their content after
+the new source line; unrelated symlinks require manual review. The shell
+migration runs before Home Manager removes obsolete links, respects dry runs,
+and preserves the writable file on subsequent activations. Rolling back to a
+configuration that manages `.zshrc` directly may require resolving a Home
+Manager backup conflict; preserve application additions before doing so.
 
 ### Preferences and first activation
 
