@@ -99,6 +99,9 @@
     # Lightweight and flexible command-line JSON processor
     jq
 
+    # x86 assembler required by FFmpeg builds targeting x86
+    nasm
+
     # Ambitious Vim-fork focused on extensibility and agility
     # Existing ~/.config/nvim files remain user-managed.
     neovim
@@ -114,6 +117,9 @@
     # Global npm installs are separate from this Nix package list. Prefer
     # project dependencies; Nix's Node installation directory is read-only.
     nodejs
+
+    # Discover library compiler and linker flags for builds such as FFmpeg
+    pkg-config
 
     # Fast Git hook manager written in Rust, drop-in alternative to pre-commit
     prek
@@ -146,6 +152,9 @@
 
     # Download files over HTTP, HTTPS, and FTP.
     wget
+
+    # Compress and decompress XZ and LZMA archives.
+    xz
 
   ];
 
