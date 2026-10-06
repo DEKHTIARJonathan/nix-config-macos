@@ -135,6 +135,92 @@ class RestoreTests(unittest.TestCase):
         self.assertFalse(self.home.exists())
         self.assertEqual(preferences.writes, 0)
 
+    def test_editor_fonts_preserve_settings_backup_and_repeat_without_writes(self):
+        restore.seed_editors(self.source, self.home)
+        code = self.home / "Library/Application Support/Code/User/settings.json"
+        zed = self.home / ".config/zed/settings.json"
+        original_code = b'''{// personal settings
+          "terminal.integrated.fontFamily": "Menlo",
+          "terminal.integrated.fontSize": 17,
+          "editor.fontFamily": "Other font",
+          "workbench.settings.applyToAllProfiles": ["editor.fontSize"],
+        }'''
+        original_zed = b'{"terminal": {"font_size": 19, "font_family": "Menlo"}, "ui_font_size": 16}'
+        code.write_bytes(original_code)
+        zed.write_bytes(original_zed)
+        restore.restore_editor_fonts(self.source, self.home, dry_run=True)
+        self.assertEqual(code.read_bytes(), original_code)
+        self.assertFalse(restore.state_directory(self.home).exists())
+        restore.restore_editor_fonts(self.source, self.home)
+        updated_code = json.loads(code.read_text())
+        self.assertEqual(updated_code["terminal.integrated.fontFamily"], "'MesloLGS NF'")
+        self.assertEqual(updated_code["terminal.integrated.fontSize"], 17)
+        self.assertEqual(updated_code["editor.fontFamily"], "Other font")
+        self.assertEqual(updated_code["workbench.settings.applyToAllProfiles"],
+                         ["editor.fontSize", "terminal.integrated.fontFamily"])
+        updated_zed = json.loads(zed.read_text())
+        self.assertEqual(updated_zed, {"terminal": {"font_size": 19, "font_family": "MesloLGS NF"},
+                                      "ui_font_size": 16})
+        folder = restore.state_directory(self.home) / "backups"
+        backups = list(folder.iterdir())
+        self.assertCountEqual([p.read_bytes() for p in backups], [original_code, original_zed])
+        self.assertTrue(all(p.stat().st_mode & 0o777 == 0o600 for p in backups))
+        with patch.object(restore, "atomic_write") as write:
+            restore.restore_editor_fonts(self.source, self.home)
+            write.assert_not_called()
+        self.assertCountEqual(list(folder.iterdir()), backups)
+
+    def test_editor_fonts_skip_missing_files_and_refuse_symlinks(self):
+        restore.restore_editor_fonts(self.source, self.home)
+        self.assertFalse(self.home.exists())
+        code = self.home / "Library/Application Support/Code/User/settings.json"
+        code.parent.mkdir(parents=True)
+        external = self.home / "external.json"
+        external.write_text('{}')
+        for destination in (external, self.home / "absent"):
+            code.symlink_to(destination)
+            with self.assertRaisesRegex(RuntimeError, "symlink"):
+                restore.restore_editor_fonts(self.source, self.home)
+            self.assertEqual(code.readlink(), destination)
+            self.assertEqual(external.read_text(), '{}')
+            code.unlink()
+        code.parent.rename(code.parent.with_name("RealUser"))
+        code.parent.symlink_to(code.parent.with_name("RealUser"), target_is_directory=True)
+        with self.assertRaisesRegex(RuntimeError, "symlink"):
+            restore.restore_editor_fonts(self.source, self.home)
+        self.assertFalse(restore.state_directory(self.home).exists())
+
+    def test_editor_fonts_invalid_settings_are_preserved(self):
+        code = self.home / "Library/Application Support/Code/User/settings.json"
+        code.parent.mkdir(parents=True)
+        for content in ('broken', '[]', '{"workbench.settings.applyToAllProfiles": null}',
+                        '{"duplicate": 1, "duplicate": 2}'):
+            code.write_text(content)
+            with self.assertRaises(ValueError):
+                restore.restore_editor_fonts(self.source, self.home)
+            self.assertEqual(code.read_text(), content)
+            self.assertFalse(restore.state_directory(self.home).exists())
+
+    def test_editor_font_failed_write_preserves_original_and_can_retry(self):
+        code = self.home / "Library/Application Support/Code/User/settings.json"
+        code.parent.mkdir(parents=True)
+        code.write_bytes(b'{}')
+        replace = restore.os.replace
+
+        def fail_settings_write(source, target):
+            if target == code:
+                raise OSError("simulated write failure")
+            return replace(source, target)
+
+        with patch.object(restore.os, "replace", side_effect=fail_settings_write):
+            with self.assertRaises(OSError):
+                restore.restore_editor_fonts(self.source, self.home)
+        self.assertEqual(code.read_bytes(), b'{}')
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertEqual([p.read_bytes() for p in backups], [b'{}'])
+        restore.restore_editor_fonts(self.source, self.home)
+        self.assertEqual(json.loads(code.read_text())["terminal.integrated.fontFamily"], "'MesloLGS NF'")
+
     def test_terminal_merges_binary_data_and_only_restores_once(self):
         domain = "com.apple.Terminal"
         preferences = FakePreferences({domain: {"Window Settings": {"Personal": {"value": 1}}, "unrelated": 7}})

@@ -7,6 +7,9 @@
   "commit": {
     "gpgSign": false
   },
+  "init": {
+    "defaultBranch": "master"
+  },
   "tag": {
     "forceSignAnnotated": false
   },

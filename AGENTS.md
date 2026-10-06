@@ -285,10 +285,15 @@ profiles use it at 11 points and Clear Dark uses it at 12 points. Preserve font
 size, colors, and unrelated profile settings during a repair.
 
 Zed uses its own `terminal.font_family` setting, independent of Apple Terminal.
-Keep `"MesloLGS NF"` in `settings/zed-settings.json` for new installations. When
-repairing an existing Zed installation, back up and update only that key in its
-writable user settings too: seeding deliberately preserves existing files.
-Preserve editor/UI fonts, terminal size, and other settings.
+Keep `"MesloLGS NF"` in `settings/zed-settings.json` and the corresponding
+`terminal.integrated.fontFamily` in `settings/code-settings.json`.
+`restore_editor_fonts()` maintains these terminal font keys on every activation
+and shares the VS Code font across profiles through
+`workbench.settings.applyToAllProfiles`. Seeding still preserves existing files;
+the separate font repair backs up original bytes, refuses symlinks, and writes
+atomically. Changed JSONC/JSON5 files become JSON; comments remain in backups.
+Preserve editor/UI fonts, terminal size, and other settings. macOS has no
+universal terminal-font preference; additional apps require their own settings.
 
 Shift+Enter is maintained by `terminal_keybindings()` in
 `scripts/restore_settings.py`. Both `$000D` (Shift+Return) and `$0003`
@@ -316,6 +321,8 @@ Preserve these contracts when changing migration code:
 
 - Missing editor settings are seeded as writable files. Existing files and
   symlinks, including dangling symlinks, are preserved by default.
+- The separate editor-fonts pass maintains only the VS Code/Zed terminal font
+  keys and VS Code's shared-profile entry, including with `all --once`.
 - Explicit editor replacement backs up the existing object and does not write
   through its symlink target.
 - Terminal snapshots merge profiles. Repeated activation preserves user profile
@@ -453,6 +460,7 @@ reference, not instructions to run them all on every task.
 | `mac-config-restore terminal`                               | Explicitly reapply the captured Terminal snapshot and managed key mappings.     |
 | `mac-config-restore dock`                                   | Explicitly restore captured Dock order.                                         |
 | `mac-config-restore editors`                                | Seed missing editor settings.                                                   |
+| `mac-config-restore editor-fonts`                           | Repair VS Code/Zed terminal fonts with backups.                                 |
 | `mac-config-restore editors --replace-existing`             | Back up and replace editor settings.                                            |
 | `mac-config-setup-editors all`                              | Request installation/configuration of missing editor extensions.                |
 | `mac-config-setup-editors all --verify`                     | Check extension installation.                                                   |

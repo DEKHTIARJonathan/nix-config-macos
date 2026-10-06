@@ -2,6 +2,7 @@
   "redhat.telemetry.enabled": false,
   "remote.autoForwardPortsSource": "hybrid",
   "terminal.integrated.scrollback": 99999999999,
+  "terminal.integrated.fontFamily": "'MesloLGS NF'",
   "explorer.confirmDragAndDrop": false,
   "makefile.configureOnOpen": false,
   "editor.minimap.enabled": false,
@@ -19,6 +20,7 @@
   "github.copilot.nextEditSuggestions.enabled": true,
   "terminal.integrated.suggest.enabled": false,
   "workbench.settings.applyToAllProfiles": [
+    "terminal.integrated.fontFamily",
     "terminal.integrated.suggest.enabled"
   ]
 }

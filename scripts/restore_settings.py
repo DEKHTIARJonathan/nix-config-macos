@@ -11,6 +11,8 @@ import subprocess
 import tempfile
 import uuid
 
+import json5
+
 from mac_preferences import Preferences
 
 
@@ -111,6 +113,53 @@ def seed_editors(source, home, replace=False, dry_run=False, *, editor=None):
                 print(f"Keeping newly created {target}")
 
 
+def restore_editor_fonts(source, home, dry_run=False):
+    """Maintain terminal fonts in writable editor settings, without reseeding."""
+    files = json.loads((source / "editor-files.json").read_text())
+    for editor in ("code", "zed"):
+        name = f"{editor}-settings.json"
+        target = home / files[name]
+        # Check inside the configured home; macOS itself aliases /var to
+        # /private/var, including temporary homes used by the test suite.
+        parents = [parent for parent in target.parents if parent == home or home in parent.parents]
+        if target.is_symlink() or any(parent.is_symlink() for parent in parents):
+            raise RuntimeError(f"Refusing to write terminal font through a symlink: {target}")
+        if not target.exists():
+            print(f"Skipping missing editor settings: {target}")
+            continue
+        original = target.read_bytes()
+        settings = json5.loads(original.decode(), allow_duplicate_keys=False)
+        if not isinstance(settings, dict):
+            raise ValueError(f"Expected an object in {target}")
+        seed = json.loads((source / name).read_text())
+        if editor == "code":
+            key = "terminal.integrated.fontFamily"
+            profiles_key = "workbench.settings.applyToAllProfiles"
+            profiles = settings.get(profiles_key, [])
+            if not isinstance(profiles, list) or not all(isinstance(item, str) for item in profiles):
+                raise ValueError(f"Expected a string array for {profiles_key} in {target}")
+            if settings.get(key) == seed[key] and key in profiles:
+                continue
+            settings[key] = seed[key]
+            settings[profiles_key] = profiles + ([key] if key not in profiles else [])
+        else:
+            terminal = settings.get("terminal", {})
+            if not isinstance(terminal, dict):
+                raise ValueError(f"Expected a terminal object in {target}")
+            font = seed["terminal"]["font_family"]
+            if terminal.get("font_family") == font:
+                continue
+            settings["terminal"] = {**terminal, "font_family": font}
+        print(f"{'Would repair' if dry_run else 'Repairing'} terminal font in {target}")
+        if dry_run:
+            continue
+        content = (json.dumps(settings, indent=2, ensure_ascii=False) + "\n").encode()
+        backup = backup_path(home, f"{editor}-settings.json")
+        atomic_write(backup, original)
+        print(f"Backup: {backup}")
+        atomic_write(target, content)
+
+
 def dock_entries(items, applications=Path("/Applications")):
     entries = []
     for item in items:
@@ -180,7 +229,7 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("component", choices=["zshrc", "editors", "dock", "terminal", "all"])
+    parser.add_argument("component", choices=["zshrc", "editors", "editor-fonts", "dock", "terminal", "all"])
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parent.parent / "settings")
     parser.add_argument("--home", type=Path, default=Path.home())
     parser.add_argument("--once", action="store_true", help="Skip previously restored Dock/Terminal preferences")
@@ -190,7 +239,7 @@ def main():
     dry_run = args.dry_run or bool(os.environ.get("DRY_RUN"))
     if os.geteuid() == 0 and not dry_run:
         parser.error("Run as the configured user, not root")
-    components = ["editors", "dock", "terminal"] if args.component == "all" else [args.component]
+    components = ["editors", "editor-fonts", "dock", "terminal"] if args.component == "all" else [args.component]
     failed = False
     preferences = None
     for component in components:
@@ -199,6 +248,8 @@ def main():
                 seed_zshrc(args.home, dry_run)
             elif component == "editors":
                 seed_editors(args.source, args.home, args.replace_existing, dry_run)
+            elif component == "editor-fonts":
+                restore_editor_fonts(args.source, args.home, dry_run)
             else:
                 if preferences is None:
                     preferences = Preferences()

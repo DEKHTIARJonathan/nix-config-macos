@@ -391,8 +391,11 @@ On the first Home Manager activation, after applications are installed:
 Powerlevel10k shows the branch and Git/provider icons using the installed
 MesloLGS NF font. Both icons are configured in `settings/p10k.zsh`; setting
 `POWERLEVEL9K_VCS_BRANCH_ICON` or `POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION`
-to an empty value hides the corresponding icon. For other terminals, select
-`MesloLGS NF` in that application's font settings as well.
+to an empty value hides the corresponding icon. VS Code and Zed terminal fonts
+are repaired automatically on every activation, including existing settings.
+There is no macOS setting that forces a font in every application: other
+terminals still need an application-specific setting. Workspace or remote
+settings can also override an editor's user defaults.
 
 Dock and Terminal each have their own completion marker under
 `~/.local/state/nix-macos-config`. Subsequent activations preserve changes to
@@ -414,6 +417,7 @@ mac-config-restore all --dry-run
 mac-config-restore dock
 mac-config-restore terminal
 mac-config-restore editors                 # Seed only missing files
+mac-config-restore editor-fonts            # Repair VS Code/Zed terminal fonts
 mac-config-restore editors --replace-existing  # Back up and replace editor files
 ```
 
@@ -425,16 +429,22 @@ backups.
 
 ### Editors and extensions
 
-VS Code and Zed keep their captured preferences in writable user files. There is
-an explicit `terminal.font_family = "MesloLGS NF"` setting in Zed's seed so its
-terminal uses the installed prompt font independently of Apple Terminal.
-Existing editor files are preserved during activation; font repairs on an
-existing installation must also update that key in
-`~/.config/zed/settings.json`. There were no user shortcut, snippet, task, or
-additional profile files to restore. The Flutter SDK path, explicit Python
-interpreter path, temporary Postman instruction files, and version-specific
-Continue extension schema reference were omitted as requested. The
-`.github/instructions` setting is retained.
+VS Code and Zed keep their captured preferences in writable user files.
+`settings/code-settings.json` sets `terminal.integrated.fontFamily` to
+`'MesloLGS NF'`; `settings/zed-settings.json` sets `terminal.font_family` to
+`MesloLGS NF`. Activation maintains these keys in existing settings as well as
+new installations. VS Code also adds the font key to
+`workbench.settings.applyToAllProfiles`, retaining existing entries. Other
+settings, including terminal sizes and editor/UI fonts, are preserved. The font
+repair skips missing files, refuses symlinks, and backs up original bytes
+privately before an atomic write. Changed JSONC/JSON5 files are serialized as
+JSON, so comments and formatting remain in the backup. Unchanged files are not
+rewritten. Reload the editor if an open terminal retains its previous font.
+There were no user shortcut, snippet, task, or additional profile files to
+restore. The Flutter SDK path, explicit Python interpreter path, temporary
+Postman instruction files, and version-specific Continue extension schema
+reference were omitted as requested. The `.github/instructions` setting is
+retained.
 
 The inventory records 37 VS Code extensions and nine Zed extensions: Dockerfile,
 Git Firefly, HTML, Log, Make, Nix, reStructuredText, Ruby, and TOML. Observed
