@@ -207,6 +207,13 @@
     hash = "sha256-K58n4W/WOVPQSMX9S/qlM4M4jAgotl731zZL4H7tMpI=";
     appName = "Signal.app";
   };
+  slack = {
+    version = "latest";
+    downloadName = "slack-latest.dmg";
+    url = "https://slack.com/api/desktop.latestRelease?arch=universal&redirect=true&variant=dmg";
+    hash = "sha256-iQnCIrgFVSwYs+hkANxrkAf4i5mtuhC8IQ0513Z+EW8=";
+    appName = "Slack.app";
+  };
   # ====================== Password Managers ====================== #
   onepassword = {
     version = "8.12.38";

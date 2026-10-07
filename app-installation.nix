@@ -48,6 +48,16 @@ in
   ++ builtins.attrValues installers;
   environment.pathsToLink = [ "/share/macos-pkgs" ];
 
+  # Native apps are installed directly in /Applications. Replace nix-darwin's
+  # unused app-copy step, which otherwise creates an empty Nix Apps directory.
+  system.activationScripts.applications.text = lib.mkForce ''
+    if [ -d '/Applications/Nix Apps' ] && [ ! -L '/Applications/Nix Apps' ]; then
+      if ! /bin/rmdir '/Applications/Nix Apps' 2>/dev/null; then
+        echo 'Preserving /Applications/Nix Apps: it is not empty or could not be removed.' >&2
+      fi
+    fi
+  '';
+
   # Install missing apps before Home Manager restores Dock entries. Preserve
   # existing apps, including self-updated versions, on subsequent rebuilds.
   system.activationScripts.postActivation.text = lib.mkBefore ''

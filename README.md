@@ -302,6 +302,24 @@ already includes a lock.
 
 Both Android entries are included in one SDK package.
 
+Playwright **1.61.1** browser dependencies are declared in `home.nix` using
+upstream Apple Silicon archives. Home Manager links them under
+`~/Library/Caches/ms-playwright`, where the project's Playwright already looks:
+
+- WebKit revision **2311** (macOS 15+): `webkit-2311`.
+- Chromium headless shell revision **1228**, version **149.0.7827.55**:
+  `chromium_headless_shell-1228`.
+
+Other cached browser revisions remain independent; no global browser-path
+override is set. These declarations supply WebKit and headless Chromium, not
+headed Chromium or Firefox, and do not replace the project's Playwright package.
+When a project requires new revisions, update the declarations to match them.
+
+Both browser hashes were recorded from the builds' reported fixed-output hash
+mismatches. Future revision changes follow the same placeholder-and-mismatch
+workflow. Recording the hashes does not establish activation or browser runtime
+verification.
+
 ## One-time user setup
 
 If Git LFS is not already configured:
