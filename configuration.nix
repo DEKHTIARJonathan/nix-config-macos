@@ -137,6 +137,9 @@
     # Fast Git hook manager written in Rust, drop-in alternative to pre-commit
     prek
 
+    # Python interpreter for shells and development tools
+    python3
+
     # Search tool like grep and The Silver Searcher
     ripgrep
 

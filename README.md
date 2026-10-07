@@ -289,6 +289,7 @@ already includes a lock.
 | nixfmt                   | `pkgs.nixfmt`                                      |
 | node                     | `pkgs.nodejs` (includes npm)                       |
 | prek                     | `pkgs.prek`                                        |
+| python3                  | `pkgs.python3`; Zsh aliases `python` to `python3`  |
 | ripgrep                  | `pkgs.ripgrep`                                     |
 | rustup                   | `pkgs.rustup`                                      |
 | shellcheck               | `pkgs.shellcheck`                                  |
@@ -351,11 +352,12 @@ prompt configuration. MesloLGS NF is installed for the prompt and Terminal.
 `code` and `vscode` launch VS Code; `zed` launches Zed. Login shells use
 nix-darwin's default tool order; subshells preserve inherited project
 toolchains. Existing Cargo initialization and the Python 3.12 framework path are
-retained conditionally; no extra Python/Flutter toolchain or old Android/Java
-environment is restored. `~/.cargo/bin` is also included when `~/.cargo/env` is
-absent or does not update PATH, so Cargo-installed tools are available in
-interactive and noninteractive Zsh shells. Inherited project tools retain
-priority, and duplicate paths are removed.
+retained conditionally. Nix provides the default Python interpreter, and Zsh
+aliases `python` to `python3`. No old Flutter or Android/Java environment is
+restored. `~/.cargo/bin` is also included when `~/.cargo/env` is absent or does
+not update PATH, so Cargo-installed tools are available in interactive and
+noninteractive Zsh shells. Inherited project tools retain priority, and
+duplicate paths are removed.
 
 The captured global Git settings include Jonathan Dekhtiar's name/email, an
 empty signing key, disabled commit signing, disabled forced annotated-tag

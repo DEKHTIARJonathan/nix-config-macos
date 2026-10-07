@@ -75,6 +75,7 @@ in
       }
     ];
     shellAliases = {
+      python = "python3";
       code = "'/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'";
       vscode = "'/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code'";
       zed = "'/Applications/Zed.app/Contents/MacOS/cli'";
