@@ -74,10 +74,6 @@
   # Use macOS's native core utilities (cp, ls, mv, date, etc.). Installing
   # GNU coreutils here shadows them and can break macOS-specific build scripts.
   environment.systemPackages = with pkgs; [
-    # Incredibly fast JavaScript runtime, bundler, test runner, and package manager
-    # Installed by Nix: update through this configuration, not `bun upgrade`.
-    bun
-
     # Cross-platform make
     cmake
 
@@ -125,12 +121,6 @@
     # Nix formatter used by the system-language prek hook.
     nixfmt
 
-    # Open-source, cross-platform JavaScript runtime environment
-    # Includes npm. A versioned attribute (e.g. nodejs_24) can pin a major.
-    # Global npm installs are separate from this Nix package list. Prefer
-    # project dependencies; Nix's Node installation directory is read-only.
-    nodejs
-
     # Discover library compiler and linker flags for builds such as FFmpeg
     pkg-config
 
@@ -162,9 +152,6 @@
 
     # Display directories as trees (with optional color/HTML output)
     tree
-
-    # Python dependency environments for make test, matching CI.
-    uv
 
     # Download files over HTTP, HTTPS, and FTP.
     wget
@@ -202,7 +189,12 @@
   homebrew = {
     enable = true;
 
+    taps = [ "oven-sh/bun" ];
     brews = [
+      # Upgrade these independently of Nix with `brew upgrade bun node uv`.
+      "oven-sh/bun/bun" # JavaScript runtime, bundler, and package manager.
+      "node" # Includes npm; Homebrew owns both.
+      "uv" # Python dependency environments, including make test.
       "railway"
       "herdr"
       "mactop"

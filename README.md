@@ -270,9 +270,9 @@ already includes a lock.
 
 ## Complete inventory mapping
 
-| Original entry           | Native Nix representation                          |
+| Original entry           | Managed installation                               |
 | ------------------------ | -------------------------------------------------- |
-| bun                      | `pkgs.bun`                                         |
+| bun                      | Homebrew formula `oven-sh/bun/bun`                 |
 | cmake                    | `pkgs.cmake`                                       |
 | coreutils                | Use macOS's built-in utilities                     |
 | ffmpeg                   | `pkgs.ffmpeg`                                      |
@@ -287,7 +287,7 @@ already includes a lock.
 | neovim                   | `pkgs.neovim`                                      |
 | ninja                    | `pkgs.ninja`                                       |
 | nixfmt                   | `pkgs.nixfmt`                                      |
-| node                     | `pkgs.nodejs` (includes npm)                       |
+| node                     | Homebrew formula `node` (includes npm)             |
 | prek                     | `pkgs.prek`                                        |
 | python3                  | `pkgs.python3`; Zsh aliases `python` to `python3`  |
 | ripgrep                  | `pkgs.ripgrep`                                     |
@@ -295,7 +295,7 @@ already includes a lock.
 | shellcheck               | `pkgs.shellcheck`                                  |
 | trash                    | `pkgs.darwin.trash` (same upstream implementation) |
 | tree                     | `pkgs.tree`                                        |
-| uv                       | `pkgs.uv`                                          |
+| uv                       | Homebrew formula `uv`                              |
 | android-commandlinetools | `pkgs.androidenv.composeAndroidPackages` SDK       |
 | android-platform-tools   | Same composed SDK, including adb and fastboot      |
 | hiddenbar                | Homebrew cask `hiddenbar`                          |
@@ -531,8 +531,34 @@ brew upgrade railway
 ```
 
 Existing credentials are retained. Avoid installing duplicate npm copies of
-these CLIs. Other npm global packages need a writable user prefix when using
-Nix's Node installation.
+these CLIs.
+
+Bun, Node (including npm), and uv are also installed through Homebrew so they
+can be upgraded independently of the Nix lockfile. Bun uses the official
+`oven-sh/bun` tap. After activating this configuration with `make install`, open
+a new login shell and check which installations are selected:
+
+```sh
+type -a bun node npm uv
+brew upgrade bun node uv
+```
+
+After activation, verify `bun --version` is **1.4.2 or newer**. There is no
+automatic minimum-version check. If Brew installs an older version from a stale
+tap, refresh its catalog with `brew update`, then run
+`brew upgrade oven-sh/bun/bun`.
+
+These commands should resolve to `/opt/homebrew/bin` outside project-specific
+environments. An existing standalone installation, such as `~/.local/bin/uv`,
+may take precedence; inspect it before choosing whether to remove it. Activation
+does not remove standalone installations or change existing npm prefix settings.
+
+Use `brew upgrade bun` instead of `bun upgrade`, as recommended by
+[Bun's upgrade guide](https://bun.com/guides/util/upgrade).
+[uv disables self-updates for package-manager installations](https://docs.astral.sh/uv/getting-started/installation/#upgrading-uv),
+so use `brew upgrade uv` instead of `uv self update`. Use `brew upgrade node` to
+update Node and its bundled npm together. Routine Nix activation preserves
+installed Brew versions; Brew upgrades remain explicit.
 
 ### Xcode and Apple developer tools
 
