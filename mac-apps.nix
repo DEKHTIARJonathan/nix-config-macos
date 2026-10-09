@@ -15,7 +15,7 @@
     version = "0.4.25-1";
     downloadName = "lm-studio-latest.dmg";
     url = "https://lmstudio.ai/download/latest/darwin/arm64";
-    hash = "sha256-i6uFfD0pAOFKtGQ18NFHHeBo8WXnYbucF3CT6KJeF3Q=";
+    hash = "sha256-BfdXAzZwIteXXmQx51bglycDcGO7iBjVizZpYGkliok=";
     appName = "LM Studio.app";
   };
   # ====================== GIS ====================== #
