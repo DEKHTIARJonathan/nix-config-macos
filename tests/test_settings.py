@@ -268,6 +268,171 @@ class RestoreTests(unittest.TestCase):
         restore.restore_editor_fonts(self.source, self.home)
         self.assertEqual(json.loads(code.read_text())["terminal.integrated.fontFamily"], "'MesloLGS NF'")
 
+    def test_gitkraken_fonts_preserve_profiles_and_backup_only_on_change(self):
+        targets = [self.home / f".gitkraken/profiles/{name}/profile" for name in ("one", "two")]
+        original = b'{"cli":{"fontFamily":"Menlo","fontSize":17},"editor":{"fontFamily":"Menlo"},"other":true}'
+        for target in targets:
+            target.parent.mkdir(parents=True)
+            target.write_bytes(original)
+        restore.restore_gitkraken_fonts(self.source, self.home, dry_run=True)
+        self.assertFalse(restore.state_directory(self.home).exists())
+        self.assertTrue(all(target.read_bytes() == original for target in targets))
+        restore.restore_gitkraken_fonts(self.source, self.home)
+        for target in targets:
+            self.assertEqual(json.loads(target.read_bytes()), {
+                "cli": {"fontFamily": '"MesloLGS NF"', "fontSize": 17},
+                "editor": {"fontFamily": "Menlo"}, "other": True,
+            })
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertEqual([p.read_bytes() for p in backups], [original, original])
+        self.assertTrue(all(p.stat().st_mode & 0o777 == 0o600 for p in backups))
+        with patch.object(restore, "atomic_write") as write, patch.object(restore.subprocess, "run") as run:
+            restore.restore_gitkraken_fonts(self.source, self.home)
+            write.assert_not_called()
+            run.assert_not_called()
+
+    def test_gitkraken_fonts_failed_write_is_retryable(self):
+        target = self.home / ".gitkraken/profiles/one/profile"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b'{}')
+        replace = restore.os.replace
+
+        def fail_profile_write(source, destination):
+            if destination == target:
+                raise OSError("simulated write failure")
+            return replace(source, destination)
+
+        with patch.object(restore.os, "replace", side_effect=fail_profile_write):
+            with self.assertRaises(OSError):
+                restore.restore_gitkraken_fonts(self.source, self.home)
+        self.assertEqual(target.read_bytes(), b'{}')
+        restore.restore_gitkraken_fonts(self.source, self.home)
+        self.assertEqual(json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"')
+
+    def test_gitkraken_fonts_migrate_unquoted_value_rejected_by_app(self):
+        target = self.home / ".gitkraken/profiles/one/profile"
+        target.parent.mkdir(parents=True)
+        original = b'{"cli":{"fontFamily":"MesloLGS NF","fontSize":14},"editor":{"fontFamily":"Menlo"}}'
+        target.write_bytes(original)
+        restore.restore_gitkraken_fonts(self.source, self.home)
+        settings = json.loads(target.read_bytes())
+        # Literal option value emitted by GitKraken 12.6's font selector. Its
+        # startup validation resets any unmatched value to the default font.
+        self.assertEqual(settings["cli"]["fontFamily"], '"MesloLGS NF"')
+        self.assertEqual(settings["cli"]["fontSize"], 14)
+        self.assertEqual(settings["editor"]["fontFamily"], "Menlo")
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertEqual([p.read_bytes() for p in backups], [original])
+        with patch.object(restore, "atomic_write") as write:
+            restore.restore_gitkraken_fonts(self.source, self.home)
+            write.assert_not_called()
+
+    def test_gitkraken_fonts_preserve_invalid_files_and_refuse_symlinks(self):
+        restore.restore_gitkraken_fonts(self.source, self.home)
+        self.assertFalse(self.home.exists())
+        target = self.home / ".gitkraken/profiles/one/profile"
+        target.parent.mkdir(parents=True)
+        for content in ('broken', '[]', '{"cli":null}', '{"cli":{},"cli":{}}'):
+            target.write_text(content)
+            with self.assertRaises(ValueError):
+                restore.restore_gitkraken_fonts(self.source, self.home)
+            self.assertEqual(target.read_text(), content)
+        target.unlink()
+        target.symlink_to(self.home / "absent")
+        with self.assertRaisesRegex(RuntimeError, "symlink"):
+            restore.restore_gitkraken_fonts(self.source, self.home)
+        target.unlink()
+        target.parent.rename(target.parent.with_name("real"))
+        target.parent.symlink_to(target.parent.with_name("real"), target_is_directory=True)
+        with self.assertRaisesRegex(RuntimeError, "symlink"):
+            restore.restore_gitkraken_fonts(self.source, self.home)
+        self.assertFalse(restore.state_directory(self.home).exists())
+
+    def test_editor_keybindings_preserve_other_actions_and_are_idempotent(self):
+        restore.seed_editors(self.source, self.home)
+        code = self.home / "Library/Application Support/Code/User/keybindings.json"
+        profile = code.parent / "profiles/custom/keybindings.json"
+        profile.parent.mkdir(parents=True)
+        empty_profile = code.parent / "profiles/new/keybindings.json"
+        empty_profile.parent.mkdir(parents=True)
+        zed = self.home / ".config/zed/keymap.json"
+        code_original = b'[{"key":"shift+enter","command":"userAction","when":"editorTextFocus"}]'
+        zed_original = b'[{"context":"Editor","bindings":{"shift-enter":"userAction"}}]'
+        for target, content in ((code, code_original), (profile, code_original), (zed, zed_original)):
+            target.write_bytes(content)
+        restore.restore_editor_keybindings(self.source, self.home, dry_run=True)
+        self.assertEqual(code.read_bytes(), code_original)
+        self.assertFalse(restore.state_directory(self.home).exists())
+        restore.restore_editor_keybindings(self.source, self.home)
+        self.assertEqual(json.loads(empty_profile.read_bytes())[-1]["when"], "terminalFocus")
+        for target in (code, profile):
+            updated = json.loads(target.read_bytes())
+            self.assertEqual(updated[:-1], json.loads(code_original))
+            self.assertEqual(updated[-1]["when"], "terminalFocus")
+            self.assertEqual(updated[-1]["args"]["text"], "\x1b[13;2u")
+        updated = json.loads(zed.read_bytes())
+        self.assertEqual(updated[:-1], json.loads(zed_original))
+        self.assertEqual(updated[-1], {"context": "Terminal", "bindings": {
+            "shift-enter": ["terminal::SendText", "\x1b[13;2u"]}})
+        with patch.object(restore, "atomic_write") as write:
+            restore.restore_editor_keybindings(self.source, self.home)
+            write.assert_not_called()
+        backups = list((restore.state_directory(self.home) / "backups").iterdir())
+        self.assertCountEqual([p.read_bytes() for p in backups], [code_original, code_original, zed_original])
+
+    def test_editor_keybindings_missing_invalid_and_symlink_files(self):
+        restore.restore_editor_keybindings(self.source, self.home)
+        self.assertFalse(self.home.exists())
+        target = self.home / "Library/Application Support/Code/User/keybindings.json"
+        target.parent.mkdir(parents=True)
+        for content in ('broken', '{}', '[null]', '[{"key":1,"key":2}]'):
+            target.write_text(content)
+            with self.assertRaises(ValueError):
+                restore.restore_editor_keybindings(self.source, self.home)
+            self.assertEqual(target.read_text(), content)
+        target.unlink()
+        target.symlink_to(self.home / "absent")
+        with self.assertRaisesRegex(RuntimeError, "symlink"):
+            restore.restore_editor_keybindings(self.source, self.home)
+        self.assertFalse(restore.state_directory(self.home).exists())
+        target.unlink()
+        restore.restore_editor_keybindings(self.source, self.home, dry_run=True)
+        self.assertFalse(target.exists())
+        restore.restore_editor_keybindings(self.source, self.home)
+        self.assertEqual(json.loads(target.read_bytes())[-1]["args"]["text"], "\x1b[13;2u")
+
+    def test_editor_keybindings_failed_write_preserves_original_for_retry(self):
+        target = self.home / ".config/zed/keymap.json"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b'[]')
+        replace = restore.os.replace
+
+        def fail_keymap_write(source, destination):
+            if destination == target:
+                raise OSError("simulated write failure")
+            return replace(source, destination)
+
+        with patch.object(restore.os, "replace", side_effect=fail_keymap_write):
+            with self.assertRaises(OSError):
+                restore.restore_editor_keybindings(self.source, self.home)
+        self.assertEqual(target.read_bytes(), b'[]')
+        restore.restore_editor_keybindings(self.source, self.home)
+        self.assertEqual(json.loads(target.read_bytes())[-1]["context"], "Terminal")
+
+    def test_all_once_repairs_gitkraken_without_querying_or_stopping_processes(self):
+        target = self.home / ".gitkraken/profiles/one/profile"
+        target.parent.mkdir(parents=True)
+        target.write_bytes(b'{}')
+        arguments = ["restore_settings", "all", "--once", "--home", str(self.home), "--source", str(self.source)]
+        with patch.object(sys, "argv", arguments), patch.object(restore.os, "geteuid", return_value=501), \
+                patch.object(restore.subprocess, "run", side_effect=AssertionError("Must not query or stop GitKraken")), \
+                patch.object(restore, "Preferences", return_value=FakePreferences()), \
+                patch.object(restore, "restore_desktop"):
+            self.assertEqual(restore.main(), 0)
+        self.assertEqual(json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"')
+        keymap = self.home / ".config/zed/keymap.json"
+        self.assertEqual(json.loads(keymap.read_bytes())[-1]["context"], "Terminal")
+
     def test_terminal_merges_binary_data_and_only_restores_once(self):
         domain = "com.apple.Terminal"
         preferences = FakePreferences({domain: {"Window Settings": {"Personal": {"value": 1}}, "unrelated": 7}})

@@ -185,6 +185,37 @@ wins, inspect `.zprofile` and `.zshrc` for later `brew shellenv` calls, PATH
 assignments, aliases, or version-manager initialization. Keep Nix's system
 profile before duplicate Brew commands when you want the Nix versions to run.
 
+JDK 21 and JDK 25 are declared in `android.nix`. JDK 21 is the default for
+`java`, `javac`, and `JAVA_HOME`; `JAVA_21_HOME` and `JAVA_25_HOME` point to
+each installation. After activation, check both with
+`"$JAVA_21_HOME/bin/java" -version` and `"$JAVA_25_HOME/bin/java" -version`. To
+use JDK 25 in the current shell:
+
+```bash
+export JAVA_HOME="$JAVA_25_HOME"
+export PATH="$JAVA_HOME/bin:$PATH"
+```
+
+Use `JAVA_21_HOME` in the same commands to switch back to JDK 21. Select the
+appropriate JDK home explicitly in IDEs that do not inherit shell variables.
+
+Activation registers both complete JDK bundles with macOS through stable links
+at `/Library/Java/JavaVirtualMachines/nix-jdk-21.jdk` and
+`/Library/Java/JavaVirtualMachines/nix-jdk-25.jdk`. The Java environment
+variables above point to their `Contents/Home` directories. This lets Gradle
+discover the JDKs through macOS even when Android Studio is launched from
+Finder. Activation updates these links when Nix changes a JDK version and
+refuses to overwrite an unrelated installation or symlink at either path. Other
+JDK installations are preserved; no Gradle project or user settings are
+rewritten.
+
+After activation, restart Android Studio and retry Gradle sync. Verify macOS
+discovery with `/usr/libexec/java_home -V` and
+`/usr/libexec/java_home -v 21 --exec java -version`. Gradle daemon criteria that
+request Java 21 can then use the local JDK without a download URL, provided
+toolchain auto-detection is enabled. Java 21 remains the configured shell
+default; macOS's unversioned `java_home` command may select Java 25.
+
 Docker Desktop owns the Docker CLI and credential helpers in `~/.docker/bin`;
 Home Manager adds that directory to Zsh's PATH, including noninteractive shells.
 Launch Docker Desktop once to complete its setup, then check
@@ -421,10 +452,21 @@ On the first Home Manager activation, after applications are installed:
 Powerlevel10k shows the branch and Git/provider icons using the installed
 MesloLGS NF font. Both icons are configured in `settings/p10k.zsh`; setting
 `POWERLEVEL9K_VCS_BRANCH_ICON` or `POWERLEVEL9K_VCS_VISUAL_IDENTIFIER_EXPANSION`
-to an empty value hides the corresponding icon. VS Code and Zed terminal fonts
-are repaired automatically on every activation, including existing settings.
-There is no macOS setting that forces a font in every application: other
-terminals still need an application-specific setting. Workspace or remote
+to an empty value hides the corresponding icon. VS Code, Zed, and existing
+GitKraken profiles have their terminal fonts repaired on activation. GitKraken
+uses `cli.fontFamily` in `~/.gitkraken/profiles/*/profile`; the repair preserves
+its editor font, terminal size, and all other profile fields. The value includes
+literal double quotes around the family name (`"MesloLGS NF"`, represented as
+`"\"MesloLGS NF\""` in JSON), matching GitKraken's font selector. An unquoted
+value is rejected by GitKraken 12.6 at startup and reset to its default font.
+Activation applies the font even while GitKraken is running, without a process
+check, deferred repair, or background agent. No separate repair command is
+needed after installation. GitKraken can still overwrite the setting when it
+saves its in-memory profile; an open terminal may retain its previous font until
+reopened. Original profile bytes are backed up privately before an atomic write;
+missing profiles are not created, and symlinks and malformed profiles are
+refused. There is no macOS setting that forces a font in every application:
+other terminals still need an application-specific setting. Workspace or remote
 settings can also override an editor's user defaults.
 
 Dock and Terminal each have their own completion marker under
@@ -440,6 +482,24 @@ restoration; explicitly rerun it after installing them. Preference backups are
 binary plists in the private `backups/` directory under that state directory.
 Explicit editor restores also back up replaced files.
 
+VS Code and Zed also receive terminal-only Shift+Enter bindings on every
+activation, sending the same `ESC [13;2u` sequence. The repair merges into their
+writable keybinding files, including existing VS Code profile directories,
+preserves unrelated shortcuts, and backs up changed files. It skips absent
+editor directories and refuses symlinks and malformed files. JSONC/JSON5
+comments remain in the backups; modified files become JSON.
+
+GitKraken's installed terminal implementation sends plain Return for both Enter
+and Shift+Enter, and exposes no supported custom terminal keybinding setting.
+Zsh cannot distinguish identical bytes, and Zsh bindings do not control Codex's
+input. Use **Ctrl+J** for a newline in Codex there. For longer prompts,
+[Codex also supports Ctrl+G to open an external editor](https://learn.chatgpt.com/docs/cli-customization).
+There is no native macOS switch that makes Shift+Enter distinct in every
+embedded terminal. The configuration keeps native app behavior rather than
+installing a global keyboard remapper. Fonts and keybindings are managed here
+for supported apps so their settings do not need repeated manual repairs;
+additional terminal apps still need an adapter for their own settings.
+
 After activation, these commands run as your user (never with `sudo`):
 
 ```sh
@@ -448,6 +508,8 @@ mac-config-restore dock
 mac-config-restore terminal
 mac-config-restore editors                 # Seed only missing files
 mac-config-restore editor-fonts            # Repair VS Code/Zed terminal fonts
+mac-config-restore gitkraken-fonts         # Optional: repair all existing profiles immediately
+mac-config-restore editor-keybindings      # Repair terminal Shift+Enter in VS Code/Zed
 mac-config-restore editors --replace-existing  # Back up and replace editor files
 ```
 
@@ -470,11 +532,11 @@ repair skips missing files, refuses symlinks, and backs up original bytes
 privately before an atomic write. Changed JSONC/JSON5 files are serialized as
 JSON, so comments and formatting remain in the backup. Unchanged files are not
 rewritten. Reload the editor if an open terminal retains its previous font.
-There were no user shortcut, snippet, task, or additional profile files to
-restore. The Flutter SDK path, explicit Python interpreter path, temporary
-Postman instruction files, and version-specific Continue extension schema
-reference were omitted as requested. The `.github/instructions` setting is
-retained.
+There were no captured user shortcut, snippet, task, or additional profile
+files; the terminal Shift+Enter bindings above are maintained separately. The
+Flutter SDK path, explicit Python interpreter path, temporary Postman
+instruction files, and version-specific Continue extension schema reference were
+omitted as requested. The `.github/instructions` setting is retained.
 
 The inventory records 37 VS Code extensions and nine Zed extensions: Dockerfile,
 Git Firefly, HTML, Log, Make, Nix, reStructuredText, Ruby, and TOML. Observed

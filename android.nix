@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 let
   # Command-line tooling equivalent to your two Android Homebrew casks.
   # Versions default to those recorded by the locked nixpkgs revision;
@@ -48,10 +48,11 @@ in
     # Both tool sets come from one composed SDK, avoiding duplicate adb.
     androidSdk
 
-    # Supporting runtime for Google's Java-based command-line tools and
-    # typical Gradle/Android projects. Change the Java major if your project
-    # requires another version; this makes Java available persistently too.
-    pkgs.jdk17
+    # Default Java runtime and development tools, including Android tooling.
+    pkgs.jdk21
+
+    # Keep JDK 25 available without overriding JDK 21's commands on PATH.
+    (lib.lowPrio pkgs.jdk25)
   ];
 
   environment.variables = {
@@ -62,8 +63,19 @@ in
     # Both variables intentionally point at the same SDK.
     ANDROID_SDK_ROOT = androidSdkRoot;
 
-    JAVA_HOME = "${pkgs.jdk17.home}";
+    JAVA_HOME = "/Library/Java/JavaVirtualMachines/nix-jdk-21.jdk/Contents/Home";
+    JAVA_21_HOME = "/Library/Java/JavaVirtualMachines/nix-jdk-21.jdk/Contents/Home";
+    JAVA_25_HOME = "/Library/Java/JavaVirtualMachines/nix-jdk-25.jdk/Contents/Home";
   };
+
+  # Finder-launched IDEs and Gradle use macOS JDK discovery, independently of
+  # shell variables. Register complete bundles, including their Info.plist.
+  # Only our own links are updated; unrelated Java installations are preserved.
+  system.activationScripts.postActivation.text = lib.mkBefore ''
+    ${pkgs.python3}/bin/python3 ${./scripts/register_java.py} \
+      --jdk21 ${lib.escapeShellArg pkgs.jdk21.bundle} \
+      --jdk25 ${lib.escapeShellArg pkgs.jdk25.bundle}
+  '';
 
   # IMPORTANT: the Nix SDK is read-only. Add components above and rebuild;
   # `sdkmanager --install` cannot modify this SDK. You can still query it.

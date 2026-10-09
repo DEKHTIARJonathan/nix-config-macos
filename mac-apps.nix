@@ -5,14 +5,14 @@
 {
   # ====================== LOCAL LLM ====================== #
   bionic = {
-    version = "1.1.7-7";
+    version = "latest";
     downloadName = "bionic-latest.dmg";
     url = "https://lmstudio.ai/download/bionic/latest/darwin/arm64";
     hash = "sha256-0HxGsvlFtCKnwUTsBCi3Z50hEgw5+vvKRz2WFbXfQ8g=";
     appName = "Bionic.app";
   };
   lm-studio = {
-    version = "0.4.25-1";
+    version = "latest";
     downloadName = "lm-studio-latest.dmg";
     url = "https://lmstudio.ai/download/latest/darwin/arm64";
     hash = "sha256-BfdXAzZwIteXXmQx51bglycDcGO7iBjVizZpYGkliok=";
@@ -27,7 +27,7 @@
   };
   google-earth-pro = {
     # Explicit Intel exception: the Apple Silicon host needs Rosetta 2.
-    version = "7.3.7.1327";
+    version = "latest";
     format = "dmg-pkg";
     downloadName = "google-earth-pro-intel.dmg";
     url = "https://dl.google.com/earth/client/advanced/current/GoogleEarthProMac-Intel.dmg";
@@ -42,23 +42,23 @@
     appName = "Android Studio.app";
   };
   docker-desktop = {
-    version = "4.93.0";
+    version = "latest";
     downloadName = "docker-desktop.dmg";
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
     hash = "sha256-AhR+TVWf9B4dnXvmOlVBATQCNwZMe23yNFSKoRHr8Ew=";
     appName = "Docker.app";
   };
   gitkraken = {
-    version = "12.6.0";
-    url = "https://release.gitkraken.dev/gkd/production/normal/darwin/arm64/12.6.0/3K6vJ86wvnBNQdR1D23qN80JvdP/installGitKraken.dmg";
+    version = "latest";
+    url = "https://api.gitkraken.dev/releases/production/darwin/arm64/active/installGitKraken.dmg";
     hash = "sha256-1TEOAmnLHJR7wZFQBN+5jmbKJGsCR2nRj7t50KlrTRc=";
     appName = "GitKraken.app";
   };
   vscode = {
-    version = "1.140.0";
-    downloadName = "vscode-07f806f999227108933c2e30515b26eecc1fda74.dmg";
-    url = "https://vscode.download.prss.microsoft.com/dbazure/download/stable/07f806f999227108933c2e30515b26eecc1fda74/VSCode-darwin-arm64.dmg";
-    hash = "sha256-Wcx3EotORVHaDJfwQ3/WHT0LK8R9gMO5KchZNoo5odM=";
+    version = "latest";
+    downloadName = "vscode.dmg";
+    url = "https://code.visualstudio.com/sha/download?build=stable&os=darwin-arm64-dmg";
+    hash = "sha256-qw7MdIVdXTjomGBSNLwDOye3nyAubxKhFEL8QQrgZWE=";
     appName = "Visual Studio Code.app";
   };
   zed = {
@@ -76,10 +76,10 @@
     dmgExtractor = "7zz";
     # The signed updater links MacOS/ksadmin to ../Helpers/ksadmin inside its bundle.
     allowParentSymlinks = true;
-    version = "154.1.96.61";
+    version = "latest";
     downloadName = "brave-browser.dmg";
-    url = "https://referrals.brave.com/latest/BRV010/Brave-Browser.dmg";
-    hash = "sha256-e7kmXHIZlubEtjgfQ7it49nN6cNKnsNhsWlrxWbjgW0=";
+    url = "https://laptop-updates.brave.com/download/BRV010?bitness=64";
+    hash = "sha256-p5M5es79W8Pype7S9C0Gi026aykfZa8At6TpFyIufVA=";
     appName = "Brave Browser.app";
   };
   chrome = {
@@ -90,10 +90,10 @@
     appName = "Google Chrome.app";
   };
   firefox = {
-    version = "157.0";
-    downloadName = "Firefox-20157.0.dmg";
-    url = "https://download-installer.cdn.mozilla.net/pub/firefox/releases/157.0/mac/en-US/Firefox%20157.0.dmg";
-    hash = "sha256-322MebYSa88ky3Drq5NxkWpmICji1wbkYtQy54/fOWw=";
+    version = "latest";
+    downloadName = "Firefox.dmg";
+    url = "https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US";
+    hash = "sha256-QKCmSRIGNUYCVtrprWPkA3f3cybLycRJpdCh1/XdeYI=";
     appName = "Firefox.app";
   };
   # ====================== Mac Tools ====================== #
@@ -112,19 +112,19 @@
   };
   mole = {
     dmgExtractor = "7zz";
-    version = "1.15.0";
-    url = "https://cdn.tw93.fun/mole/Mole-1.15.0.dmg";
+    version = "latest";
+    url = "https://mole.fit/download";
     hash = "sha256-eZAMUi6XJUmngneTiOhkyAMhV1qyoe1TTN7GMt8DBhQ=";
     appName = "Mole.app";
   };
   raycast = {
-    version = "2.6.2.0";
-    url = "https://x-r2.raycast-releases.com/Raycast_2.6.2.0_49937c9d92_arm64.dmg";
-    hash = "sha256-FeS7qiK/LEOXg/Js49M/Na+pphgIARIZdGmqXBj0xdw=";
+    version = "latest";
+    url = "https://www.raycast.com/download/mac";
+    hash = "sha256-P8QGQZiujT/4jxW0j/jbZxce88uz/4BaODceKP+Zpgw=";
     appName = "Raycast.app";
   };
   rodecaster-app = {
-    version = "2.0.114";
+    version = "latest";
     format = "zip-pkg";
     downloadName = "rodecaster-app.zip";
     url = "https://update.rode.com/rc-app/RODECaster_App_MACOS.zip";
@@ -141,9 +141,9 @@
     removeQuarantine = true;
   };
   titanmesh = {
-    version = "1.0.0";
-    url = "https://github.com/OpenSpeleo/TitanMesh-Releases/releases/download/v1.0.0/titanmesh-v1.0.0-macos-universal.dmg";
-    hash = "sha256-YDvnzD01rHTsjhdqx3jTg5is3DZxv7WJNemarUl4j+Y=";
+    version = "1.1.0";
+    url = "https://github.com/OpenSpeleo/TitanMesh-Releases/releases/download/v1.1.0/titanmesh-v1.1.0-macos-universal.dmg";
+    hash = "sha256-aWzjouiCxBo/07yB2YN5ce1/c30wQ1wu1QYOw5odVpQ=";
     appName = "TitanMesh.app";
     removeQuarantine = true;
   };
@@ -180,7 +180,7 @@
   };
   # ====================== VPN ====================== #
   nordvpn = {
-    version = "10.12.0";
+    version = "latest";
     downloadName = "nordvpn-latest.pkg";
     format = "pkg";
     url = "https://downloads.nordcdn.com/apps/macos/generic/NordVPN-OpenVPN/latest/NordVPN.pkg";
@@ -195,7 +195,7 @@
   };
   # ====================== Communication ====================== #
   rambox = {
-    version = "2.7.1";
+    version = "latest";
     downloadName = "rambox-latest.dmg";
     url = "https://rambox.app/api/download?os=mac&package=dmg";
     hash = "sha256-UfBP2LVBcQUw1pwSrQc5NIN0ZTVk/sCM0Zt2EldhL+s=";
@@ -216,7 +216,7 @@
   };
   # ====================== Password Managers ====================== #
   onepassword = {
-    version = "8.12.38";
+    version = "latest";
     downloadName = "onepassword-latest.pkg";
     format = "pkg";
     # The supplied ZIP contains only a downloader. This is the full installer
@@ -227,10 +227,10 @@
   };
   # ====================== Networking ====================== #
   tailscale = {
-    version = "1.102.4";
+    version = "latest";
     format = "pkg";
-    url = "https://pkgs.tailscale.com/stable/Tailscale-1.102.4-macos.pkg";
-    hash = "sha256-tAtzOvdiM/0eSvesrrMlJo5V5oGMFcbpqp549CckXFs=";
+    url = "https://pkgs.tailscale.com/stable/Tailscale-latest-macos.pkg";
+    hash = "sha256-Z+xV8Y7ir6wKj7V/eBGXf0rW3x3r1KGH+g2z27XUAdU=";
     appName = "Tailscale.app";
   };
 }

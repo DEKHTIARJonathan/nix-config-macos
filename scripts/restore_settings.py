@@ -160,6 +160,92 @@ def restore_editor_fonts(source, home, dry_run=False):
         atomic_write(target, content)
 
 
+def restore_gitkraken_fonts(source, home, dry_run=False):
+    """Maintain the terminal font in existing GitKraken profiles only."""
+    profiles = home / ".gitkraken/profiles"
+    # Apply on every activation, even while GitKraken is open, as requested.
+    # Its in-memory profile can still overwrite this setting when saved.
+    for parent in (home, profiles.parent, profiles):
+        if parent.is_symlink():
+            raise RuntimeError(f"Refusing to write terminal font through a symlink: {parent}")
+    if not profiles.exists():
+        return
+    # GitKraken quotes font option values containing spaces and compares them
+    # literally at startup. An unquoted MesloLGS NF is reset to the default
+    # (Menlo), even though it is a valid CSS font family and is installed.
+    family = json.loads((source / "zed-settings.json").read_text())["terminal"]["font_family"]
+    font = json.dumps(family, ensure_ascii=False)
+    pending = []
+    for folder in sorted(profiles.iterdir()):
+        if folder.is_symlink():
+            raise RuntimeError(f"Refusing to write terminal font through a symlink: {folder}")
+        if not folder.is_dir():
+            continue
+        target = folder / "profile"
+        if target.is_symlink():
+            raise RuntimeError(f"Refusing to write terminal font through a symlink: {target}")
+        if not target.exists():
+            continue
+        original = target.read_bytes()
+        settings = json5.loads(original.decode(), allow_duplicate_keys=False)
+        if not isinstance(settings, dict) or not isinstance(settings.get("cli", {}), dict):
+            raise ValueError(f"Expected profile and cli objects in {target}")
+        cli = settings.get("cli", {})
+        if cli.get("fontFamily") == font:
+            continue
+        settings["cli"] = {**cli, "fontFamily": font}
+        content = (json.dumps(settings, indent=2, ensure_ascii=False) + "\n").encode()
+        pending.append((target, original, content))
+    for target, original, content in pending:
+        print(f"{'Would repair' if dry_run else 'Repairing'} terminal font in {target}")
+        if dry_run:
+            continue
+        if target.read_bytes() != original:
+            raise RuntimeError(f"Profile changed during font repair; retry: {target}")
+        backup = backup_path(home, "gitkraken-profile.json")
+        atomic_write(backup, original)
+        print(f"Backup: {backup}")
+        atomic_write(target, content)
+
+
+def restore_editor_keybindings(source, home, dry_run=False):
+    """Send the same Shift+Enter sequence in managed editor terminals."""
+    files = json.loads((source / "editor-files.json").read_text())
+    for editor, filename in (("code", "keybindings.json"), ("zed", "keymap.json")):
+        folder = (home / files[f"{editor}-settings.json"]).parent
+        targets = [folder / filename]
+        if editor == "code":
+            targets += [profile / filename for profile in sorted((folder / "profiles").glob("*/"))]
+        for target in targets:
+            parents = [parent for parent in target.parents if parent == home or home in parent.parents]
+            if target.is_symlink() or any(parent.is_symlink() for parent in parents):
+                raise RuntimeError(f"Refusing to write terminal key bindings through a symlink: {target}")
+            if not target.parent.exists():
+                continue
+            original = target.read_bytes() if target.exists() else None
+            settings = json5.loads(original.decode(), allow_duplicate_keys=False) if original is not None else []
+            if not isinstance(settings, list) or not all(isinstance(item, dict) for item in settings):
+                raise ValueError(f"Expected an array of key binding objects in {target}")
+            if editor == "code":
+                binding = {"key": "shift+enter", "command": "workbench.action.terminal.sendSequence",
+                           "args": {"text": "\x1b[13;2u"}, "when": "terminalFocus"}
+            else:
+                binding = {"context": "Terminal", "bindings": {"shift-enter": ["terminal::SendText", "\x1b[13;2u"]}}
+            # Last matching user rule wins. Preserve all other shortcuts,
+            # including Shift+Enter actions outside terminal focus.
+            if settings and settings[-1] == binding:
+                continue
+            settings = [item for item in settings if item != binding] + [binding]
+            print(f"{'Would repair' if dry_run else 'Repairing'} terminal Shift+Enter in {target}")
+            if dry_run:
+                continue
+            if original is not None:
+                backup = backup_path(home, f"{editor}-{filename}")
+                atomic_write(backup, original)
+                print(f"Backup: {backup}")
+            atomic_write(target, (json.dumps(settings, indent=2, ensure_ascii=False) + "\n").encode())
+
+
 def dock_entries(items, applications=Path("/Applications")):
     entries = []
     for item in items:
@@ -229,7 +315,7 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("component", choices=["zshrc", "editors", "editor-fonts", "dock", "terminal", "all"])
+    parser.add_argument("component", choices=["zshrc", "editors", "editor-fonts", "gitkraken-fonts", "editor-keybindings", "dock", "terminal", "all"])
     parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parent.parent / "settings")
     parser.add_argument("--home", type=Path, default=Path.home())
     parser.add_argument("--once", action="store_true", help="Skip previously restored Dock/Terminal preferences")
@@ -239,7 +325,7 @@ def main():
     dry_run = args.dry_run or bool(os.environ.get("DRY_RUN"))
     if os.geteuid() == 0 and not dry_run:
         parser.error("Run as the configured user, not root")
-    components = ["editors", "editor-fonts", "dock", "terminal"] if args.component == "all" else [args.component]
+    components = ["editors", "editor-fonts", "gitkraken-fonts", "editor-keybindings", "dock", "terminal"] if args.component == "all" else [args.component]
     failed = False
     preferences = None
     for component in components:
@@ -250,6 +336,10 @@ def main():
                 seed_editors(args.source, args.home, args.replace_existing, dry_run)
             elif component == "editor-fonts":
                 restore_editor_fonts(args.source, args.home, dry_run)
+            elif component == "gitkraken-fonts":
+                restore_gitkraken_fonts(args.source, args.home, dry_run)
+            elif component == "editor-keybindings":
+                restore_editor_keybindings(args.source, args.home, dry_run)
             else:
                 if preferences is None:
                     preferences = Preferences()
