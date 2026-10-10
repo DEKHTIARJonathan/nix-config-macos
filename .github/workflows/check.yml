@@ -28,7 +28,7 @@ jobs:
         run: |
           /home/linuxbrew/.linuxbrew/bin/brew install nixfmt
           echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
-      - uses: j178/prek-action@v3.0.0
+      - uses: j178/prek-action@v3.0.1
         with:
           extra-args: --all-files
 
