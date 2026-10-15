@@ -18,6 +18,69 @@ import setup_editors as editors
 import verify_development_tools as development
 
 
+@unittest.skipUnless(
+    os.environ.get("DEBLOAT_ACTIVATION_FILE"),
+    "Generated activation script is supplied by the Nix check",
+)
+class DebloatActivationTests(unittest.TestCase):
+    def test_every_activation_runs_as_configured_user_and_propagates_failure(self):
+        script = Path(os.environ["DEBLOAT_ACTIVATION_FILE"]).read_text()
+        # Intercept launchctl entirely: never execute sudo or change services.
+        harness = """
+id() { printf '501\\n'; }
+launchctl() {
+  printf '%s\\n' "$@" >> "$DEBLOAT_LOG"
+  return "$DEBLOAT_STATUS"
+}
+"""
+        for status in (0, 7):
+            with (
+                self.subTest(status=status),
+                tempfile.TemporaryDirectory() as directory,
+            ):
+                log = Path(directory) / "commands.log"
+                result = subprocess.run(
+                    [
+                        "/bin/sh",
+                        "-c",
+                        harness + script + script + '\nprintf "continued\\n"\n',
+                    ],
+                    env=dict(
+                        os.environ, DEBLOAT_LOG=str(log), DEBLOAT_STATUS=str(status)
+                    ),
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(
+                    result.returncode, 0 if status == 0 else 1, result.stderr
+                )
+                arguments = log.read_text().splitlines()
+                count = 2 if status == 0 else 1
+                self.assertEqual(arguments.count("balanced"), count)
+                width = len(arguments) // count
+                for start in range(0, len(arguments), width):
+                    command = arguments[start : start + width]
+                    self.assertEqual(
+                        command[:6],
+                        [
+                            "asuser",
+                            "501",
+                            "sudo",
+                            "-u",
+                            os.environ["DEBLOAT_USERNAME"],
+                            "--set-home",
+                        ],
+                    )
+                    self.assertEqual(
+                        command[6:8], ["env", "PATH=/usr/bin:/bin:/usr/sbin:/sbin"]
+                    )
+                    self.assertTrue(command[8].endswith("/bin/python3"))
+                    self.assertTrue(command[9].endswith("/bin/debloat"))
+                    self.assertEqual(command[10:], ["--preset", "balanced"])
+                self.assertEqual("continued" in result.stdout, status == 0)
+
+
 class FakePreferences:
     def __init__(self, values=None):
         self.values = copy.deepcopy(values or {})

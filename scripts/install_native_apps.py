@@ -49,6 +49,69 @@ def find_bundle(root):
     return app
 
 
+def load_bundle_cache(path):
+    """A missing or damaged discovery cache only costs another archive scan."""
+    try:
+        if path.is_symlink():
+            return {}
+        cache = json.loads(path.read_text())
+        return cache if isinstance(cache, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def known_bundle_name(entry, name, cache_file):
+    if entry.get("appName"):
+        return entry["appName"]
+    cached = load_bundle_cache(cache_file).get(name)
+    if not isinstance(cached, dict):
+        return None
+    bundle = cached.get("appName")
+    if (
+        cached.get("source") == entry["source"]
+        and cached.get("format") == entry["format"]
+        and isinstance(bundle, str)
+        and bundle.endswith(".app")
+        and Path(bundle).name == bundle
+        and "/" not in bundle
+        and "\0" not in bundle
+    ):
+        return bundle
+    return None
+
+
+def remember_bundle_name(cache_file, name, entry, bundle):
+    """Publish discovery atomically after a successful install or adoption."""
+    temporary = None
+    try:
+        if cache_file.is_symlink():
+            raise OSError(
+                f"Refusing to write bundle cache through a symlink: {cache_file}"
+            )
+        cache = load_bundle_cache(cache_file)
+        cache[name] = {
+            "source": entry["source"],
+            "format": entry["format"],
+            "appName": bundle,
+        }
+        cache_file.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=cache_file.parent, prefix=".app-bundles-", delete=False
+        ) as output:
+            temporary = Path(output.name)
+            json.dump(cache, output)
+            output.write("\n")
+        os.replace(temporary, cache_file)
+    except OSError as error:
+        # Installation succeeded; an optional speedup must not invalidate it.
+        print(
+            f"Could not cache {name}'s bundle name; next run will rediscover it: {error}"
+        )
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 @contextmanager
 def unpack(entry):
     root = Path(tempfile.mkdtemp(prefix="mac-config-app-"))
@@ -221,6 +284,11 @@ def main():
     )
     parser.add_argument("--applications", type=Path, default=Path("/Applications"))
     parser.add_argument(
+        "--cache-file",
+        type=Path,
+        default=Path.home() / ".local/state/nix-macos-config/app-bundles.json",
+    )
+    parser.add_argument(
         "--backups",
         type=Path,
         default=Path.home() / ".local/state/nix-macos-config/apps",
@@ -246,7 +314,8 @@ def main():
         manifest = {name: manifest[name] for name in args.only}
     failed = False
     for name, entry in manifest.items():
-        target = args.applications / entry["appName"] if entry.get("appName") else None
+        bundle = known_bundle_name(entry, name, args.cache_file)
+        target = args.applications / bundle if bundle else None
         if (
             target is not None
             and (target.exists() or target.is_symlink())
@@ -264,6 +333,8 @@ def main():
             with os.fdopen(descriptor, "a") as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX)
                 # Another activation may have installed it while this one waited.
+                bundle = known_bundle_name(entry, name, args.cache_file)
+                target = args.applications / bundle if bundle else None
                 if (
                     target is not None
                     and (target.exists() or target.is_symlink())
@@ -272,7 +343,9 @@ def main():
                     print(f"Keeping installed app: {target}")
                     continue
                 with unpack(entry) as source:
-                    target = target or args.applications / source.name
+                    # Cached names only skip existing apps; fresh discovery owns
+                    # the destination when installing or explicitly replacing.
+                    target = args.applications / (entry.get("appName") or source.name)
                     install_bundle(
                         source,
                         target,
@@ -280,6 +353,8 @@ def main():
                         replace=args.replace_existing,
                         remove_quarantine=entry.get("removeQuarantine", False),
                     )
+                if not entry.get("appName"):
+                    remember_bundle_name(args.cache_file, name, entry, target.name)
         except (
             OSError,
             ValueError,

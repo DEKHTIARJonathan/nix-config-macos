@@ -36,6 +36,7 @@ class NativeAppTests(unittest.TestCase):
         (contents / "data").chmod(0o444)
         self.destination = self.root / "Applications/Example.app"
         self.backups = self.root / "backups"
+        self.cache_file = self.root / "state/app-bundles.json"
         quit_app = patch.object(apps, "quit_running_app")
         self.quit_app = quit_app.start()
         self.addCleanup(quit_app.stop)
@@ -104,14 +105,19 @@ class NativeAppTests(unittest.TestCase):
         return subprocess.CompletedProcess(command, 0)
 
     def install_discovered(
-        self, format="dmg", replace=False, remove_quarantine=False, app_name=None
+        self,
+        format="dmg",
+        replace=False,
+        remove_quarantine=False,
+        app_name=None,
+        source="fixture",
     ):
         manifest = self.root / "apps.json"
         manifest.write_text(
             json.dumps(
                 {
                     "example": {
-                        "source": "fixture",
+                        "source": source,
                         "format": format,
                         "removeQuarantine": remove_quarantine,
                         "appName": app_name,
@@ -127,6 +133,8 @@ class NativeAppTests(unittest.TestCase):
             str(self.destination.parent),
             "--backups",
             str(self.backups),
+            "--cache-file",
+            str(self.cache_file),
         ]
         if replace:
             args.append("--replace-existing")
@@ -167,6 +175,193 @@ class NativeAppTests(unittest.TestCase):
                     (installed / "Contents/data").read_text(), "vendor bundle"
                 )
                 shutil.rmtree(installed)
+
+    def test_repeat_activation_skips_archives_and_preserves_self_updates(self):
+        for format in ("dmg", "zip"):
+            with (
+                self.subTest(format=format),
+                patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+            ):
+                self.assertEqual(self.install_discovered(format), 0)
+            (self.destination / "Contents/data").write_text("self-updated")
+            with patch.object(apps.subprocess, "run") as run:
+                self.assertEqual(self.install_discovered(format), 0)
+            run.assert_not_called()
+            self.assertEqual(
+                (self.destination / "Contents/data").read_text(), "self-updated"
+            )
+        self.assertEqual(self.cache_file.stat().st_mode & 0o777, 0o600)
+        self.assertEqual(self.cache_file.parent.stat().st_mode & 0o777, 0o700)
+        self.quit_app.assert_not_called()
+        self.assertFalse(self.backups.exists())
+
+    def test_adopted_app_is_cached_without_copying_it(self):
+        self.existing_app()
+        with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            self.assertEqual(self.install_discovered(), 0)
+        with patch.object(apps.subprocess, "run") as run:
+            self.assertEqual(self.install_discovered(), 0)
+        run.assert_not_called()
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
+
+    def test_deleted_cached_app_is_reinstalled_using_fresh_discovery(self):
+        with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            self.assertEqual(self.install_discovered(), 0)
+            shutil.rmtree(self.destination)
+            self.source.rename(self.source.with_name("Renamed.app"))
+            self.assertEqual(self.install_discovered(), 0)
+        self.assertTrue(
+            (self.destination.parent / "Renamed.app/Contents/data").exists()
+        )
+        self.assertFalse(self.destination.exists())
+        self.assertEqual(
+            json.loads(self.cache_file.read_text())["example"]["appName"], "Renamed.app"
+        )
+
+    def test_source_or_format_changes_refresh_cache_without_replacing_app(self):
+        self.existing_app()
+        for source, format in (("first", "dmg"), ("second", "dmg"), ("second", "zip")):
+            with (
+                self.subTest(source=source, format=format),
+                patch.object(
+                    apps.subprocess, "run", side_effect=self.archive_command
+                ) as run,
+            ):
+                self.assertEqual(self.install_discovered(format, source=source), 0)
+            self.assertTrue(run.called)
+            cached = json.loads(self.cache_file.read_text())["example"]
+            self.assertEqual((cached["source"], cached["format"]), (source, format))
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
+
+    def test_invalid_cache_falls_back_to_discovery(self):
+        self.existing_app()
+        self.cache_file.parent.mkdir()
+        invalid = ["{broken", "[]", '{"example": null}']
+        for bundle in (
+            "../Example.app",
+            "/Applications/Example.app",
+            "nested/Example.app",
+            "Bad\0.app",
+            42,
+        ):
+            invalid.append(
+                json.dumps(
+                    {
+                        "example": {
+                            "source": "fixture",
+                            "format": "dmg",
+                            "appName": bundle,
+                        }
+                    }
+                )
+            )
+        for content in invalid:
+            self.cache_file.write_text(content)
+            with (
+                self.subTest(content=content),
+                patch.object(
+                    apps.subprocess, "run", side_effect=self.archive_command
+                ) as run,
+            ):
+                self.assertEqual(self.install_discovered(), 0)
+            self.assertTrue(run.called)
+            self.assertEqual(
+                json.loads(self.cache_file.read_text())["example"]["appName"],
+                "Example.app",
+            )
+
+    def test_failed_install_or_detach_does_not_publish_cache(self):
+        mkdtemp = tempfile.mkdtemp
+
+        def allocate(*args, **kwargs):
+            directory = mkdtemp(*args, **kwargs)
+            self.addCleanup(shutil.rmtree, directory, ignore_errors=True)
+            return directory
+
+        for failed_command in ("copy", "detach"):
+
+            def fail(command, failed_command=failed_command, **kwargs):
+                if (
+                    failed_command == "copy"
+                    and command[:2] == ["/usr/bin/ditto", "--rsrc"]
+                ) or (
+                    failed_command == "detach"
+                    and command[:2] == ["/usr/bin/hdiutil", "detach"]
+                ):
+                    raise subprocess.CalledProcessError(1, command)
+                return self.archive_command(command, **kwargs)
+
+            with (
+                self.subTest(failed_command=failed_command),
+                patch.object(apps.tempfile, "mkdtemp", side_effect=allocate),
+                patch.object(apps.subprocess, "run", side_effect=fail),
+            ):
+                self.assertEqual(self.install_discovered(), 1)
+            self.assertFalse(self.cache_file.exists())
+
+    def test_cached_app_replacement_still_unpacks_and_backs_up(self):
+        self.existing_app()
+        with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            self.assertEqual(self.install_discovered(), 0)
+        with patch.object(
+            apps.subprocess, "run", side_effect=self.archive_command
+        ) as run:
+            self.assertEqual(self.install_discovered(replace=True), 0)
+        self.assertTrue(run.called)
+        (backup,) = self.backups.glob("*.zip.bckp")
+        with zipfile.ZipFile(backup) as archive:
+            self.assertEqual(
+                archive.read("Example.app/updated"), b"self-updated version"
+            )
+        self.assertTrue((self.destination / "Contents/data").exists())
+
+    def test_cache_is_rechecked_after_waiting_for_installation_lock(self):
+        def another_installer(*args):
+            self.existing_app()
+            apps.remember_bundle_name(
+                self.cache_file,
+                "example",
+                {"source": "fixture", "format": "dmg"},
+                "Example.app",
+            )
+
+        with (
+            patch.object(apps.fcntl, "flock", side_effect=another_installer),
+            patch.object(apps.subprocess, "run") as run,
+        ):
+            self.assertEqual(self.install_discovered(), 0)
+        run.assert_not_called()
+
+    def test_failed_cache_write_preserves_previous_cache_and_installed_app(self):
+        self.existing_app()
+        with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            self.assertEqual(self.install_discovered(), 0)
+        original = self.cache_file.read_bytes()
+        with (
+            patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+            patch.object(apps.os, "replace", side_effect=OSError("cache write failed")),
+        ):
+            self.assertEqual(self.install_discovered(source="changed"), 0)
+        self.assertEqual(self.cache_file.read_bytes(), original)
+        self.assertEqual(list(self.cache_file.parent.iterdir()), [self.cache_file])
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
+
+    def test_symlinked_cache_does_not_read_or_overwrite_target(self):
+        self.existing_app()
+        target = self.root / "other.json"
+        target.write_text("preserve me")
+        self.cache_file.parent.mkdir()
+        self.cache_file.symlink_to(target)
+        with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            self.assertEqual(self.install_discovered(), 0)
+        self.assertTrue(self.cache_file.is_symlink())
+        self.assertEqual(target.read_text(), "preserve me")
 
     def test_name_override_does_not_select_between_multiple_apps(self):
         shutil.copytree(self.source, self.root / "image/Uninstaller.app")

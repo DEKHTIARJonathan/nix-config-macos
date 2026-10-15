@@ -151,6 +151,11 @@ selected tools in `configuration.nix`. Preserve `cleanup = "none"`, disabled
 automatic upgrades/updates, and shell integration that keeps fallback Brew paths
 behind the default Nix paths. Do not uninstall old copies during an addition.
 
+The user authorized `debloat --preset balanced` on every activation, after
+Homebrew and user setup, as the configured user. Keep this out of builds and
+tests; tests must mock execution. Preserve nonzero exit propagation and do not
+add SIP changes or broader presets.
+
 Prefer macOS's native core utilities (`cp`, `ls`, `mv`, `date`, etc.). Do not
 add GNU coreutils to the global package list: shadowing Apple's commands can
 break macOS-specific scripts such as Cerbero's DMG extraction. Add tools absent
@@ -261,8 +266,15 @@ extended attributes. Installed bundles remain writable for vendor updaters.
 
 Ordinary rebuilds preserve existing apps, including self-updated copies. A new
 inventory URL/hash updates the bootstrap source, not every installed app.
-Explicit replacement is a separate operation. Preserve installation locks,
-staging, backup verification, atomic rename recovery, and failure propagation.
+Discovered bundle names are cached privately in
+`~/.local/state/nix-macos-config/app-bundles.json`, keyed by inventory entry and
+validated against its source and format. Repeated activation skips existing apps
+before opening archives. Missing apps and explicit replacements require fresh
+discovery. Publish cache updates atomically under the installation lock only
+after successful installation/adoption and archive cleanup; an invalid cache
+must fall back to discovery. Explicit replacement is a separate operation.
+Preserve installation locks, staging, backup verification, atomic rename
+recovery, and failure propagation.
 
 Replacement backups are native ZIP archives ending in `.zip.bckp` under the
 user's private state directory. Do not leave ordinary unpacked backup apps where

@@ -169,6 +169,17 @@
 
   fonts.packages = [ pkgs.meslo-lgs-nf ];
 
+  # Apply the requested preset on every activation, after Homebrew and user setup.
+  # Run as the configured user so debloat targets the correct GUI domain/home.
+  system.activationScripts.debloat.text = ''
+    echo "Applying debloat balanced preset..."
+    launchctl asuser "$(id -u ${lib.escapeShellArg host.username})" \
+      sudo -u ${lib.escapeShellArg host.username} --set-home \
+      env PATH=/usr/bin:/bin:/usr/sbin:/sbin \
+      ${pkgs.python3}/bin/python3 ${lib.escapeShellArg "${config.homebrew.prefix}/bin/debloat"} --preset balanced || exit 1
+  '';
+  system.activationScripts.postActivation.text = lib.mkAfter config.system.activationScripts.debloat.text;
+
   # Homebrew installation management. It remains available for future
   # macOS applications that are missing or unsuitable in nixpkgs.
   nix-homebrew = {
@@ -195,7 +206,10 @@
   homebrew = {
     enable = true;
 
-    taps = [ "oven-sh/bun" ];
+    taps = [
+      "oven-sh/bun"
+      "oleksandrkrupko/debloat"
+    ];
     brews = [
       # Upgrade these independently of Nix with `brew upgrade bun node uv`.
       "oven-sh/bun/bun" # JavaScript runtime, bundler, and package manager.
@@ -204,6 +218,7 @@
       "railway"
       "herdr"
       "mactop"
+      "oleksandrkrupko/debloat/debloat" # Interactive macOS service management.
     ];
     casks = [
       "hiddenbar"

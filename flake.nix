@@ -117,6 +117,8 @@
             ZSH_HOME_DIRECTORY = home.home.homeDirectory;
             ZSH_TEST_BIN = "${pkgs.zsh}/bin/zsh";
             PRE_ACTIVATION_FILE = pkgs.writeText "mac-config-pre-activation.sh" self.darwinConfigurations.mac.config.system.activationScripts.preActivation.text;
+            DEBLOAT_ACTIVATION_FILE = pkgs.writeText "mac-config-debloat.sh" self.darwinConfigurations.mac.config.system.activationScripts.debloat.text;
+            DEBLOAT_USERNAME = host.username;
           }
           ''
             cp -R ${./scripts} scripts

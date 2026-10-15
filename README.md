@@ -664,6 +664,15 @@ so use `brew upgrade uv` instead of `uv self update`. Use `brew upgrade node` to
 update Node and its bundled npm together. Routine Nix activation preserves
 installed Brew versions; Brew upgrades remain explicit.
 
+`debloat` is installed from the upstream `oleksandrkrupko/debloat` tap. Every
+`make install` applies `debloat --preset balanced` after Homebrew and user
+setup, as the configured user. It may request that user's sudo password. The
+preset disables telemetry, Siri/Apple Intelligence, iMessage/Continuity, and
+Family services; see the
+[upstream preset documentation](https://github.com/OleksandrKrupko/mac-os-debloat#presets).
+It does not disable SIP. Command failures stop activation. Builds and tests do
+not execute debloat against the host.
+
 ### Xcode and Apple developer tools
 
 ```sh
@@ -784,8 +793,12 @@ name in `/Applications`, including when it is inside a wrapper directory.
 Discovery skips bundled helper apps, hidden directories, `__MACOSX`, and
 symlinks. Zero or multiple apps cause an error. `appName` optionally overrides
 the destination name. Existing apps remain untouched unless replacement is
-explicitly requested. Without an explicit name, activation must mount or unpack
-the archive to discover the name before checking for an existing app.
+explicitly requested. The first activation discovers each unnamed bundle and
+caches its name in `~/.local/state/nix-macos-config/app-bundles.json`. Later
+activations skip existing apps before mounting or unpacking their archives. A
+changed source or format, a missing app, or an unreadable cache triggers fresh
+discovery. Explicit replacement always opens the archive. The cache is updated
+atomically only after successful installation or adoption of an existing app.
 
 DMG builds detect the image's filesystem and use `undmg` for HFS or `7zz` for
 APFS. No per-app extractor setting is needed. Unrecognized or ambiguous image
