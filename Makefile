@@ -11,10 +11,11 @@ setup:
 	/bin/bash scripts/setup.sh
 
 # Build as the current user, with a separate progress row per download.
+# Finish independent downloads/builds even when another source has a bad hash.
 build:
 	nix $(NIX_FEATURES) run --no-update-lock-file .#nix-output-monitor -- \
 	    build .#darwinConfigurations.mac.system \
-		$(NIX_FEATURES) --no-update-lock-file --out-link result
+		$(NIX_FEATURES) --no-update-lock-file --keep-going --out-link result
 
 # Use the built system's launcher, including on a laptop's first activation.
 # switch also records the system generation for subsequent rollbacks.

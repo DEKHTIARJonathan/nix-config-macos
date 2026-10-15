@@ -115,8 +115,14 @@
     # Existing ~/.config/nvim files remain user-managed.
     neovim
 
+    # Nix language server with incremental analysis
+    nil
+
     # Small build system for use with gyp or CMake
     ninja
+
+    # Nix language server backed by the Nix evaluator
+    nixd
 
     # Nix formatter used by the system-language prek hook.
     nixfmt

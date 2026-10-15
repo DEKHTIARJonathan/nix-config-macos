@@ -4,16 +4,13 @@
   undmg,
   unzip,
   _7zz,
+  python3,
 }:
 {
   pname,
-  version,
   src,
-  appName,
+  appName ? null,
   format ? "dmg",
-  appPath ? appName,
-  dmgExtractor ? "undmg",
-  allowParentSymlinks ? false,
 }:
 assert lib.assertMsg (builtins.elem format [
   "dmg"
@@ -22,26 +19,30 @@ assert lib.assertMsg (builtins.elem format [
   "zip-pkg"
   "dmg-pkg"
 ]) "Unsupported macOS installer format: ${format}";
-assert lib.assertMsg (builtins.elem dmgExtractor [
-  "undmg"
-  "7zz"
-]) "Unsupported DMG extractor: ${dmgExtractor}";
 let
+  isDmg = builtins.elem format [
+    "dmg"
+    "dmg-pkg"
+  ];
   isInstaller = builtins.elem format [
     "pkg"
     "zip-pkg"
     "dmg-pkg"
   ];
 in
+assert lib.assertMsg (
+  !isInstaller || appName != null
+) "PKG entry ${pname} requires appName to verify installation";
 stdenvNoCC.mkDerivation (
   {
-    inherit pname version src;
+    name = pname;
+    inherit pname src;
 
     nativeBuildInputs =
-      lib.optional (builtins.elem format [
-        "dmg"
-        "dmg-pkg"
-      ]) (if dmgExtractor == "7zz" then _7zz else undmg)
+      lib.optionals isDmg [
+        undmg
+        _7zz
+      ]
       ++ lib.optional (builtins.elem format [
         "zip"
         "zip-pkg"
@@ -84,14 +85,10 @@ stdenvNoCC.mkDerivation (
         ''
       else
         ''
-          app=${lib.escapeShellArg appPath}
-          if [ ! -f "$app/Contents/Info.plist" ]; then
-            echo "Missing app bundle: $app" >&2
-            find . -maxdepth 3 -name '*.app' -print >&2
-            exit 1
-          fi
+          app="$(${python3}/bin/python3 ${../scripts/install_native_apps.py} --find-bundle .)"
+          appName=${if appName != null then lib.escapeShellArg appName else ''"''${app##*/}"''}
           mkdir -p "$out/Applications"
-          cp -R "$app" "$out/Applications/"${lib.escapeShellArg appName}
+          cp -R "$app" "$out/Applications/$appName"
         ''
     )
     + ''
@@ -104,24 +101,31 @@ stdenvNoCC.mkDerivation (
       sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
     };
   }
-  //
-    lib.optionalAttrs
-      (
-        builtins.elem format [
-          "dmg"
-          "dmg-pkg"
-        ]
-        && dmgExtractor == "7zz"
-      )
-      {
-        unpackPhase = ''
-          runHook preUnpack
-          # 7-Zip also reads APFS DMGs. Extract only the selected app, preserve
-          # symlinks, and omit xattr streams (which otherwise become extra files).
-          7zz x -y -sns- ${lib.optionalString allowParentSymlinks "-snld"} -bso0 -bsp0 "$src" ${
-            lib.optionalString (!isInstaller) (lib.escapeShellArg "${appPath}/*")
-          }
-          runHook postUnpack
-        '';
-      }
+  // lib.optionalAttrs isDmg {
+    unpackPhase = ''
+      runHook preUnpack
+      # Inspect archive headers only: filenames must not affect detection.
+      listing="$(LC_ALL=C 7zz l -slt "$src")"
+      filesystem="$(printf '%s\n' "$listing" | awk '
+        /^----------$/ { files = 1 }
+        !files && /^Type = (HFS|APFS)$/ { print $3 }
+      ')"
+      case "$filesystem" in
+        HFS)
+          echo "Detected HFS DMG; extracting with undmg"
+          undmg "$src"
+          ;;
+        APFS)
+          echo "Detected APFS DMG; extracting with 7zz"
+          # Omit the Applications shortcut and xattr streams; keep bundle links.
+          7zz x -y -sns- -bso0 -bsp0 "$src" ${lib.optionalString (!isInstaller) "'-ir!*.app/*'"}
+          ;;
+        *)
+          echo "Expected one HFS or APFS filesystem in the DMG; detected: ''${filesystem:-none}" >&2
+          exit 1
+          ;;
+      esac
+      runHook postUnpack
+    '';
+  }
 )

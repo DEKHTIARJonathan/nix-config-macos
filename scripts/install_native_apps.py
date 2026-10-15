@@ -17,6 +17,34 @@ import uuid
 import zipfile
 
 
+def find_bundle(root):
+    """Select one outer app bundle without following links or entering helpers."""
+    root = Path(root)
+    candidates = []
+
+    def walk_error(error):
+        raise error
+
+    for directory, directories, _ in os.walk(root, followlinks=False, onerror=walk_error):
+        descend = []
+        for name in sorted(directories):
+            path = Path(directory) / name
+            if name.startswith(".") or name == "__MACOSX" or path.is_symlink():
+                continue
+            if name.endswith(".app"):
+                candidates.append(path)
+            else:
+                descend.append(name)
+        directories[:] = descend
+    if len(candidates) != 1:
+        found = ", ".join(str(path.relative_to(root)) for path in candidates) or "none"
+        raise ValueError(f"Expected exactly one app bundle, found {len(candidates)} ({found})")
+    app, = candidates
+    if not app.name.endswith(".app") or not (app / "Contents/Info.plist").is_file():
+        raise ValueError(f"Missing or invalid app bundle: {app}")
+    return app
+
+
 @contextmanager
 def unpack(entry):
     root = Path(tempfile.mkdtemp(prefix="mac-config-app-"))
@@ -27,10 +55,10 @@ def unpack(entry):
             candidate.mkdir()
             subprocess.run(["/usr/bin/hdiutil", "attach", "-readonly", "-nobrowse", "-mountpoint", str(candidate), entry["source"]], check=True)
             mount = candidate
-            yield mount / entry.get("appPath", entry["appName"])
+            yield find_bundle(mount)
         elif entry["format"] == "zip":
             subprocess.run(["/usr/bin/ditto", "-xk", entry["source"], str(root)], check=True)
-            yield root / entry.get("appPath", entry["appName"])
+            yield find_bundle(root)
         else:
             raise ValueError(f"Unsupported app format: {entry['format']}")
     finally:
@@ -61,8 +89,7 @@ def archive_bundle(source, backups):
     return backup
 
 
-def install_bundle(source, destination, backups, replace=False, remove_finder_info=False,
-                   remove_quarantine=False):
+def install_bundle(source, destination, backups, replace=False, remove_quarantine=False):
     """Stage a complete native copy before moving the old bundle to its backup."""
     if destination.exists() or destination.is_symlink():
         if not replace:
@@ -75,9 +102,6 @@ def install_bundle(source, destination, backups, replace=False, remove_finder_in
     with tempfile.TemporaryDirectory(prefix=".mac-config-", dir=destination.parent) as directory:
         staged = Path(directory) / destination.name
         subprocess.run(["/usr/bin/ditto", "--rsrc", "--extattr", str(source), str(staged)], check=True)
-        if remove_finder_info:
-            # Preserve quarantine and detached code-signing attributes.
-            subprocess.run(["/usr/bin/xattr", "-dr", "com.apple.FinderInfo", str(staged)], check=True)
         if remove_quarantine:
             subprocess.run(["/usr/bin/xattr", "-dr", "com.apple.quarantine", str(staged)], check=True)
         # Read-only source images must not disable the installed app's updater.
@@ -133,12 +157,20 @@ def quit_running_app(target):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--manifest", type=Path, required=True)
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--manifest", type=Path)
+    mode.add_argument("--find-bundle", type=Path, help="Print the selected bundle path without installing (used during builds)")
     parser.add_argument("--applications", type=Path, default=Path("/Applications"))
     parser.add_argument("--backups", type=Path, default=Path.home() / ".local/state/nix-macos-config/apps")
     parser.add_argument("--replace-existing", action="store_true")
     parser.add_argument("--only", nargs="+", help="Install only these inventory names")
     args = parser.parse_args()
+    if args.find_bundle is not None:
+        try:
+            print(find_bundle(args.find_bundle))
+        except (OSError, ValueError) as error:
+            parser.exit(1, f"{error}\n")
+        return 0
     if os.geteuid() == 0:
         parser.error("Run as the configured user so installed apps remain user-writable")
     manifest = json.loads(args.manifest.read_text())
@@ -149,8 +181,8 @@ def main():
         manifest = {name: manifest[name] for name in args.only}
     failed = False
     for name, entry in manifest.items():
-        target = args.applications / entry["appName"]
-        if (target.exists() or target.is_symlink()) and not args.replace_existing:
+        target = args.applications / entry["appName"] if entry.get("appName") else None
+        if target is not None and (target.exists() or target.is_symlink()) and not args.replace_existing:
             print(f"Keeping installed app: {target}")
             continue
         try:
@@ -160,13 +192,13 @@ def main():
             with os.fdopen(descriptor, "a") as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX)
                 # Another activation may have installed it while this one waited.
-                if (target.exists() or target.is_symlink()) and not args.replace_existing:
+                if target is not None and (target.exists() or target.is_symlink()) and not args.replace_existing:
                     print(f"Keeping installed app: {target}")
                     continue
                 with unpack(entry) as source:
-                    install_bundle(source, target, args.backups, args.replace_existing,
-                                   entry.get("removeFinderInfo", False),
-                                   entry.get("removeQuarantine", False))
+                    target = target or args.applications / source.name
+                    install_bundle(source, target, args.backups, replace=args.replace_existing,
+                                   remove_quarantine=entry.get("removeQuarantine", False))
         except (OSError, ValueError, RuntimeError, zipfile.BadZipFile, subprocess.SubprocessError) as error:
             print(f"Failed to install {name}: {error}")
             failed = True

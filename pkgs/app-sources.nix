@@ -24,7 +24,7 @@ lib.mapAttrs (
   in
   fetchurl {
     inherit (app) url hash;
-    name = app.downloadName or "${name}-${app.version}.${extension}";
+    name = app.downloadName or "${name}.${extension}";
     # The wrapper converts this meter into per-build structured status updates.
     curlOptsList = [ "--progress-bar" ];
   }

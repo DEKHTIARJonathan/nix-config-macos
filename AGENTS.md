@@ -58,7 +58,7 @@ has passed a build or been activated.
 | `mac-apps.nix`                        | Single inventory of vendor app downloads, hashes, bundle names, formats, and per-app exceptions.                                                                                                                  |
 | `app-installation.nix`                | Produces native installation manifests and orders system activation.                                                                                                                                              |
 | `pkgs/app-sources.nix`                | Creates fixed-output `fetchurl` downloads from the app inventory.                                                                                                                                                 |
-| `pkgs/macos-apps.nix`                 | Filters enabled inventory entries and exposes app package derivations.                                                                                                                                            |
+| `pkgs/macos-apps.nix`                 | Exposes app package derivations for every inventory entry.                                                                                                                                                        |
 | `pkgs/mk-macos-app.nix`               | Extracts app archives or stages vendor PKGs during a build.                                                                                                                                                       |
 | `scripts/install_native_apps.py`      | Installs writable DMG/ZIP bundles as the user, with native metadata and replacement backups.                                                                                                                      |
 | `scripts/install_native_pkgs.py`      | Installs missing PKG products as root and verifies the expected app exists.                                                                                                                                       |
@@ -194,49 +194,46 @@ flow. The presence of `wget` in the package list does not change this rule. A
 generic URL is intentional even though upstream may later replace its content: a
 future hash mismatch must be resolved explicitly rather than silently accepted.
 
-Use an observed version as package metadata when known. If the version is
-unknown and not needed to fulfill the edit, use an honest placeholder such as
-`"latest"` rather than inventing a release number or downloading the installer
-to discover it. Metadata does not authorize changing the supplied URL.
+Do not add a `version` field: the URL and hash select the download. Ordinary
+DMG/ZIP entries need only those two fields. The archive supplies the bundle
+name; the download filename defaults to the inventory key plus its archive
+extension. Keep overrides only where necessary.
 
 Example configuration-only addition:
 
 ```nix
 example = {
-  version = "latest";
-  downloadName = "example-latest.dmg";
   url = "https://vendor.example/download/latest/darwin/arm64";
   hash = lib.fakeHash;
-  appName = "Example.app";
 };
 ```
 
-The installed bundle name must be accurate. Use available evidence; if its name
-or archive layout is unverified, report that limitation instead of claiming the
-package builds. Prefer Apple Silicon or universal assets. Intel-only exceptions
-must remain explicit rather than changing the host platform.
+Bundle discovery requires exactly one outer `.app`, including inside wrapper
+directories, and ignores helper apps inside it, hidden directories, `__MACOSX`,
+and symlinks. Ambiguous archives fail. PKG entries still require an accurate
+`appName` for presence checks and post-install verification. If an archive
+layout is unverified, report that limitation instead of claiming the package
+builds. Prefer Apple Silicon or universal assets. Intel-only exceptions must
+remain explicit rather than changing the host platform.
 
 ### App inventory fields
 
-| Field                 | Meaning                                                                                                 |
-| --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `version`             | Package metadata; not a guarantee of the currently self-updated native version.                         |
-| `url`                 | User-supplied download endpoint.                                                                        |
-| `hash`                | Fixed-output SHA-256 in SRI form, or `lib.fakeHash` while awaiting a mismatch.                          |
-| `appName`             | Expected installed `.app` name, including spaces and capitalization.                                    |
-| `downloadName`        | Explicit store filename, useful for endpoints without an archive suffix.                                |
-| `format`              | `dmg` by default; also `zip`, `pkg`, `zip-pkg`, and `dmg-pkg`.                                          |
-| `appPath`             | Bundle path within the archive; defaults to `appName`.                                                  |
-| `dmgExtractor`        | `undmg` by default; `7zz` is available for layouts such as APFS DMGs.                                   |
-| `allowParentSymlinks` | Narrow extraction exception for a known vendor bundle layout.                                           |
-| `enable`              | Defaults to true; false excludes the entry from app package outputs and installation.                   |
-| `removeFinderInfo`    | Targeted native-copy exception for an evidenced FinderInfo/signature issue.                             |
-| `removeQuarantine`    | Targeted native-copy exception; never a blanket Gatekeeper change.                                      |
-| `preserveXattrs`      | Existing inventory annotation; native deployment already preserves extended attributes for all bundles. |
+| Field              | Meaning                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------ |
+| `url`              | User-supplied download endpoint.                                                     |
+| `hash`             | Fixed-output SHA-256 in SRI form, or `lib.fakeHash` while awaiting a mismatch.       |
+| `appName`          | Optional destination bundle name override. Required for PKGs.                        |
+| `downloadName`     | Optional store filename override; defaults to `<inventory-key>.<archive-extension>`. |
+| `format`           | `dmg` by default; also `zip`, `pkg`, `zip-pkg`, and `dmg-pkg`.                       |
+| `removeQuarantine` | Targeted native-copy exception; never a blanket Gatekeeper change.                   |
 
 Do not add extraction, quarantine, symlink, or signature exceptions
 speculatively. Do not patch or re-sign vendor binaries as a routine installation
 workaround.
+
+DMG builds detect HFS versus APFS from archive headers and choose `undmg` or
+`7zz` automatically. Do not add per-app extractor settings. Unknown or ambiguous
+filesystems and extraction errors must fail rather than reuse partial output.
 
 ## Build and deployment architecture
 
@@ -263,7 +260,7 @@ are mounted read-only and copied with Apple's `ditto`, preserving resources and
 extended attributes. Installed bundles remain writable for vendor updaters.
 
 Ordinary rebuilds preserve existing apps, including self-updated copies. A new
-inventory version/hash updates the bootstrap source, not every installed app.
+inventory URL/hash updates the bootstrap source, not every installed app.
 Explicit replacement is a separate operation. Preserve installation locks,
 staging, backup verification, atomic rename recovery, and failure propagation.
 
@@ -461,7 +458,9 @@ does not edit user Nix configuration or managed shell files to enable features.
 
 From the repository root, `make build` runs the flake's `nix-output-monitor` and
 builds `.#darwinConfigurations.mac.system` into `result`, without changing the
-lockfile. `make install` depends on that successful build, then runs
+lockfile. Its child build uses `--keep-going` so independent downloads and
+builds finish after a hash mismatch or other build failure; the overall failure
+status is preserved. `make install` depends on that successful build, then runs
 `sudo ./result/sw/bin/darwin-rebuild switch --flake .#mac --no-update-lock-file`.
 The bundled launcher works before the first activation; `switch` records the
 system generation. Bare `make` means `make build`. Adding or editing these

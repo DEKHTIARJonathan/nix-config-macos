@@ -74,10 +74,44 @@
           pkgs = self.darwinConfigurations.mac.pkgs;
           python = pkgs.python3.withPackages (ps: [ ps.json5 ]);
           home = self.darwinConfigurations.mac.config.home-manager.users.${host.username};
+          mkApp = pkgs.callPackage ./pkgs/mk-macos-app.nix { };
+          fixture = {
+            pname = "app-discovery-fixture";
+            src = pkgs.writeText "unused-fixture-source" "";
+          };
+          autoApp = mkApp fixture;
+          namedApp = mkApp (
+            fixture
+            // {
+              appName = "Renamed.app";
+            }
+          );
+          pkgApp = mkApp (
+            fixture
+            // {
+              format = "dmg-pkg";
+              appName = "Fixture.app";
+            }
+          );
         in
         pkgs.runCommand "mac-config-settings-tests"
           {
-            nativeBuildInputs = [ python ];
+            nativeBuildInputs = [
+              python
+              pkgs._7zz
+              pkgs.undmg
+            ];
+            # Exercise generated build commands with local archives, never vendors.
+            APP_BUILD_PHASES = pkgs.writeText "app-build-phases.json" (
+              builtins.toJSON {
+                autoInstall = autoApp.installPhase;
+                autoUnpack = autoApp.unpackPhase;
+                namedInstall = namedApp.installPhase;
+                namedUnpack = namedApp.unpackPhase;
+                pkgUnpack = pkgApp.unpackPhase;
+                pkgInstall = pkgApp.installPhase;
+              }
+            );
             ZSH_ENV_FILE = "${home.home-files}/.zshenv";
             ZSH_RC_FILE = "${home.home-files}/.config/zsh/nix-zshrc";
             ZSH_HOME_DIRECTORY = home.home.homeDirectory;

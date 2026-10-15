@@ -7,7 +7,6 @@ let
   inventory = import ../mac-apps.nix { inherit lib; };
   sources = import ./app-sources.nix { inherit pkgs; };
   mkApp = pkgs.callPackage ./mk-macos-app.nix { };
-  enabled = lib.filterAttrs (_: app: app.enable or true) inventory;
 in
 lib.mapAttrs (
   name: app:
@@ -19,11 +18,8 @@ lib.mapAttrs (
     // builtins.removeAttrs app [
       "url"
       "hash"
-      "enable"
       "removeQuarantine"
-      "removeFinderInfo"
       "downloadName"
-      "preserveXattrs"
     ]
   )
-) enabled
+) inventory

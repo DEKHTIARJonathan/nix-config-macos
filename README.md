@@ -17,7 +17,7 @@ everyday tools remain available without entering a development shell.
 | `settings/`             | Live Mac settings snapshot, profiles, and extension inventories       |
 | `scripts/`              | User settings restoration, editor setup, developer-tools verification |
 | `android.nix`           | Native Nix Android tools and Java runtime                             |
-| `mac-apps.nix`          | Shared inventory: app versions, URLs, hashes, and formats             |
+| `mac-apps.nix`          | Shared inventory: app URLs, hashes, formats, and exceptions           |
 | `app-installation.nix`  | Installs missing native app bundles and PKG products                  |
 | `pkgs/mk-macos-app.nix` | Shared DMG/ZIP app and embedded PKG builder                           |
 | `pkgs/app-sources.nix`  | Fixed-output downloads from the inventory                             |
@@ -604,7 +604,7 @@ Routine activation never runs marketplace installation commands.
 `mac-apps.nix` pins vendor downloads by SHA-256, including Chrome, Firefox,
 Brave, Raycast, Android Studio, Docker Desktop, Google Earth Pro, and RØDECaster
 App. Chrome, Brave, Docker, and RØDECaster use mutable vendor endpoints:
-changing their hash/version is an explicit bootstrap update, independent of
+changing their URL/hash is an explicit bootstrap update, independent of
 `flake.lock`. The archive filename is not assumed to be the installed app's
 version.
 
@@ -771,21 +771,36 @@ Apple Silicon even for explicitly permitted Intel apps:
 
 ```nix
 example = {
-  version = "1.2.3";
   url = "https://example.com/Example-1.2.3.dmg";
   hash = lib.fakeHash;
-  appName = "Example.app";
   # format = "zip";  # Default: "dmg"; also "pkg", "zip-pkg", or "dmg-pkg".
-  # appPath = "Subdirectory/Example.app";  # Default: appName.
-  # dmgExtractor = "7zz";  # For APFS DMGs; default: "undmg" (HFS).
-  # downloadName = "example-latest.dmg";  # Stable store filename for a mutable URL.
-  # enable = false;  # Exclude an entry without deleting it.
+  # appName = "Example.app";  # Optional bundle name override; required for PKGs.
+  # downloadName = "custom.dmg";  # Optional; default: entry name + archive extension.
 };
 ```
 
+DMG/ZIP entries automatically discover the single `.app` bundle and keep its
+name in `/Applications`, including when it is inside a wrapper directory.
+Discovery skips bundled helper apps, hidden directories, `__MACOSX`, and
+symlinks. Zero or multiple apps cause an error. `appName` optionally overrides
+the destination name. Existing apps remain untouched unless replacement is
+explicitly requested. Without an explicit name, activation must mount or unpack
+the archive to discover the name before checking for an existing app.
+
+DMG builds detect the image's filesystem and use `undmg` for HFS or `7zz` for
+APFS. No per-app extractor setting is needed. Unrecognized or ambiguous image
+layouts fail with an error; extraction failures are propagated. Native
+installation still mounts the original DMG read-only and copies with `ditto`.
+
+There is no `version` field: the supplied URL and hash select the download. Its
+store filename defaults to `<entry-name>.<archive-extension>`, even for URLs
+without a filename. `downloadName` is only an optional filename override.
+Changing this filename can cause Nix to fetch the source again.
+
 PKGs are staged during the build and run as root during activation when the
-expected app is missing. Archives containing multiple PKGs are rejected instead
-of selecting an arbitrary installer.
+expected app is missing. They still require `appName` to check for an existing
+installation and verify the result. Archives containing multiple PKGs are
+rejected instead of selecting an arbitrary installer.
 
 To add or update an app, preserve the exact supplied URL, including generic
 `latest` endpoints, and set `hash = lib.fakeHash;`. Configuration-only edits
@@ -803,7 +818,7 @@ sudo darwin-rebuild switch --flake .#mac
 ```
 
 For the existing inventory, substitute an attribute such as `signal`, `ariane`,
-`onepassword`, or `insta360-studio`. App versions/hashes are independent of
+`onepassword`, or `insta360-studio`. App URLs/hashes are independent of
 `flake.lock`; `nix flake update` alone does not update them. A mutable `latest`
 URL is still pinned by its hash, but a fresh download will fail if the vendor
 replaces the file. Keep the supplied URL and resolve that mismatch explicitly;
@@ -829,12 +844,20 @@ Bare `make` also builds. Build, install, and test preserve `flake.lock`; only
 locked flake, equivalent to:
 
 ```sh
-nix --extra-experimental-features 'nix-command flakes' run --no-update-lock-file .#nix-output-monitor -- build .#darwinConfigurations.mac.system --extra-experimental-features 'nix-command flakes' --no-update-lock-file --out-link result
+nix --extra-experimental-features 'nix-command flakes' run --no-update-lock-file .#nix-output-monitor -- build .#darwinConfigurations.mac.system --extra-experimental-features 'nix-command flakes' --no-update-lock-file --keep-going --out-link result
 ```
 
 This works before the first system activation and does not depend on shell
 configuration. Nix first obtains the monitor; it then runs the requested build.
 The monitor's own initial download uses the native Nix display.
+
+The build uses `--keep-going` so a hash mismatch or other build failure does not
+cancel independent downloads and builds. Successful outputs remain available in
+the Nix store for the next attempt, unless garbage-collected. The command still
+exits with a failure status, and `make install` does not activate until the
+build succeeds. Correct each mismatched hash using its reported `got:` value,
+then rerun `make build`. This does not provide download resumption after
+cancellation or automatically accept mismatched hashes.
 
 The download builder converts curl's meter into structured Nix phase updates
 such as `download 42.0%`. The monitor displays these beside each active build,

@@ -13,12 +13,10 @@ let
   manifest = pkgs.writeText "native-macos-apps.json" (
     builtins.toJSON (
       lib.mapAttrs (name: _: {
-        inherit (inventory.${name}) appName;
+        appName = inventory.${name}.appName or null;
         source = sources.${name};
         format = inventory.${name}.format or "dmg";
-        appPath = inventory.${name}.appPath or inventory.${name}.appName;
         removeQuarantine = inventory.${name}.removeQuarantine or false;
-        removeFinderInfo = inventory.${name}.removeFinderInfo or false;
       }) bundles
     )
   );
