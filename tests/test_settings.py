@@ -3,12 +3,12 @@
 import copy
 import json
 import os
-from pathlib import Path
 import plistlib
 import subprocess
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -34,7 +34,10 @@ class FakePreferences:
         self.writes += 1
 
 
-@unittest.skipUnless(os.environ.get("PRE_ACTIVATION_FILE"), "Generated activation script is supplied by the Nix check")
+@unittest.skipUnless(
+    os.environ.get("PRE_ACTIVATION_FILE"),
+    "Generated activation script is supplied by the Nix check",
+)
 class RosettaActivationTests(unittest.TestCase):
     def test_installation_skip_verification_and_failure_propagation(self):
         script = Path(os.environ["PRE_ACTIVATION_FILE"]).read_text()
@@ -42,7 +45,7 @@ class RosettaActivationTests(unittest.TestCase):
         # install software or depend on the host's actual Rosetta state.
         script = script.replace("/usr/bin/arch", "mock_arch")
         script = script.replace("/usr/sbin/softwareupdate", "mock_softwareupdate")
-        harness = '''
+        harness = """
             set -e
             rosetta_ready=$ROSETTA_READY
             mock_arch() {
@@ -54,7 +57,7 @@ class RosettaActivationTests(unittest.TestCase):
                 if test "$ROSETTA_INSTALL_FAILS" = 1; then return 42; fi
                 rosetta_ready=$ROSETTA_INSTALL_WORKS
             }
-        '''
+        """
         cases = [
             # ready, installer fails, installation works, success, probes, installs
             (True, False, False, True, 2, 0),
@@ -63,20 +66,39 @@ class RosettaActivationTests(unittest.TestCase):
             (False, False, False, False, 2, 1),
         ]
         for ready, fails, works, success, probes, installs in cases:
-            with self.subTest(ready=ready, fails=fails, works=works), tempfile.TemporaryDirectory() as directory:
+            with (
+                self.subTest(ready=ready, fails=fails, works=works),
+                tempfile.TemporaryDirectory() as directory,
+            ):
                 log = Path(directory) / "commands.log"
                 result = subprocess.run(
-                    ["/bin/sh", "-c", harness + script + script + '\nprintf "activation continued\\n"\n'],
-                    env={"PATH": os.defpath, "ROSETTA_LOG": str(log),
-                         "ROSETTA_READY": str(int(ready)), "ROSETTA_INSTALL_FAILS": str(int(fails)),
-                         "ROSETTA_INSTALL_WORKS": str(int(works))},
-                    capture_output=True, text=True,
+                    [
+                        "/bin/sh",
+                        "-c",
+                        harness
+                        + script
+                        + script
+                        + '\nprintf "activation continued\\n"\n',
+                    ],
+                    check=False,
+                    env={
+                        "PATH": os.defpath,
+                        "ROSETTA_LOG": str(log),
+                        "ROSETTA_READY": str(int(ready)),
+                        "ROSETTA_INSTALL_FAILS": str(int(fails)),
+                        "ROSETTA_INSTALL_WORKS": str(int(works)),
+                    },
+                    capture_output=True,
+                    text=True,
                 )
                 self.assertEqual(result.returncode == 0, success, result.stderr)
                 self.assertEqual("activation continued" in result.stdout, success)
                 commands = log.read_text().splitlines()
                 self.assertEqual(commands.count("probe -x86_64 /usr/bin/true"), probes)
-                self.assertEqual(commands.count("install --install-rosetta --agree-to-license"), installs)
+                self.assertEqual(
+                    commands.count("install --install-rosetta --agree-to-license"),
+                    installs,
+                )
                 self.assertEqual(len(commands), probes + installs)
 
 
@@ -143,9 +165,13 @@ class RestoreTests(unittest.TestCase):
         self.home.mkdir()
         target = self.home / ".zshrc"
         target.write_bytes(b"# existing settings\n")
-        with patch.object(restore.os, "replace", side_effect=OSError("simulated write failure")):
-            with self.assertRaises(OSError):
-                restore.seed_zshrc(self.home)
+        with (
+            patch.object(
+                restore.os, "replace", side_effect=OSError("simulated write failure")
+            ),
+            self.assertRaises(OSError),
+        ):
+            restore.seed_zshrc(self.home)
         self.assertEqual(target.read_bytes(), b"# existing settings\n")
         restore.seed_zshrc(self.home)
         self.assertTrue(target.read_bytes().endswith(b"# existing settings\n"))
@@ -173,12 +199,16 @@ class RestoreTests(unittest.TestCase):
         self.assertFalse(zed.is_symlink())
         self.assertEqual(external.read_text(), "external data")
         backups = list((restore.state_directory(self.home) / "backups").iterdir())
-        self.assertTrue(any(p.is_symlink() and p.readlink() == external for p in backups))
+        self.assertTrue(
+            any(p.is_symlink() and p.readlink() == external for p in backups)
+        )
 
     def test_dry_run_has_no_files_or_preference_writes(self):
         preferences = FakePreferences()
         restore.seed_editors(self.source, self.home, dry_run=True)
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True, dry_run=True)
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True, dry_run=True
+        )
         self.assertFalse(self.home.exists())
         self.assertEqual(preferences.writes, 0)
 
@@ -186,12 +216,12 @@ class RestoreTests(unittest.TestCase):
         restore.seed_editors(self.source, self.home)
         code = self.home / "Library/Application Support/Code/User/settings.json"
         zed = self.home / ".config/zed/settings.json"
-        original_code = b'''{// personal settings
+        original_code = b"""{// personal settings
           "terminal.integrated.fontFamily": "Menlo",
           "terminal.integrated.fontSize": 17,
           "editor.fontFamily": "Other font",
           "workbench.settings.applyToAllProfiles": ["editor.fontSize"],
-        }'''
+        }"""
         original_zed = b'{"terminal": {"font_size": 19, "font_family": "Menlo"}, "ui_font_size": 16}'
         code.write_bytes(original_code)
         zed.write_bytes(original_zed)
@@ -200,17 +230,28 @@ class RestoreTests(unittest.TestCase):
         self.assertFalse(restore.state_directory(self.home).exists())
         restore.restore_editor_fonts(self.source, self.home)
         updated_code = json.loads(code.read_text())
-        self.assertEqual(updated_code["terminal.integrated.fontFamily"], "'MesloLGS NF'")
+        self.assertEqual(
+            updated_code["terminal.integrated.fontFamily"], "'MesloLGS NF'"
+        )
         self.assertEqual(updated_code["terminal.integrated.fontSize"], 17)
         self.assertEqual(updated_code["editor.fontFamily"], "Other font")
-        self.assertEqual(updated_code["workbench.settings.applyToAllProfiles"],
-                         ["editor.fontSize", "terminal.integrated.fontFamily"])
+        self.assertEqual(
+            updated_code["workbench.settings.applyToAllProfiles"],
+            ["editor.fontSize", "terminal.integrated.fontFamily"],
+        )
         updated_zed = json.loads(zed.read_text())
-        self.assertEqual(updated_zed, {"terminal": {"font_size": 19, "font_family": "MesloLGS NF"},
-                                      "ui_font_size": 16})
+        self.assertEqual(
+            updated_zed,
+            {
+                "terminal": {"font_size": 19, "font_family": "MesloLGS NF"},
+                "ui_font_size": 16,
+            },
+        )
         folder = restore.state_directory(self.home) / "backups"
         backups = list(folder.iterdir())
-        self.assertCountEqual([p.read_bytes() for p in backups], [original_code, original_zed])
+        self.assertCountEqual(
+            [p.read_bytes() for p in backups], [original_code, original_zed]
+        )
         self.assertTrue(all(p.stat().st_mode & 0o777 == 0o600 for p in backups))
         with patch.object(restore, "atomic_write") as write:
             restore.restore_editor_fonts(self.source, self.home)
@@ -223,16 +264,18 @@ class RestoreTests(unittest.TestCase):
         code = self.home / "Library/Application Support/Code/User/settings.json"
         code.parent.mkdir(parents=True)
         external = self.home / "external.json"
-        external.write_text('{}')
+        external.write_text("{}")
         for destination in (external, self.home / "absent"):
             code.symlink_to(destination)
             with self.assertRaisesRegex(RuntimeError, "symlink"):
                 restore.restore_editor_fonts(self.source, self.home)
             self.assertEqual(code.readlink(), destination)
-            self.assertEqual(external.read_text(), '{}')
+            self.assertEqual(external.read_text(), "{}")
             code.unlink()
         code.parent.rename(code.parent.with_name("RealUser"))
-        code.parent.symlink_to(code.parent.with_name("RealUser"), target_is_directory=True)
+        code.parent.symlink_to(
+            code.parent.with_name("RealUser"), target_is_directory=True
+        )
         with self.assertRaisesRegex(RuntimeError, "symlink"):
             restore.restore_editor_fonts(self.source, self.home)
         self.assertFalse(restore.state_directory(self.home).exists())
@@ -240,8 +283,12 @@ class RestoreTests(unittest.TestCase):
     def test_editor_fonts_invalid_settings_are_preserved(self):
         code = self.home / "Library/Application Support/Code/User/settings.json"
         code.parent.mkdir(parents=True)
-        for content in ('broken', '[]', '{"workbench.settings.applyToAllProfiles": null}',
-                        '{"duplicate": 1, "duplicate": 2}'):
+        for content in (
+            "broken",
+            "[]",
+            '{"workbench.settings.applyToAllProfiles": null}',
+            '{"duplicate": 1, "duplicate": 2}',
+        ):
             code.write_text(content)
             with self.assertRaises(ValueError):
                 restore.restore_editor_fonts(self.source, self.home)
@@ -251,7 +298,7 @@ class RestoreTests(unittest.TestCase):
     def test_editor_font_failed_write_preserves_original_and_can_retry(self):
         code = self.home / "Library/Application Support/Code/User/settings.json"
         code.parent.mkdir(parents=True)
-        code.write_bytes(b'{}')
+        code.write_bytes(b"{}")
         replace = restore.os.replace
 
         def fail_settings_write(source, target):
@@ -259,17 +306,24 @@ class RestoreTests(unittest.TestCase):
                 raise OSError("simulated write failure")
             return replace(source, target)
 
-        with patch.object(restore.os, "replace", side_effect=fail_settings_write):
-            with self.assertRaises(OSError):
-                restore.restore_editor_fonts(self.source, self.home)
-        self.assertEqual(code.read_bytes(), b'{}')
+        with (
+            patch.object(restore.os, "replace", side_effect=fail_settings_write),
+            self.assertRaises(OSError),
+        ):
+            restore.restore_editor_fonts(self.source, self.home)
+        self.assertEqual(code.read_bytes(), b"{}")
         backups = list((restore.state_directory(self.home) / "backups").iterdir())
-        self.assertEqual([p.read_bytes() for p in backups], [b'{}'])
+        self.assertEqual([p.read_bytes() for p in backups], [b"{}"])
         restore.restore_editor_fonts(self.source, self.home)
-        self.assertEqual(json.loads(code.read_text())["terminal.integrated.fontFamily"], "'MesloLGS NF'")
+        self.assertEqual(
+            json.loads(code.read_text())["terminal.integrated.fontFamily"],
+            "'MesloLGS NF'",
+        )
 
     def test_gitkraken_fonts_preserve_profiles_and_backup_only_on_change(self):
-        targets = [self.home / f".gitkraken/profiles/{name}/profile" for name in ("one", "two")]
+        targets = [
+            self.home / f".gitkraken/profiles/{name}/profile" for name in ("one", "two")
+        ]
         original = b'{"cli":{"fontFamily":"Menlo","fontSize":17},"editor":{"fontFamily":"Menlo"},"other":true}'
         for target in targets:
             target.parent.mkdir(parents=True)
@@ -279,14 +333,21 @@ class RestoreTests(unittest.TestCase):
         self.assertTrue(all(target.read_bytes() == original for target in targets))
         restore.restore_gitkraken_fonts(self.source, self.home)
         for target in targets:
-            self.assertEqual(json.loads(target.read_bytes()), {
-                "cli": {"fontFamily": '"MesloLGS NF"', "fontSize": 17},
-                "editor": {"fontFamily": "Menlo"}, "other": True,
-            })
+            self.assertEqual(
+                json.loads(target.read_bytes()),
+                {
+                    "cli": {"fontFamily": '"MesloLGS NF"', "fontSize": 17},
+                    "editor": {"fontFamily": "Menlo"},
+                    "other": True,
+                },
+            )
         backups = list((restore.state_directory(self.home) / "backups").iterdir())
         self.assertEqual([p.read_bytes() for p in backups], [original, original])
         self.assertTrue(all(p.stat().st_mode & 0o777 == 0o600 for p in backups))
-        with patch.object(restore, "atomic_write") as write, patch.object(restore.subprocess, "run") as run:
+        with (
+            patch.object(restore, "atomic_write") as write,
+            patch.object(restore.subprocess, "run") as run,
+        ):
             restore.restore_gitkraken_fonts(self.source, self.home)
             write.assert_not_called()
             run.assert_not_called()
@@ -294,7 +355,7 @@ class RestoreTests(unittest.TestCase):
     def test_gitkraken_fonts_failed_write_is_retryable(self):
         target = self.home / ".gitkraken/profiles/one/profile"
         target.parent.mkdir(parents=True)
-        target.write_bytes(b'{}')
+        target.write_bytes(b"{}")
         replace = restore.os.replace
 
         def fail_profile_write(source, destination):
@@ -302,12 +363,16 @@ class RestoreTests(unittest.TestCase):
                 raise OSError("simulated write failure")
             return replace(source, destination)
 
-        with patch.object(restore.os, "replace", side_effect=fail_profile_write):
-            with self.assertRaises(OSError):
-                restore.restore_gitkraken_fonts(self.source, self.home)
-        self.assertEqual(target.read_bytes(), b'{}')
+        with (
+            patch.object(restore.os, "replace", side_effect=fail_profile_write),
+            self.assertRaises(OSError),
+        ):
+            restore.restore_gitkraken_fonts(self.source, self.home)
+        self.assertEqual(target.read_bytes(), b"{}")
         restore.restore_gitkraken_fonts(self.source, self.home)
-        self.assertEqual(json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"')
+        self.assertEqual(
+            json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"'
+        )
 
     def test_gitkraken_fonts_migrate_unquoted_value_rejected_by_app(self):
         target = self.home / ".gitkraken/profiles/one/profile"
@@ -332,7 +397,7 @@ class RestoreTests(unittest.TestCase):
         self.assertFalse(self.home.exists())
         target = self.home / ".gitkraken/profiles/one/profile"
         target.parent.mkdir(parents=True)
-        for content in ('broken', '[]', '{"cli":null}', '{"cli":{},"cli":{}}'):
+        for content in ("broken", "[]", '{"cli":null}', '{"cli":{},"cli":{}}'):
             target.write_text(content)
             with self.assertRaises(ValueError):
                 restore.restore_gitkraken_fonts(self.source, self.home)
@@ -343,7 +408,9 @@ class RestoreTests(unittest.TestCase):
             restore.restore_gitkraken_fonts(self.source, self.home)
         target.unlink()
         target.parent.rename(target.parent.with_name("real"))
-        target.parent.symlink_to(target.parent.with_name("real"), target_is_directory=True)
+        target.parent.symlink_to(
+            target.parent.with_name("real"), target_is_directory=True
+        )
         with self.assertRaisesRegex(RuntimeError, "symlink"):
             restore.restore_gitkraken_fonts(self.source, self.home)
         self.assertFalse(restore.state_directory(self.home).exists())
@@ -356,15 +423,23 @@ class RestoreTests(unittest.TestCase):
         empty_profile = code.parent / "profiles/new/keybindings.json"
         empty_profile.parent.mkdir(parents=True)
         zed = self.home / ".config/zed/keymap.json"
-        code_original = b'[{"key":"shift+enter","command":"userAction","when":"editorTextFocus"}]'
+        code_original = (
+            b'[{"key":"shift+enter","command":"userAction","when":"editorTextFocus"}]'
+        )
         zed_original = b'[{"context":"Editor","bindings":{"shift-enter":"userAction"}}]'
-        for target, content in ((code, code_original), (profile, code_original), (zed, zed_original)):
+        for target, content in (
+            (code, code_original),
+            (profile, code_original),
+            (zed, zed_original),
+        ):
             target.write_bytes(content)
         restore.restore_editor_keybindings(self.source, self.home, dry_run=True)
         self.assertEqual(code.read_bytes(), code_original)
         self.assertFalse(restore.state_directory(self.home).exists())
         restore.restore_editor_keybindings(self.source, self.home)
-        self.assertEqual(json.loads(empty_profile.read_bytes())[-1]["when"], "terminalFocus")
+        self.assertEqual(
+            json.loads(empty_profile.read_bytes())[-1]["when"], "terminalFocus"
+        )
         for target in (code, profile):
             updated = json.loads(target.read_bytes())
             self.assertEqual(updated[:-1], json.loads(code_original))
@@ -372,20 +447,28 @@ class RestoreTests(unittest.TestCase):
             self.assertEqual(updated[-1]["args"]["text"], "\x1b[13;2u")
         updated = json.loads(zed.read_bytes())
         self.assertEqual(updated[:-1], json.loads(zed_original))
-        self.assertEqual(updated[-1], {"context": "Terminal", "bindings": {
-            "shift-enter": ["terminal::SendText", "\x1b[13;2u"]}})
+        self.assertEqual(
+            updated[-1],
+            {
+                "context": "Terminal",
+                "bindings": {"shift-enter": ["terminal::SendText", "\x1b[13;2u"]},
+            },
+        )
         with patch.object(restore, "atomic_write") as write:
             restore.restore_editor_keybindings(self.source, self.home)
             write.assert_not_called()
         backups = list((restore.state_directory(self.home) / "backups").iterdir())
-        self.assertCountEqual([p.read_bytes() for p in backups], [code_original, code_original, zed_original])
+        self.assertCountEqual(
+            [p.read_bytes() for p in backups],
+            [code_original, code_original, zed_original],
+        )
 
     def test_editor_keybindings_missing_invalid_and_symlink_files(self):
         restore.restore_editor_keybindings(self.source, self.home)
         self.assertFalse(self.home.exists())
         target = self.home / "Library/Application Support/Code/User/keybindings.json"
         target.parent.mkdir(parents=True)
-        for content in ('broken', '{}', '[null]', '[{"key":1,"key":2}]'):
+        for content in ("broken", "{}", "[null]", '[{"key":1,"key":2}]'):
             target.write_text(content)
             with self.assertRaises(ValueError):
                 restore.restore_editor_keybindings(self.source, self.home)
@@ -399,12 +482,14 @@ class RestoreTests(unittest.TestCase):
         restore.restore_editor_keybindings(self.source, self.home, dry_run=True)
         self.assertFalse(target.exists())
         restore.restore_editor_keybindings(self.source, self.home)
-        self.assertEqual(json.loads(target.read_bytes())[-1]["args"]["text"], "\x1b[13;2u")
+        self.assertEqual(
+            json.loads(target.read_bytes())[-1]["args"]["text"], "\x1b[13;2u"
+        )
 
     def test_editor_keybindings_failed_write_preserves_original_for_retry(self):
         target = self.home / ".config/zed/keymap.json"
         target.parent.mkdir(parents=True)
-        target.write_bytes(b'[]')
+        target.write_bytes(b"[]")
         replace = restore.os.replace
 
         def fail_keymap_write(source, destination):
@@ -412,31 +497,54 @@ class RestoreTests(unittest.TestCase):
                 raise OSError("simulated write failure")
             return replace(source, destination)
 
-        with patch.object(restore.os, "replace", side_effect=fail_keymap_write):
-            with self.assertRaises(OSError):
-                restore.restore_editor_keybindings(self.source, self.home)
-        self.assertEqual(target.read_bytes(), b'[]')
+        with (
+            patch.object(restore.os, "replace", side_effect=fail_keymap_write),
+            self.assertRaises(OSError),
+        ):
+            restore.restore_editor_keybindings(self.source, self.home)
+        self.assertEqual(target.read_bytes(), b"[]")
         restore.restore_editor_keybindings(self.source, self.home)
         self.assertEqual(json.loads(target.read_bytes())[-1]["context"], "Terminal")
 
     def test_all_once_repairs_gitkraken_without_querying_or_stopping_processes(self):
         target = self.home / ".gitkraken/profiles/one/profile"
         target.parent.mkdir(parents=True)
-        target.write_bytes(b'{}')
-        arguments = ["restore_settings", "all", "--once", "--home", str(self.home), "--source", str(self.source)]
-        with patch.object(sys, "argv", arguments), patch.object(restore.os, "geteuid", return_value=501), \
-                patch.object(restore.subprocess, "run", side_effect=AssertionError("Must not query or stop GitKraken")), \
-                patch.object(restore, "Preferences", return_value=FakePreferences()), \
-                patch.object(restore, "restore_desktop"):
+        target.write_bytes(b"{}")
+        arguments = [
+            "restore_settings",
+            "all",
+            "--once",
+            "--home",
+            str(self.home),
+            "--source",
+            str(self.source),
+        ]
+        with (
+            patch.object(sys, "argv", arguments),
+            patch.object(restore.os, "geteuid", return_value=501),
+            patch.object(
+                restore.subprocess,
+                "run",
+                side_effect=AssertionError("Must not query or stop GitKraken"),
+            ),
+            patch.object(restore, "Preferences", return_value=FakePreferences()),
+            patch.object(restore, "restore_desktop"),
+        ):
             self.assertEqual(restore.main(), 0)
-        self.assertEqual(json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"')
+        self.assertEqual(
+            json.loads(target.read_bytes())["cli"]["fontFamily"], '"MesloLGS NF"'
+        )
         keymap = self.home / ".config/zed/keymap.json"
         self.assertEqual(json.loads(keymap.read_bytes())[-1]["context"], "Terminal")
 
     def test_terminal_merges_binary_data_and_only_restores_once(self):
         domain = "com.apple.Terminal"
-        preferences = FakePreferences({domain: {"Window Settings": {"Personal": {"value": 1}}, "unrelated": 7}})
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        preferences = FakePreferences(
+            {domain: {"Window Settings": {"Personal": {"value": 1}}, "unrelated": 7}}
+        )
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True
+        )
         current = preferences.read(domain)
         self.assertIn("Personal", current["Window Settings"])
         self.assertEqual(current["unrelated"], 7)
@@ -448,19 +556,31 @@ class RestoreTests(unittest.TestCase):
             self.assertEqual(keys["$000D"], "\x1b[13;2u")
             self.assertEqual(keys["$0003"], "\x1b[13;2u")
         preferences.values[domain]["Default Window Settings"] = "Personal"
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True
+        )
         self.assertEqual(preferences.writes, 1)
-        self.assertEqual(preferences.read(domain)["Default Window Settings"], "Personal")
+        self.assertEqual(
+            preferences.read(domain)["Default Window Settings"], "Personal"
+        )
         restore.restore_desktop("terminal", self.source, self.home, preferences)
         self.assertEqual(preferences.writes, 2)
 
-    def test_terminal_keybindings_migrate_existing_profiles_without_resetting_them(self):
+    def test_terminal_keybindings_migrate_existing_profiles_without_resetting_them(
+        self,
+    ):
         domain = "com.apple.Terminal"
         original = {
             "Default Window Settings": "Personal",
             "Window Settings": {
-                "Personal": {"Font": b"custom font", "keyMapBoundKeys": {"F704": "custom"}},
-                "Clear Dark": {"Font": b"modified font", "keyMapBoundKeys": {"$000D": "\r"}},
+                "Personal": {
+                    "Font": b"custom font",
+                    "keyMapBoundKeys": {"F704": "custom"},
+                },
+                "Clear Dark": {
+                    "Font": b"modified font",
+                    "keyMapBoundKeys": {"$000D": "\r"},
+                },
             },
             "unrelated": True,
         }
@@ -468,11 +588,15 @@ class RestoreTests(unittest.TestCase):
         marker = restore.state_directory(self.home) / "terminal-restored"
         marker.parent.mkdir(parents=True)
         marker.touch()
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True, dry_run=True)
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True, dry_run=True
+        )
         self.assertEqual(preferences.writes, 0)
         self.assertFalse((marker.parent / "backups").exists())
 
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True
+        )
         current = preferences.read(domain)
         self.assertEqual(current["Default Window Settings"], "Personal")
         self.assertEqual(current["unrelated"], True)
@@ -481,22 +605,34 @@ class RestoreTests(unittest.TestCase):
             self.assertEqual(profile["Font"], original["Window Settings"][name]["Font"])
             self.assertEqual(profile["keyMapBoundKeys"]["$000D"], "\x1b[13;2u")
             self.assertEqual(profile["keyMapBoundKeys"]["$0003"], "\x1b[13;2u")
-        self.assertEqual(current["Window Settings"]["Personal"]["keyMapBoundKeys"]["F704"], "custom")
-        backup, = (marker.parent / "backups").iterdir()
+        self.assertEqual(
+            current["Window Settings"]["Personal"]["keyMapBoundKeys"]["F704"], "custom"
+        )
+        (backup,) = (marker.parent / "backups").iterdir()
         self.assertEqual(plistlib.loads(backup.read_bytes()), original)
 
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True
+        )
         self.assertEqual(preferences.writes, 1)
 
     def test_failed_restore_can_retry_without_completion_marker(self):
         preferences = FakePreferences()
         preferences.fail = True
         with self.assertRaises(RuntimeError):
-            restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
-        self.assertFalse((restore.state_directory(self.home) / "terminal-restored").exists())
+            restore.restore_desktop(
+                "terminal", self.source, self.home, preferences, once=True
+            )
+        self.assertFalse(
+            (restore.state_directory(self.home) / "terminal-restored").exists()
+        )
         preferences.fail = False
-        restore.restore_desktop("terminal", self.source, self.home, preferences, once=True)
-        self.assertTrue((restore.state_directory(self.home) / "terminal-restored").exists())
+        restore.restore_desktop(
+            "terminal", self.source, self.home, preferences, once=True
+        )
+        self.assertTrue(
+            (restore.state_directory(self.home) / "terminal-restored").exists()
+        )
 
     def test_dock_paths_skip_missing_and_preserve_other_preferences(self):
         source = Path(self.temporary.name) / "source"
@@ -511,20 +647,35 @@ class RestoreTests(unittest.TestCase):
         items = [
             {"name": "Example", "path": str(original), "managed": True},
             {"name": "System", "path": str(system_app), "managed": False},
-            {"name": "Missing", "path": str(applications / "Missing.app"), "managed": True},
+            {
+                "name": "Missing",
+                "path": str(applications / "Missing.app"),
+                "managed": True,
+            },
         ]
         (source / "dock.json").write_text(json.dumps(items))
-        preferences = FakePreferences({"com.apple.dock": {"persistent-others": ["Downloads"], "tilesize": 64}})
+        preferences = FakePreferences(
+            {"com.apple.dock": {"persistent-others": ["Downloads"], "tilesize": 64}}
+        )
         with patch.object(restore.subprocess, "run"):
-            restore.restore_desktop("dock", source, self.home, preferences, applications=applications)
+            restore.restore_desktop(
+                "dock", source, self.home, preferences, applications=applications
+            )
         current = preferences.read("com.apple.dock")
         entries = current["persistent-apps"]
         self.assertEqual(len(entries), 2)
-        self.assertEqual(entries[0]["tile-data"]["file-data"]["_CFURLString"], managed.as_uri() + "/")
+        self.assertEqual(
+            entries[0]["tile-data"]["file-data"]["_CFURLString"], managed.as_uri() + "/"
+        )
         self.assertEqual(current["persistent-others"], ["Downloads"])
         self.assertEqual(current["tilesize"], 64)
         managed.rmdir()
-        self.assertEqual(restore.dock_entries(items, applications)[0]["tile-data"]["file-data"]["_CFURLString"], original.as_uri() + "/")
+        self.assertEqual(
+            restore.dock_entries(items, applications)[0]["tile-data"]["file-data"][
+                "_CFURLString"
+            ],
+            original.as_uri() + "/",
+        )
 
     def test_empty_dock_does_not_write_or_mark_complete(self):
         source = Path(self.temporary.name) / "source"
@@ -539,7 +690,9 @@ class RestoreTests(unittest.TestCase):
     def test_zed_setup_merges_jsonc_and_reports_pending_downloads(self):
         target = self.home / ".config/zed/settings.json"
         target.parent.mkdir(parents=True)
-        target.write_text('{// user comment\n"buffer_font_size": 19, "auto_install_extensions": {"extra": true},}')
+        target.write_text(
+            '{// user comment\n"buffer_font_size": 19, "auto_install_extensions": {"extra": true},}'
+        )
         extensions = [{"id": "nix", "version": "1"}]
         editors.setup_zed(extensions, self.home)
         value = json.loads(target.read_text())
@@ -547,7 +700,10 @@ class RestoreTests(unittest.TestCase):
         self.assertEqual(value["auto_install_extensions"], {"extra": True, "nix": True})
         with self.assertRaisesRegex(RuntimeError, "not installed yet"):
             editors.verify_zed(extensions, self.home)
-        installed = self.home / "Library/Application Support/Zed/extensions/installed/nix/extension.toml"
+        installed = (
+            self.home
+            / "Library/Application Support/Zed/extensions/installed/nix/extension.toml"
+        )
         installed.parent.mkdir(parents=True)
         installed.touch()
         editors.verify_zed(extensions, self.home)
@@ -561,26 +717,55 @@ class RestoreTests(unittest.TestCase):
             calls.append(args)
             if "--list-extensions" in args:
                 return subprocess.CompletedProcess(args, 0, "EXISTING.extension\n", "")
-            return subprocess.CompletedProcess(args, int(args[-1] == "missing.extension"))
+            return subprocess.CompletedProcess(
+                args, int(args[-1] == "missing.extension")
+            )
 
         with self.assertRaisesRegex(RuntimeError, "missing.extension"):
-            editors.setup_code([{"id": x} for x in ["existing.extension", "missing.extension", "another.extension"]], cli, run)
+            editors.setup_code(
+                [
+                    {"id": x}
+                    for x in [
+                        "existing.extension",
+                        "missing.extension",
+                        "another.extension",
+                    ]
+                ],
+                cli,
+                run,
+            )
         self.assertEqual(len(calls), 3)
         self.assertEqual(calls[-1][-1], "another.extension")
 
     def run_editor_setup(self, editor, *options):
-        arguments = ["setup-editors", editor, "--source", str(self.source), "--home", str(self.home), *options]
-        with patch.object(sys, "argv", arguments), patch.object(editors.os, "geteuid", return_value=501):
+        arguments = [
+            "setup-editors",
+            editor,
+            "--source",
+            str(self.source),
+            "--home",
+            str(self.home),
+            *options,
+        ]
+        with (
+            patch.object(sys, "argv", arguments),
+            patch.object(editors.os, "geteuid", return_value=501),
+        ):
             return editors.main()
 
     def test_editor_selection_only_seeds_selected_settings(self):
         for selected, other in [("code", "zed"), ("zed", "code")]:
             with self.subTest(editor=selected):
                 self.home = Path(self.temporary.name) / selected
-                with patch.object(editors, "setup_code") as code, patch.object(editors, "setup_zed") as zed:
+                with (
+                    patch.object(editors, "setup_code") as code,
+                    patch.object(editors, "setup_zed") as zed,
+                ):
                     self.assertEqual(self.run_editor_setup(selected), 0)
                 files = json.loads((self.source / "editor-files.json").read_text())
-                self.assertTrue((self.home / files[f"{selected}-settings.json"]).is_file())
+                self.assertTrue(
+                    (self.home / files[f"{selected}-settings.json"]).is_file()
+                )
                 self.assertFalse((self.home / files[f"{other}-settings.json"]).exists())
                 self.assertEqual(code.called, selected == "code")
                 self.assertEqual(zed.called, selected == "zed")
@@ -594,8 +779,13 @@ class RestoreTests(unittest.TestCase):
 
     def test_all_editors_continue_after_seeding_failure(self):
         self.home.mkdir()
-        (self.home / "Library").write_text("Cannot create VS Code settings under this file")
-        with patch.object(editors, "setup_code") as code, patch.object(editors, "setup_zed") as zed:
+        (self.home / "Library").write_text(
+            "Cannot create VS Code settings under this file"
+        )
+        with (
+            patch.object(editors, "setup_code") as code,
+            patch.object(editors, "setup_zed") as zed,
+        ):
             self.assertEqual(self.run_editor_setup("all"), 1)
         code.assert_not_called()
         zed.assert_called_once()
@@ -609,8 +799,14 @@ class RestoreTests(unittest.TestCase):
 
     def test_developer_tools_require_full_xcode_and_completed_first_launch(self):
         def run(args, **kwargs):
-            outputs = {"-p": "/Applications/Xcode.app/Contents/Developer", "--show-sdk-path": "/sdk", "clang": "/clang"}
-            return subprocess.CompletedProcess(args, 0, outputs.get(args[-1], "ready"), "")
+            outputs = {
+                "-p": "/Applications/Xcode.app/Contents/Developer",
+                "--show-sdk-path": "/sdk",
+                "clang": "/clang",
+            }
+            return subprocess.CompletedProcess(
+                args, 0, outputs.get(args[-1], "ready"), ""
+            )
 
         self.assertEqual(development.verify(run, lambda _: True), 0)
 
@@ -623,7 +819,9 @@ class RestoreTests(unittest.TestCase):
 
         def clt_only(args, **kwargs):
             if args[-1] == "-p":
-                return subprocess.CompletedProcess(args, 0, "/Library/Developer/CommandLineTools", "")
+                return subprocess.CompletedProcess(
+                    args, 0, "/Library/Developer/CommandLineTools", ""
+                )
             return run(args, **kwargs)
 
         self.assertEqual(development.verify(clt_only, lambda _: True), 1)

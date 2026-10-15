@@ -1,12 +1,9 @@
 """Install writable vendor app bundles, preserving self-updates on later rebuilds."""
 
 import argparse
-from contextlib import contextmanager
-from datetime import datetime, timezone
 import fcntl
 import json
 import os
-from pathlib import Path
 import plistlib
 import shutil
 import stat
@@ -15,6 +12,9 @@ import tempfile
 import time
 import uuid
 import zipfile
+from contextlib import contextmanager
+from datetime import UTC, datetime
+from pathlib import Path
 
 
 def find_bundle(root):
@@ -25,7 +25,9 @@ def find_bundle(root):
     def walk_error(error):
         raise error
 
-    for directory, directories, _ in os.walk(root, followlinks=False, onerror=walk_error):
+    for directory, directories, _ in os.walk(
+        root, followlinks=False, onerror=walk_error
+    ):
         descend = []
         for name in sorted(directories):
             path = Path(directory) / name
@@ -38,8 +40,10 @@ def find_bundle(root):
         directories[:] = descend
     if len(candidates) != 1:
         found = ", ".join(str(path.relative_to(root)) for path in candidates) or "none"
-        raise ValueError(f"Expected exactly one app bundle, found {len(candidates)} ({found})")
-    app, = candidates
+        raise ValueError(
+            f"Expected exactly one app bundle, found {len(candidates)} ({found})"
+        )
+    (app,) = candidates
     if not app.name.endswith(".app") or not (app / "Contents/Info.plist").is_file():
         raise ValueError(f"Missing or invalid app bundle: {app}")
     return app
@@ -53,11 +57,24 @@ def unpack(entry):
         if entry["format"] == "dmg":
             candidate = root / "mount"
             candidate.mkdir()
-            subprocess.run(["/usr/bin/hdiutil", "attach", "-readonly", "-nobrowse", "-mountpoint", str(candidate), entry["source"]], check=True)
+            subprocess.run(
+                [
+                    "/usr/bin/hdiutil",
+                    "attach",
+                    "-readonly",
+                    "-nobrowse",
+                    "-mountpoint",
+                    str(candidate),
+                    entry["source"],
+                ],
+                check=True,
+            )
             mount = candidate
             yield find_bundle(mount)
         elif entry["format"] == "zip":
-            subprocess.run(["/usr/bin/ditto", "-xk", entry["source"], str(root)], check=True)
+            subprocess.run(
+                ["/usr/bin/ditto", "-xk", entry["source"], str(root)], check=True
+            )
             yield find_bundle(root)
         else:
             raise ValueError(f"Unsupported app format: {entry['format']}")
@@ -66,7 +83,9 @@ def unpack(entry):
             try:
                 subprocess.run(["/usr/bin/hdiutil", "detach", str(mount)], check=True)
             except subprocess.SubprocessError:
-                print(f"Image remains mounted at {mount}; detach it before removing {root}")
+                print(
+                    f"Image remains mounted at {mount}; detach it before removing {root}"
+                )
                 raise
         shutil.rmtree(root)
 
@@ -74,12 +93,24 @@ def unpack(entry):
 def archive_bundle(source, backups):
     """Keep a verified native ZIP outside vendor bundle discovery/relocation."""
     backups.mkdir(parents=True, exist_ok=True, mode=0o700)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     backup = backups / f"{source.name}.{stamp}-{uuid.uuid4().hex[:8]}.zip.bckp"
     with tempfile.TemporaryDirectory(prefix=".archive-", dir=backups) as directory:
         staged = Path(directory) / "bundle.zip"
-        subprocess.run(["/usr/bin/ditto", "-c", "-k", "--sequesterRsrc", "--keepParent",
-                        "--rsrc", "--extattr", str(source), str(staged)], check=True)
+        subprocess.run(
+            [
+                "/usr/bin/ditto",
+                "-c",
+                "-k",
+                "--sequesterRsrc",
+                "--keepParent",
+                "--rsrc",
+                "--extattr",
+                str(source),
+                str(staged),
+            ],
+            check=True,
+        )
         with zipfile.ZipFile(staged) as archive:
             if not archive.namelist() or archive.testzip() is not None:
                 raise RuntimeError(f"Invalid app backup: {source}")
@@ -89,24 +120,36 @@ def archive_bundle(source, backups):
     return backup
 
 
-def install_bundle(source, destination, backups, replace=False, remove_quarantine=False):
+def install_bundle(
+    source, destination, backups, replace=False, remove_quarantine=False
+):
     """Stage a complete native copy before moving the old bundle to its backup."""
-    if destination.exists() or destination.is_symlink():
-        if not replace:
-            print(f"Keeping installed app: {destination}")
-            return
+    if (destination.exists() or destination.is_symlink()) and not replace:
+        print(f"Keeping installed app: {destination}")
+        return
     info = plistlib.loads((source / "Contents/Info.plist").read_bytes())
     if not info.get("CFBundleIdentifier"):
         raise ValueError(f"Missing bundle identifier: {source}")
     destination.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix=".mac-config-", dir=destination.parent) as directory:
+    with tempfile.TemporaryDirectory(
+        prefix=".mac-config-", dir=destination.parent
+    ) as directory:
         staged = Path(directory) / destination.name
-        subprocess.run(["/usr/bin/ditto", "--rsrc", "--extattr", str(source), str(staged)], check=True)
+        subprocess.run(
+            ["/usr/bin/ditto", "--rsrc", "--extattr", str(source), str(staged)],
+            check=True,
+        )
         if remove_quarantine:
-            subprocess.run(["/usr/bin/xattr", "-dr", "com.apple.quarantine", str(staged)], check=True)
+            subprocess.run(
+                ["/usr/bin/xattr", "-dr", "com.apple.quarantine", str(staged)],
+                check=True,
+            )
         # Read-only source images must not disable the installed app's updater.
         for root, directories, files in os.walk(staged):
-            for path in [Path(root), *(Path(root) / name for name in directories + files)]:
+            for path in [
+                Path(root),
+                *(Path(root) / name for name in directories + files),
+            ]:
                 if not path.is_symlink():
                     path.chmod(stat.S_IMODE(path.stat().st_mode) | stat.S_IWUSR)
         backup = None
@@ -116,7 +159,9 @@ def install_bundle(source, destination, backups, replace=False, remove_quarantin
                 return
             backups.mkdir(parents=True, exist_ok=True, mode=0o700)
             if backups.stat().st_dev != destination.parent.stat().st_dev:
-                raise RuntimeError("App backups must be on the same filesystem as /Applications for atomic replacement")
+                raise RuntimeError(
+                    "App backups must be on the same filesystem as /Applications for atomic replacement"
+                )
             quit_running_app(destination)
             archive_bundle(destination, backups)
             backup = backups / f".retired-{uuid.uuid4().hex}-{destination.name}"
@@ -134,20 +179,30 @@ def install_bundle(source, destination, backups, replace=False, remove_quarantin
                 else:
                     shutil.rmtree(backup)
             except OSError as error:
-                print(f"Installed successfully; archived old bundle also remains at {backup}: {error}")
+                print(
+                    f"Installed successfully; archived old bundle also remains at {backup}: {error}"
+                )
     print(f"Installed {destination.name} {info.get('CFBundleShortVersionString', '')}")
 
 
 def quit_running_app(target):
     def running():
-        result = subprocess.run(["/bin/ps", "-axo", "comm="], capture_output=True, text=True, check=True)
-        return any(line.startswith(str(target) + "/") for line in result.stdout.splitlines())
+        result = subprocess.run(
+            ["/bin/ps", "-axo", "comm="], capture_output=True, text=True, check=True
+        )
+        return any(
+            line.startswith(str(target) + "/") for line in result.stdout.splitlines()
+        )
 
     if not running():
         return
     info = plistlib.loads((target / "Contents/Info.plist").read_bytes())
     identifier = json.dumps(info["CFBundleIdentifier"])
-    subprocess.run(["/usr/bin/osascript", "-e", f"tell application id {identifier} to quit"], check=True, timeout=60)
+    subprocess.run(
+        ["/usr/bin/osascript", "-e", f"tell application id {identifier} to quit"],
+        check=True,
+        timeout=60,
+    )
     for _ in range(20):
         if not running():
             return
@@ -159,9 +214,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--manifest", type=Path)
-    mode.add_argument("--find-bundle", type=Path, help="Print the selected bundle path without installing (used during builds)")
+    mode.add_argument(
+        "--find-bundle",
+        type=Path,
+        help="Print the selected bundle path without installing (used during builds)",
+    )
     parser.add_argument("--applications", type=Path, default=Path("/Applications"))
-    parser.add_argument("--backups", type=Path, default=Path.home() / ".local/state/nix-macos-config/apps")
+    parser.add_argument(
+        "--backups",
+        type=Path,
+        default=Path.home() / ".local/state/nix-macos-config/apps",
+    )
     parser.add_argument("--replace-existing", action="store_true")
     parser.add_argument("--only", nargs="+", help="Install only these inventory names")
     args = parser.parse_args()
@@ -172,7 +235,9 @@ def main():
             parser.exit(1, f"{error}\n")
         return 0
     if os.geteuid() == 0:
-        parser.error("Run as the configured user so installed apps remain user-writable")
+        parser.error(
+            "Run as the configured user so installed apps remain user-writable"
+        )
     manifest = json.loads(args.manifest.read_text())
     if args.only:
         unknown = set(args.only) - manifest.keys()
@@ -182,24 +247,46 @@ def main():
     failed = False
     for name, entry in manifest.items():
         target = args.applications / entry["appName"] if entry.get("appName") else None
-        if target is not None and (target.exists() or target.is_symlink()) and not args.replace_existing:
+        if (
+            target is not None
+            and (target.exists() or target.is_symlink())
+            and not args.replace_existing
+        ):
             print(f"Keeping installed app: {target}")
             continue
         try:
             args.applications.mkdir(parents=True, exist_ok=True)
-            descriptor = os.open(args.applications / ".mac-config-install.lock",
-                                 os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+            descriptor = os.open(
+                args.applications / ".mac-config-install.lock",
+                os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW,
+                0o600,
+            )
             with os.fdopen(descriptor, "a") as lock:
                 fcntl.flock(lock, fcntl.LOCK_EX)
                 # Another activation may have installed it while this one waited.
-                if target is not None and (target.exists() or target.is_symlink()) and not args.replace_existing:
+                if (
+                    target is not None
+                    and (target.exists() or target.is_symlink())
+                    and not args.replace_existing
+                ):
                     print(f"Keeping installed app: {target}")
                     continue
                 with unpack(entry) as source:
                     target = target or args.applications / source.name
-                    install_bundle(source, target, args.backups, replace=args.replace_existing,
-                                   remove_quarantine=entry.get("removeQuarantine", False))
-        except (OSError, ValueError, RuntimeError, zipfile.BadZipFile, subprocess.SubprocessError) as error:
+                    install_bundle(
+                        source,
+                        target,
+                        args.backups,
+                        replace=args.replace_existing,
+                        remove_quarantine=entry.get("removeQuarantine", False),
+                    )
+        except (
+            OSError,
+            ValueError,
+            RuntimeError,
+            zipfile.BadZipFile,
+            subprocess.SubprocessError,
+        ) as error:
             print(f"Failed to install {name}: {error}")
             failed = True
     return int(failed)

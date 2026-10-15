@@ -17,11 +17,17 @@ class Preferences:
             "CFPreferencesCopyMultiple": ([pointer] * 4, pointer),
             "CFPreferencesSetMultiple": ([pointer] * 5, None),
             "CFPreferencesSynchronize": ([pointer] * 3, ct.c_bool),
-            "CFPropertyListCreateData": ([pointer, pointer, index, ct.c_ulong, pointer], pointer),
+            "CFPropertyListCreateData": (
+                [pointer, pointer, index, ct.c_ulong, pointer],
+                pointer,
+            ),
             "CFDataGetLength": ([pointer], index),
             "CFDataGetBytePtr": ([pointer], pointer),
             "CFDataCreate": ([pointer, ct.c_char_p, index], pointer),
-            "CFPropertyListCreateWithData": ([pointer, pointer, ct.c_ulong, pointer, pointer], pointer),
+            "CFPropertyListCreateWithData": (
+                [pointer, pointer, ct.c_ulong, pointer, pointer],
+                pointer,
+            ),
             "CFRelease": ([pointer], None),
         }
         for name, (arguments, result) in signatures.items():
@@ -43,7 +49,9 @@ class Preferences:
             data = self.cf.CFPropertyListCreateData(None, value, 200, 0, None)
             if not data:
                 raise RuntimeError(f"Cannot serialize preferences: {domain}")
-            raw = ct.string_at(self.cf.CFDataGetBytePtr(data), self.cf.CFDataGetLength(data))
+            raw = ct.string_at(
+                self.cf.CFDataGetBytePtr(data), self.cf.CFDataGetLength(data)
+            )
             return plistlib.loads(raw)
         finally:
             for item in (data, value, app):

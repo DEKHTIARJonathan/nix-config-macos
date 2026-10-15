@@ -1,7 +1,7 @@
 """Check Apple developer tools without installing or changing anything."""
 
-from pathlib import Path
 import subprocess
+from pathlib import Path
 
 
 def verify(runner=subprocess.run, exists=lambda path: Path(path).exists()):
@@ -16,7 +16,9 @@ def verify(runner=subprocess.run, exists=lambda path: Path(path).exists()):
             failed = True
             return None
         if result.returncode:
-            detail = (result.stderr or result.stdout).strip() or f"exit status {result.returncode}"
+            detail = (
+                result.stderr or result.stdout
+            ).strip() or f"exit status {result.returncode}"
             print(f"FAIL {label}: {detail}")
             failed = True
             return None
@@ -24,15 +26,32 @@ def verify(runner=subprocess.run, exists=lambda path: Path(path).exists()):
         return result.stdout.strip()
 
     selected = command("Selected developer directory", ["/usr/bin/xcode-select", "-p"])
-    if not selected or not selected.endswith(".app/Contents/Developer") or not exists(selected):
-        print("FAIL Select a full Xcode installation with sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer")
+    if (
+        not selected
+        or not selected.endswith(".app/Contents/Developer")
+        or not exists(selected)
+    ):
+        print(
+            "FAIL Select a full Xcode installation with sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer"
+        )
         failed = True
     command("Xcode version", ["/usr/bin/xcodebuild", "-version"])
-    if command("Xcode first-launch readiness", ["/usr/bin/xcodebuild", "-checkFirstLaunchStatus"]) is None:
+    if (
+        command(
+            "Xcode first-launch readiness",
+            ["/usr/bin/xcodebuild", "-checkFirstLaunchStatus"],
+        )
+        is None
+    ):
         print("Open Xcode to accept its license and complete first-launch setup.")
-    command("Command Line Tools receipt", ["/usr/sbin/pkgutil", "--pkg-info", "com.apple.pkg.CLTools_Executables"])
+    command(
+        "Command Line Tools receipt",
+        ["/usr/sbin/pkgutil", "--pkg-info", "com.apple.pkg.CLTools_Executables"],
+    )
     if not exists("/Library/Developer/CommandLineTools/usr/bin/clang"):
-        print("FAIL Command Line Tools files missing; install them using xcode-select --install")
+        print(
+            "FAIL Command Line Tools files missing; install them using xcode-select --install"
+        )
         failed = True
     for label, args in [
         ("clang", ["/usr/bin/xcrun", "--find", "clang"]),

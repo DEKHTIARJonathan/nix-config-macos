@@ -22,7 +22,7 @@ repos:
   # Markdown formatting
   # -------------------------
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.9.9
+    rev: v3.9.10
     hooks:
       - id: prettier
         name: prettier markdown
@@ -54,3 +54,29 @@ repos:
         # Use nixfmt from PATH instead of building it with Cabal.
         language: system
         types: [nix]
+
+  # -------------------------
+  # Python formatting
+  # -------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.0
+    hooks:
+      # Linter
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+
+      # Formatter
+      - id: ruff-format
+
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.4.0  # check for the latest version
+    hooks:
+      - id: autoflake
+        args:
+          [
+            "--in-place",
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+            "--expand-star-imports",
+          ]
+        additional_dependencies: ["autoflake"]

@@ -1,18 +1,18 @@
 """Test bootstrap control flow with fake installers and developer tools."""
 
 import os
-from pathlib import Path
 import shlex
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts/setup.sh"
 
 # Every system probe/installer is mocked. Only Bash and temporary-file utilities
 # run for real, so these tests also work on Linux without Nix or Apple tools.
-MOCKS = r'''
+MOCKS = r"""
 record() { printf '%s\n' "$*" >> "$TEST_ROOT/calls"; }
 uname() {
     if [[ $1 == -s ]]; then printf '%s\n' "${TEST_OS:-Darwin}";
@@ -60,7 +60,7 @@ if [ "${INSTALL_STATUS:-0}" != 0 ]; then exit "$INSTALL_STATUS"; fi
 if [ "${INSTALL_NO_NIX:-0}" = 0 ]; then touch "$TEST_ROOT/nix-ready"; fi
 INSTALLER
 }
-'''
+"""
 
 
 class SetupTests(unittest.TestCase):
@@ -75,9 +75,18 @@ class SetupTests(unittest.TestCase):
         env = dict(os.environ, TEST_ROOT=str(self.root), TMPDIR=str(self.root))
         env.update(variables)
         result = subprocess.run(
-            ["/bin/bash", "--noprofile", "--norc", "-c",
-             f"source {shlex.quote(str(SCRIPT))}\n{MOCKS}\n{body}"],
-            env=env, text=True, capture_output=True, timeout=10,
+            [
+                "/bin/bash",
+                "--noprofile",
+                "--norc",
+                "-c",
+                f"source {shlex.quote(str(SCRIPT))}\n{MOCKS}\n{body}",
+            ],
+            check=False,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=10,
         )
         calls = self.root / "calls"
         self.calls = calls.read_text() if calls.exists() else ""
@@ -177,21 +186,25 @@ class SetupTests(unittest.TestCase):
         self.assertNotIn("nix --version", self.calls)
 
     def test_wrong_platform_or_root_is_rejected_before_work(self):
-        for variables in ({"TEST_OS": "Linux"}, {"TEST_ARCH": "x86_64"}, {"TEST_UID": "0"}):
+        for variables in (
+            {"TEST_OS": "Linux"},
+            {"TEST_ARCH": "x86_64"},
+            {"TEST_UID": "0"},
+        ):
             with self.subTest(variables=variables):
                 result = self.run_setup(**variables)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertEqual(self.calls, "")
 
     def test_path_fallbacks_preserve_existing_precedence(self):
-        result = self.run_setup(r'''
+        result = self.run_setup(r"""
 original_path=$PATH
 ensure_developer_tools() { :; }
 ensure_nix() {
     [[ $PATH == "$original_path:/nix/var/nix/profiles/default/bin:$HOME/.nix-profile/bin" ]]
 }
 main
-''')
+""")
         self.assert_success(result)
 
 

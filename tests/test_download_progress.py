@@ -2,12 +2,11 @@
 
 import io
 import json
-from pathlib import Path
 import selectors
 import subprocess
 import sys
 import unittest
-
+from pathlib import Path
 
 WRAPPER = Path(__file__).resolve().parent.parent / "scripts/curl_progress.py"
 sys.path.insert(0, str(WRAPPER.parent))
@@ -27,18 +26,29 @@ class DownloadProgressTests(unittest.TestCase):
         )
         with subprocess.Popen(
             [sys.executable, str(WRAPPER), sys.executable, "-c", child],
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         ) as process:
             try:
                 with selectors.DefaultSelector() as selector:
                     selector.register(process.stderr, selectors.EVENT_READ)
-                    self.assertTrue(selector.select(timeout=5), "Progress was buffered until completion")
+                    self.assertTrue(
+                        selector.select(timeout=5),
+                        "Progress was buffered until completion",
+                    )
                 progress = process.stderr.read1(4096)
-                self.assertEqual(json.loads(progress[5:]), {"action": "setPhase", "phase": "download 25.0%"})
+                self.assertEqual(
+                    json.loads(progress[5:]),
+                    {"action": "setPhase", "phase": "download 25.0%"},
+                )
                 self.assertIsNone(process.poll())
                 output, errors = process.communicate(b"continue\n", timeout=5)
                 self.assertEqual(output, b"payload\x00\r\n")
-                self.assertEqual(json.loads(errors[5:]), {"action": "setPhase", "phase": "download 100.0%"})
+                self.assertEqual(
+                    json.loads(errors[5:]),
+                    {"action": "setPhase", "phase": "download 100.0%"},
+                )
                 self.assertEqual(process.returncode, 0)
             finally:
                 if process.poll() is None:
@@ -51,7 +61,9 @@ class DownloadProgressTests(unittest.TestCase):
         self.assertEqual(output.getvalue(), b"")
         progress.feed(b"5.0%\r### 26.0%\r### 27.0%\r### 100.0%\r")
         events = [json.loads(line[5:]) for line in output.getvalue().splitlines()]
-        self.assertEqual([event["phase"] for event in events], ["download 25.0%", "download 100.0%"])
+        self.assertEqual(
+            [event["phase"] for event in events], ["download 25.0%", "download 100.0%"]
+        )
         self.assertNotIn(b"success", output.getvalue())
 
     def test_retry_progress_can_restart_and_unknown_sizes_are_explicit(self):
@@ -66,9 +78,16 @@ class DownloadProgressTests(unittest.TestCase):
 
     def test_curl_failure_and_unterminated_error_are_preserved(self):
         result = subprocess.run(
-            [sys.executable, str(WRAPPER), sys.executable, "-c",
-             "import sys; sys.stderr.write('curl: connection failed'); sys.exit(22)"],
-            capture_output=True, timeout=5,
+            [
+                sys.executable,
+                str(WRAPPER),
+                sys.executable,
+                "-c",
+                "import sys; sys.stderr.write('curl: connection failed'); sys.exit(22)",
+            ],
+            check=False,
+            capture_output=True,
+            timeout=5,
         )
         self.assertEqual(result.returncode, 22)
         self.assertEqual(result.stderr, b"curl: connection failed")

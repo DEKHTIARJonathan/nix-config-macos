@@ -7,7 +7,6 @@ import subprocess
 import sys
 import time
 
-
 PERCENT = re.compile(rb"[ #]*([0-9]+(?:\.[0-9]+)?)%")
 
 
@@ -37,8 +36,14 @@ class Progress:
                 self.output.flush()
             return
         now = self.clock()
-        restarted = percent is not None and self.last_percent is not None and percent < self.last_percent
-        if phase != self.last_phase and (now - self.last_time >= 0.5 or percent == 100 or restarted):
+        restarted = (
+            percent is not None
+            and self.last_percent is not None
+            and percent < self.last_percent
+        )
+        if phase != self.last_phase and (
+            now - self.last_time >= 0.5 or percent == 100 or restarted
+        ):
             event = {"action": "setPhase", "phase": phase}
             self.output.write(b"@nix " + json.dumps(event).encode() + b"\n")
             self.output.flush()

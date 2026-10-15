@@ -1,9 +1,9 @@
 """Exercise JDK discovery registration using only temporary directories."""
 
-from pathlib import Path
 import sys
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -18,11 +18,22 @@ class JavaRegistrationTests(unittest.TestCase):
         self.root = Path(temporary.name)
         self.store = self.root / "store"
         self.registry = self.root / "JavaVirtualMachines"
-        self.bundles = {version: self.bundle(version, "initial") for version in ("21", "25")}
+        self.bundles = {
+            version: self.bundle(version, "initial") for version in ("21", "25")
+        }
 
     def bundle(self, version, revision):
-        bundle = self.store / f"{revision}-zulu-{version}" / "Library/Java/JavaVirtualMachines" / f"zulu-{version}.jdk"
-        for member in ("Contents/Info.plist", "Contents/Home/bin/java", "Contents/Home/bin/javac"):
+        bundle = (
+            self.store
+            / f"{revision}-zulu-{version}"
+            / "Library/Java/JavaVirtualMachines"
+            / f"zulu-{version}.jdk"
+        )
+        for member in (
+            "Contents/Info.plist",
+            "Contents/Home/bin/java",
+            "Contents/Home/bin/javac",
+        ):
             path = bundle / member
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(f"fixture {version} {member}")
@@ -38,7 +49,11 @@ class JavaRegistrationTests(unittest.TestCase):
             self.assertEqual(link.readlink(), bundle)
             self.assertTrue((link / "Contents/Info.plist").is_file())
             self.assertTrue((link / "Contents/Home/bin/javac").is_file())
-        with patch.object(register_java.os, "replace", side_effect=AssertionError("unexpected rewrite")):
+        with patch.object(
+            register_java.os,
+            "replace",
+            side_effect=AssertionError("unexpected rewrite"),
+        ):
             self.register()
 
     def test_updates_and_rolls_back_links_without_touching_other_jdks(self):
@@ -59,7 +74,10 @@ class JavaRegistrationTests(unittest.TestCase):
     def test_repairs_dangling_managed_link(self):
         self.registry.mkdir()
         link = self.registry / "nix-jdk-21.jdk"
-        link.symlink_to(self.store / "removed-generation/Library/Java/JavaVirtualMachines/zulu-21.jdk")
+        link.symlink_to(
+            self.store
+            / "removed-generation/Library/Java/JavaVirtualMachines/zulu-21.jdk"
+        )
         self.register()
         self.assertEqual(link.readlink(), self.bundles["21"])
 
@@ -107,13 +125,19 @@ class JavaRegistrationTests(unittest.TestCase):
         self.register()
         previous = self.bundles["21"]
         self.bundles["21"] = self.bundle("21", "upgrade")
-        with patch.object(register_java.os, "replace", side_effect=OSError("simulated failure")):
-            with self.assertRaisesRegex(OSError, "simulated failure"):
-                self.register()
+        with (
+            patch.object(
+                register_java.os, "replace", side_effect=OSError("simulated failure")
+            ),
+            self.assertRaisesRegex(OSError, "simulated failure"),
+        ):
+            self.register()
         self.assertEqual((self.registry / "nix-jdk-21.jdk").readlink(), previous)
         self.assertFalse(list(self.registry.glob(".nix-jdks-*")))
         self.register()
-        self.assertEqual((self.registry / "nix-jdk-21.jdk").readlink(), self.bundles["21"])
+        self.assertEqual(
+            (self.registry / "nix-jdk-21.jdk").readlink(), self.bundles["21"]
+        )
 
 
 if __name__ == "__main__":

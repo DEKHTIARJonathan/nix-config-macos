@@ -1,18 +1,17 @@
 """Seed writable shell/editor files and restore captured Dock/Terminal preferences."""
 
 import argparse
-from datetime import datetime, timezone
 import json
 import os
-from pathlib import Path
 import plistlib
 import shutil
 import subprocess
 import tempfile
 import uuid
+from datetime import UTC, datetime
+from pathlib import Path
 
 import json5
-
 from mac_preferences import Preferences
 
 
@@ -38,7 +37,7 @@ def state_directory(home):
 def backup_path(home, name):
     folder = state_directory(home) / "backups"
     folder.mkdir(parents=True, exist_ok=True, mode=0o700)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return folder / f"{stamp}-{uuid.uuid4().hex[:8]}-{name}"
 
 
@@ -62,14 +61,21 @@ def seed_zshrc(home, dry_run=False, *, store=Path("/nix/store")):
     managed_link = False
     if target.is_symlink():
         link = target.readlink()
-        managed_link = link.parent.parent == store and link.parent.name.endswith("-home-manager-files") and link.name == ".zshrc"
+        managed_link = (
+            link.parent.parent == store
+            and link.parent.name.endswith("-home-manager-files")
+            and link.name == ".zshrc"
+        )
         if not managed_link:
             raise RuntimeError(f"Refusing to replace an unmanaged symlink: {target}")
     current = target.read_bytes() if exists else b""
     if not managed_link and loader in current.splitlines(keepends=True):
         print(f"Keeping {target}")
         return
-    content = b"# Nix settings load first; application setup may edit this writable file.\n" + loader
+    content = (
+        b"# Nix settings load first; application setup may edit this writable file.\n"
+        + loader
+    )
     if not managed_link:
         content += current
     print(f"{'Would restore' if dry_run else 'Restoring'} writable {target}")
@@ -121,23 +127,34 @@ def restore_editor_fonts(source, home, dry_run=False):
         target = home / files[name]
         # Check inside the configured home; macOS itself aliases /var to
         # /private/var, including temporary homes used by the test suite.
-        parents = [parent for parent in target.parents if parent == home or home in parent.parents]
+        parents = [
+            parent
+            for parent in target.parents
+            if parent == home or home in parent.parents
+        ]
         if target.is_symlink() or any(parent.is_symlink() for parent in parents):
-            raise RuntimeError(f"Refusing to write terminal font through a symlink: {target}")
+            raise RuntimeError(
+                f"Refusing to write terminal font through a symlink: {target}"
+            )
         if not target.exists():
             print(f"Skipping missing editor settings: {target}")
             continue
         original = target.read_bytes()
         settings = json5.loads(original.decode(), allow_duplicate_keys=False)
         if not isinstance(settings, dict):
-            raise ValueError(f"Expected an object in {target}")
+            # Invalid file content, not an invalid caller argument type.
+            raise ValueError(f"Expected an object in {target}")  # noqa: TRY004
         seed = json.loads((source / name).read_text())
         if editor == "code":
             key = "terminal.integrated.fontFamily"
             profiles_key = "workbench.settings.applyToAllProfiles"
             profiles = settings.get(profiles_key, [])
-            if not isinstance(profiles, list) or not all(isinstance(item, str) for item in profiles):
-                raise ValueError(f"Expected a string array for {profiles_key} in {target}")
+            if not isinstance(profiles, list) or not all(
+                isinstance(item, str) for item in profiles
+            ):
+                raise ValueError(
+                    f"Expected a string array for {profiles_key} in {target}"
+                )
             if settings.get(key) == seed[key] and key in profiles:
                 continue
             settings[key] = seed[key]
@@ -167,29 +184,40 @@ def restore_gitkraken_fonts(source, home, dry_run=False):
     # Its in-memory profile can still overwrite this setting when saved.
     for parent in (home, profiles.parent, profiles):
         if parent.is_symlink():
-            raise RuntimeError(f"Refusing to write terminal font through a symlink: {parent}")
+            raise RuntimeError(
+                f"Refusing to write terminal font through a symlink: {parent}"
+            )
     if not profiles.exists():
         return
     # GitKraken quotes font option values containing spaces and compares them
     # literally at startup. An unquoted MesloLGS NF is reset to the default
     # (Menlo), even though it is a valid CSS font family and is installed.
-    family = json.loads((source / "zed-settings.json").read_text())["terminal"]["font_family"]
+    family = json.loads((source / "zed-settings.json").read_text())["terminal"][
+        "font_family"
+    ]
     font = json.dumps(family, ensure_ascii=False)
     pending = []
     for folder in sorted(profiles.iterdir()):
         if folder.is_symlink():
-            raise RuntimeError(f"Refusing to write terminal font through a symlink: {folder}")
+            raise RuntimeError(
+                f"Refusing to write terminal font through a symlink: {folder}"
+            )
         if not folder.is_dir():
             continue
         target = folder / "profile"
         if target.is_symlink():
-            raise RuntimeError(f"Refusing to write terminal font through a symlink: {target}")
+            raise RuntimeError(
+                f"Refusing to write terminal font through a symlink: {target}"
+            )
         if not target.exists():
             continue
         original = target.read_bytes()
         settings = json5.loads(original.decode(), allow_duplicate_keys=False)
-        if not isinstance(settings, dict) or not isinstance(settings.get("cli", {}), dict):
-            raise ValueError(f"Expected profile and cli objects in {target}")
+        if not isinstance(settings, dict) or not isinstance(
+            settings.get("cli", {}), dict
+        ):
+            # Invalid file content, not an invalid caller argument type.
+            raise ValueError(f"Expected profile and cli objects in {target}")  # noqa: TRY004
         cli = settings.get("cli", {})
         if cli.get("fontFamily") == font:
             continue
@@ -215,35 +243,64 @@ def restore_editor_keybindings(source, home, dry_run=False):
         folder = (home / files[f"{editor}-settings.json"]).parent
         targets = [folder / filename]
         if editor == "code":
-            targets += [profile / filename for profile in sorted((folder / "profiles").glob("*/"))]
+            targets += [
+                profile / filename
+                for profile in sorted((folder / "profiles").glob("*/"))
+            ]
         for target in targets:
-            parents = [parent for parent in target.parents if parent == home or home in parent.parents]
+            parents = [
+                parent
+                for parent in target.parents
+                if parent == home or home in parent.parents
+            ]
             if target.is_symlink() or any(parent.is_symlink() for parent in parents):
-                raise RuntimeError(f"Refusing to write terminal key bindings through a symlink: {target}")
+                raise RuntimeError(
+                    f"Refusing to write terminal key bindings through a symlink: {target}"
+                )
             if not target.parent.exists():
                 continue
             original = target.read_bytes() if target.exists() else None
-            settings = json5.loads(original.decode(), allow_duplicate_keys=False) if original is not None else []
-            if not isinstance(settings, list) or not all(isinstance(item, dict) for item in settings):
-                raise ValueError(f"Expected an array of key binding objects in {target}")
+            settings = (
+                json5.loads(original.decode(), allow_duplicate_keys=False)
+                if original is not None
+                else []
+            )
+            if not isinstance(settings, list) or not all(
+                isinstance(item, dict) for item in settings
+            ):
+                raise ValueError(
+                    f"Expected an array of key binding objects in {target}"
+                )
             if editor == "code":
-                binding = {"key": "shift+enter", "command": "workbench.action.terminal.sendSequence",
-                           "args": {"text": "\x1b[13;2u"}, "when": "terminalFocus"}
+                binding = {
+                    "key": "shift+enter",
+                    "command": "workbench.action.terminal.sendSequence",
+                    "args": {"text": "\x1b[13;2u"},
+                    "when": "terminalFocus",
+                }
             else:
-                binding = {"context": "Terminal", "bindings": {"shift-enter": ["terminal::SendText", "\x1b[13;2u"]}}
+                binding = {
+                    "context": "Terminal",
+                    "bindings": {"shift-enter": ["terminal::SendText", "\x1b[13;2u"]},
+                }
             # Last matching user rule wins. Preserve all other shortcuts,
             # including Shift+Enter actions outside terminal focus.
             if settings and settings[-1] == binding:
                 continue
             settings = [item for item in settings if item != binding] + [binding]
-            print(f"{'Would repair' if dry_run else 'Repairing'} terminal Shift+Enter in {target}")
+            print(
+                f"{'Would repair' if dry_run else 'Repairing'} terminal Shift+Enter in {target}"
+            )
             if dry_run:
                 continue
             if original is not None:
                 backup = backup_path(home, f"{editor}-{filename}")
                 atomic_write(backup, original)
                 print(f"Backup: {backup}")
-            atomic_write(target, (json.dumps(settings, indent=2, ensure_ascii=False) + "\n").encode())
+            atomic_write(
+                target,
+                (json.dumps(settings, indent=2, ensure_ascii=False) + "\n").encode(),
+            )
 
 
 def dock_entries(items, applications=Path("/Applications")):
@@ -257,19 +314,31 @@ def dock_entries(items, applications=Path("/Applications")):
         if selected is None:
             print(f"Skipping missing app: {item['name']} ({original})")
             continue
-        entries.append({
-            "tile-data": {
-                "file-data": {"_CFURLString": selected.as_uri() + "/", "_CFURLStringType": 15},
-                "file-label": item["name"],
-                "file-type": 41,
-            },
-            "tile-type": "file-tile",
-        })
+        entries.append(
+            {
+                "tile-data": {
+                    "file-data": {
+                        "_CFURLString": selected.as_uri() + "/",
+                        "_CFURLStringType": 15,
+                    },
+                    "file-label": item["name"],
+                    "file-type": 41,
+                },
+                "tile-type": "file-tile",
+            }
+        )
     return entries
 
 
-def restore_desktop(component, source, home, preferences, once=False, dry_run=False,
-                    applications=Path("/Applications")):
+def restore_desktop(
+    component,
+    source,
+    home,
+    preferences,
+    once=False,
+    dry_run=False,
+    applications=Path("/Applications"),
+):
     marker = state_directory(home) / f"{component}-restored"
     keep_snapshot = once and marker.exists()
     if keep_snapshot and component != "terminal":
@@ -281,7 +350,9 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
         items = json.loads((source / "dock.json").read_text())
         entries = dock_entries(items, applications)
         if not entries:
-            raise RuntimeError("No Dock applications found; preferences and completion marker unchanged")
+            raise RuntimeError(
+                "No Dock applications found; preferences and completion marker unchanged"
+            )
         updates = {"persistent-apps": entries}
     elif keep_snapshot:
         # Profile restoration is one-time, but these two bindings are managed
@@ -293,10 +364,12 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
         updates = {"Window Settings": profiles}
     else:
         updates = plistlib.loads((source / "terminal.plist").read_bytes())
-        updates["Window Settings"] = terminal_keybindings({
-            **current.get("Window Settings", {}),
-            **updates["Window Settings"],
-        })
+        updates["Window Settings"] = terminal_keybindings(
+            {
+                **current.get("Window Settings", {}),
+                **updates["Window Settings"],
+            }
+        )
     print(f"{'Would restore' if dry_run else 'Restoring'} {component}")
     if dry_run:
         return
@@ -310,22 +383,59 @@ def restore_desktop(component, source, home, preferences, once=False, dry_run=Fa
     if component == "dock":
         subprocess.run(["/usr/bin/killall", "Dock"], check=False, capture_output=True)
     else:
-        print("Terminal preferences saved; existing windows are left open. Reopen Terminal to reload.")
+        print(
+            "Terminal preferences saved; existing windows are left open. Reopen Terminal to reload."
+        )
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("component", choices=["zshrc", "editors", "editor-fonts", "gitkraken-fonts", "editor-keybindings", "dock", "terminal", "all"])
-    parser.add_argument("--source", type=Path, default=Path(__file__).resolve().parent.parent / "settings")
+    parser.add_argument(
+        "component",
+        choices=[
+            "zshrc",
+            "editors",
+            "editor-fonts",
+            "gitkraken-fonts",
+            "editor-keybindings",
+            "dock",
+            "terminal",
+            "all",
+        ],
+    )
+    parser.add_argument(
+        "--source",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent / "settings",
+    )
     parser.add_argument("--home", type=Path, default=Path.home())
-    parser.add_argument("--once", action="store_true", help="Skip previously restored Dock/Terminal preferences")
-    parser.add_argument("--replace-existing", action="store_true", help="Back up and replace existing editor files")
+    parser.add_argument(
+        "--once",
+        action="store_true",
+        help="Skip previously restored Dock/Terminal preferences",
+    )
+    parser.add_argument(
+        "--replace-existing",
+        action="store_true",
+        help="Back up and replace existing editor files",
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
     dry_run = args.dry_run or bool(os.environ.get("DRY_RUN"))
     if os.geteuid() == 0 and not dry_run:
         parser.error("Run as the configured user, not root")
-    components = ["editors", "editor-fonts", "gitkraken-fonts", "editor-keybindings", "dock", "terminal"] if args.component == "all" else [args.component]
+    components = (
+        [
+            "editors",
+            "editor-fonts",
+            "gitkraken-fonts",
+            "editor-keybindings",
+            "dock",
+            "terminal",
+        ]
+        if args.component == "all"
+        else [args.component]
+    )
     failed = False
     preferences = None
     for component in components:
@@ -343,7 +453,9 @@ def main():
             else:
                 if preferences is None:
                     preferences = Preferences()
-                restore_desktop(component, args.source, args.home, preferences, args.once, dry_run)
+                restore_desktop(
+                    component, args.source, args.home, preferences, args.once, dry_run
+                )
         except (OSError, ValueError, RuntimeError) as error:
             print(f"Failed to restore {component}: {error}")
             failed = True

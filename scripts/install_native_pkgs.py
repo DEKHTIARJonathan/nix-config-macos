@@ -4,9 +4,9 @@ import argparse
 import fcntl
 import json
 import os
-from pathlib import Path
 import plistlib
 import subprocess
+from pathlib import Path
 
 
 def installed_app(path):
@@ -30,11 +30,20 @@ def install_packages(manifest, applications=Path("/Applications"), dry_run=False
             continue
         try:
             print(f"Installing {name} from {entry['source']}", flush=True)
-            subprocess.run([
-                "/usr/sbin/installer", "-pkg", entry["source"], "-target", "/",
-            ], check=True)
+            subprocess.run(
+                [
+                    "/usr/sbin/installer",
+                    "-pkg",
+                    entry["source"],
+                    "-target",
+                    "/",
+                ],
+                check=True,
+            )
             if not installed_app(target):
-                raise RuntimeError(f"Installer completed but expected app is missing or invalid: {target}")
+                raise RuntimeError(
+                    f"Installer completed but expected app is missing or invalid: {target}"
+                )
             print(f"Installed {target}", flush=True)
         except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
             print(f"Failed to install {name}: {error}", flush=True)
@@ -53,8 +62,11 @@ def main():
     if args.dry_run:
         return install_packages(manifest, dry_run=True)
     # Serialize activations and recheck app presence after acquiring the lock.
-    descriptor = os.open("/var/run/mac-config-install-pkgs.lock",
-                         os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW, 0o600)
+    descriptor = os.open(
+        "/var/run/mac-config-install-pkgs.lock",
+        os.O_CREAT | os.O_RDWR | os.O_NOFOLLOW,
+        0o600,
+    )
     with os.fdopen(descriptor, "a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         return install_packages(manifest)

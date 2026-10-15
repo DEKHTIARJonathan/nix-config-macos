@@ -2,12 +2,16 @@
 
 import argparse
 import os
-from pathlib import Path
 import sys
 import tempfile
+from pathlib import Path
 
 
-def register(bundles, directory=Path("/Library/Java/JavaVirtualMachines"), store=Path("/nix/store")):
+def register(
+    bundles,
+    directory=Path("/Library/Java/JavaVirtualMachines"),
+    store=Path("/nix/store"),
+):
     if directory.is_symlink():
         raise RuntimeError(f"Refusing symlinked Java registry: {directory}")
 
@@ -18,7 +22,11 @@ def register(bundles, directory=Path("/Library/Java/JavaVirtualMachines"), store
         expected = ("Library", "Java", "JavaVirtualMachines", f"zulu-{version}.jdk")
         if len(relative.parts) != 5 or relative.parts[1:] != expected:
             raise RuntimeError(f"Unexpected Nix JDK bundle: {bundle}")
-        for member in ("Contents/Info.plist", "Contents/Home/bin/java", "Contents/Home/bin/javac"):
+        for member in (
+            "Contents/Info.plist",
+            "Contents/Home/bin/java",
+            "Contents/Home/bin/javac",
+        ):
             if not (bundle / member).is_file():
                 raise RuntimeError(f"Incomplete JDK bundle: {bundle / member}")
 
@@ -32,7 +40,9 @@ def register(bundles, directory=Path("/Library/Java/JavaVirtualMachines"), store
             except ValueError:
                 old_relative = Path()
             if len(old_relative.parts) != 5 or old_relative.parts[1:] != expected:
-                raise RuntimeError(f"Refusing unrelated JDK symlink: {destination} -> {previous}")
+                raise RuntimeError(
+                    f"Refusing unrelated JDK symlink: {destination} -> {previous}"
+                )
             if previous == bundle:
                 continue
         elif destination.exists():

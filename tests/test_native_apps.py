@@ -2,15 +2,15 @@
 
 import json
 import os
-from pathlib import Path
 import plistlib
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-from unittest.mock import patch
 import zipfile
+from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import install_native_apps as apps
@@ -24,9 +24,14 @@ class NativeAppTests(unittest.TestCase):
         self.source = self.root / "image/Example.app"
         contents = self.source / "Contents"
         contents.mkdir(parents=True)
-        (contents / "Info.plist").write_bytes(plistlib.dumps({
-            "CFBundleIdentifier": "test.example", "CFBundleShortVersionString": "1.0",
-        }))
+        (contents / "Info.plist").write_bytes(
+            plistlib.dumps(
+                {
+                    "CFBundleIdentifier": "test.example",
+                    "CFBundleShortVersionString": "1.0",
+                }
+            )
+        )
         (contents / "data").write_text("vendor bundle")
         (contents / "data").chmod(0o444)
         self.destination = self.root / "Applications/Example.app"
@@ -55,16 +60,25 @@ class NativeAppTests(unittest.TestCase):
     def test_discovery_ignores_helpers_metadata_and_symlinked_apps(self):
         shutil.copytree(self.source, self.root / "image/__MACOSX/Other.app")
         shutil.copytree(self.source, self.root / "image/.Trashes/Deleted.app")
-        shutil.copytree(self.root / "image/__MACOSX/Other.app", self.source / "Contents/Helpers/Helper.app")
-        (self.root / "image/Applications").symlink_to(self.root / "Applications", target_is_directory=True)
-        (self.root / "image/Linked.app").symlink_to(self.source, target_is_directory=True)
+        shutil.copytree(
+            self.root / "image/__MACOSX/Other.app",
+            self.source / "Contents/Helpers/Helper.app",
+        )
+        (self.root / "image/Applications").symlink_to(
+            self.root / "Applications", target_is_directory=True
+        )
+        (self.root / "image/Linked.app").symlink_to(
+            self.source, target_is_directory=True
+        )
         self.assertEqual(apps.find_bundle(self.root / "image"), self.source)
 
     def test_discovery_finds_bundle_inside_wrapper_directory(self):
         wrapper = self.root / "image/Release files"
         wrapper.mkdir()
         self.source.rename(wrapper / "Vendor Name.app")
-        self.assertEqual(apps.find_bundle(self.root / "image"), wrapper / "Vendor Name.app")
+        self.assertEqual(
+            apps.find_bundle(self.root / "image"), wrapper / "Vendor Name.app"
+        )
 
     def test_discovery_rejects_ambiguous_archives(self):
         shutil.copytree(self.source, self.root / "image/Uninstaller.app")
@@ -89,25 +103,51 @@ class NativeAppTests(unittest.TestCase):
             return self.ditto(command, **kwargs)
         return subprocess.CompletedProcess(command, 0)
 
-    def install_discovered(self, format="dmg", replace=False, remove_quarantine=False, app_name=None):
+    def install_discovered(
+        self, format="dmg", replace=False, remove_quarantine=False, app_name=None
+    ):
         manifest = self.root / "apps.json"
-        manifest.write_text(json.dumps({"example": {
-            "source": "fixture", "format": format, "removeQuarantine": remove_quarantine, "appName": app_name,
-        }}))
-        args = ["install-apps", "--manifest", str(manifest), "--applications", str(self.destination.parent),
-                "--backups", str(self.backups)]
+        manifest.write_text(
+            json.dumps(
+                {
+                    "example": {
+                        "source": "fixture",
+                        "format": format,
+                        "removeQuarantine": remove_quarantine,
+                        "appName": app_name,
+                    }
+                }
+            )
+        )
+        args = [
+            "install-apps",
+            "--manifest",
+            str(manifest),
+            "--applications",
+            str(self.destination.parent),
+            "--backups",
+            str(self.backups),
+        ]
         if replace:
             args.append("--replace-existing")
-        with patch.object(sys, "argv", args), patch.object(apps.os, "geteuid", return_value=501):
+        with (
+            patch.object(sys, "argv", args),
+            patch.object(apps.os, "geteuid", return_value=501),
+        ):
             return apps.main()
 
     def test_unnamed_dmg_and_zip_install_using_discovered_bundle_name(self):
         self.source.rename(self.source.with_name("Vendor Name.app"))
         for format in ("dmg", "zip"):
-            with self.subTest(format=format), patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+            with (
+                self.subTest(format=format),
+                patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+            ):
                 self.assertEqual(self.install_discovered(format), 0)
                 installed = self.destination.parent / "Vendor Name.app"
-                self.assertEqual((installed / "Contents/data").read_text(), "vendor bundle")
+                self.assertEqual(
+                    (installed / "Contents/data").read_text(), "vendor bundle"
+                )
                 shutil.rmtree(installed)
 
     def test_name_override_renames_discovered_nested_bundle(self):
@@ -115,10 +155,17 @@ class NativeAppTests(unittest.TestCase):
         wrapper.mkdir()
         self.source.rename(wrapper / "Vendor Name.app")
         for format in ("dmg", "zip"):
-            with self.subTest(format=format), patch.object(apps.subprocess, "run", side_effect=self.archive_command):
-                self.assertEqual(self.install_discovered(format, app_name="Renamed.app"), 0)
+            with (
+                self.subTest(format=format),
+                patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+            ):
+                self.assertEqual(
+                    self.install_discovered(format, app_name="Renamed.app"), 0
+                )
                 installed = self.destination.parent / "Renamed.app"
-                self.assertEqual((installed / "Contents/data").read_text(), "vendor bundle")
+                self.assertEqual(
+                    (installed / "Contents/data").read_text(), "vendor bundle"
+                )
                 shutil.rmtree(installed)
 
     def test_name_override_does_not_select_between_multiple_apps(self):
@@ -132,10 +179,17 @@ class NativeAppTests(unittest.TestCase):
         for symlink in (False, True):
             if symlink:
                 self.destination.rename(self.root / "existing.app")
-                self.destination.symlink_to(self.root / "existing.app", target_is_directory=True)
-            with self.subTest(symlink=symlink), patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+                self.destination.symlink_to(
+                    self.root / "existing.app", target_is_directory=True
+                )
+            with (
+                self.subTest(symlink=symlink),
+                patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+            ):
                 self.assertEqual(self.install_discovered(), 0)
-            self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+            self.assertEqual(
+                (self.destination / "updated").read_text(), "self-updated version"
+            )
         self.quit_app.assert_not_called()
         self.assertFalse(self.backups.exists())
 
@@ -144,7 +198,9 @@ class NativeAppTests(unittest.TestCase):
 
         def native_command(command, **kwargs):
             if command[0] == "/usr/bin/xattr":
-                self.assertEqual(command[:3], ["/usr/bin/xattr", "-dr", "com.apple.quarantine"])
+                self.assertEqual(
+                    command[:3], ["/usr/bin/xattr", "-dr", "com.apple.quarantine"]
+                )
                 staged = Path(command[-1])
                 self.assertNotEqual(staged, self.destination)
                 self.assertTrue((staged / "Contents/Info.plist").exists())
@@ -158,30 +214,54 @@ class NativeAppTests(unittest.TestCase):
         self.assertTrue((self.destination / "Contents/Info.plist").exists())
 
     def test_discovered_app_waiting_for_lock_preserves_other_installer_result(self):
-        with patch.object(apps.fcntl, "flock", side_effect=lambda *args: self.existing_app()), \
-                patch.object(apps.subprocess, "run", side_effect=self.archive_command):
+        with (
+            patch.object(
+                apps.fcntl, "flock", side_effect=lambda *args: self.existing_app()
+            ),
+            patch.object(apps.subprocess, "run", side_effect=self.archive_command),
+        ):
             self.assertEqual(self.install_discovered(), 0)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
 
     def test_discovered_app_replacement_keeps_verified_backup(self):
         self.existing_app()
         with patch.object(apps.subprocess, "run", side_effect=self.archive_command):
             self.assertEqual(self.install_discovered(replace=True), 0)
-        backup, = self.backups.glob("*.zip.bckp")
+        (backup,) = self.backups.glob("*.zip.bckp")
         with zipfile.ZipFile(backup) as archive:
-            self.assertEqual(archive.read("Example.app/updated"), b"self-updated version")
+            self.assertEqual(
+                archive.read("Example.app/updated"), b"self-updated version"
+            )
         self.assertTrue((self.destination / "Contents/Info.plist").exists())
 
     def test_ambiguous_dmg_fails_without_installing_and_is_detached(self):
         shutil.copytree(self.source, self.root / "image/Uninstaller.app")
-        with patch.object(apps.subprocess, "run", side_effect=self.archive_command) as run:
+        with patch.object(
+            apps.subprocess, "run", side_effect=self.archive_command
+        ) as run:
             self.assertEqual(self.install_discovered(), 1)
         self.assertFalse(self.destination.exists())
-        self.assertTrue(any(call.args[0][:2] == ["/usr/bin/hdiutil", "detach"] for call in run.call_args_list))
+        self.assertTrue(
+            any(
+                call.args[0][:2] == ["/usr/bin/hdiutil", "detach"]
+                for call in run.call_args_list
+            )
+        )
 
     def test_build_discovery_command_only_prints_path(self):
-        result = subprocess.run([sys.executable, str(Path(apps.__file__)), "--find-bundle", str(self.root / "image")],
-                                capture_output=True, text=True, check=True)
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(Path(apps.__file__)),
+                "--find-bundle",
+                str(self.root / "image"),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
         self.assertEqual(result.stdout.strip(), str(self.source))
         self.assertFalse(self.destination.parent.exists())
 
@@ -197,40 +277,97 @@ class NativeAppTests(unittest.TestCase):
     def test_rebuild_does_not_unpack_or_replace_self_updated_apps(self):
         self.existing_app()
         manifest = self.root / "apps.json"
-        manifest.write_text(json.dumps({"example": {"appName": "Example.app", "source": "/missing", "format": "dmg"}}))
-        args = ["install-apps", "--manifest", str(manifest), "--applications", str(self.destination.parent)]
-        with patch.object(sys, "argv", args), patch.object(apps.os, "geteuid", return_value=501), patch.object(apps, "unpack") as unpack:
+        manifest.write_text(
+            json.dumps(
+                {
+                    "example": {
+                        "appName": "Example.app",
+                        "source": "/missing",
+                        "format": "dmg",
+                    }
+                }
+            )
+        )
+        args = [
+            "install-apps",
+            "--manifest",
+            str(manifest),
+            "--applications",
+            str(self.destination.parent),
+        ]
+        with (
+            patch.object(sys, "argv", args),
+            patch.object(apps.os, "geteuid", return_value=501),
+            patch.object(apps, "unpack") as unpack,
+        ):
             self.assertEqual(apps.main(), 0)
         unpack.assert_not_called()
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
 
     def test_install_waiting_for_lock_preserves_other_installer_result(self):
         manifest = self.root / "apps.json"
-        manifest.write_text(json.dumps({"example": {"appName": "Example.app", "source": "/missing", "format": "dmg"}}))
-        args = ["install-apps", "--manifest", str(manifest), "--applications", str(self.destination.parent)]
-        with patch.object(sys, "argv", args), patch.object(apps.os, "geteuid", return_value=501), \
-                patch.object(apps.fcntl, "flock", side_effect=lambda *args: self.existing_app()), \
-                patch.object(apps, "unpack") as unpack:
+        manifest.write_text(
+            json.dumps(
+                {
+                    "example": {
+                        "appName": "Example.app",
+                        "source": "/missing",
+                        "format": "dmg",
+                    }
+                }
+            )
+        )
+        args = [
+            "install-apps",
+            "--manifest",
+            str(manifest),
+            "--applications",
+            str(self.destination.parent),
+        ]
+        with (
+            patch.object(sys, "argv", args),
+            patch.object(apps.os, "geteuid", return_value=501),
+            patch.object(
+                apps.fcntl, "flock", side_effect=lambda *args: self.existing_app()
+            ),
+            patch.object(apps, "unpack") as unpack,
+        ):
             self.assertEqual(apps.main(), 0)
         unpack.assert_not_called()
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
 
     def test_explicit_replacement_keeps_original_as_bckp(self):
         self.existing_app()
         with patch.object(apps.subprocess, "run", side_effect=self.ditto):
-            apps.install_bundle(self.source, self.destination, self.backups, replace=True)
-        backup, = self.backups.glob("*.bckp")
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
+        (backup,) = self.backups.glob("*.bckp")
         self.assertTrue(backup.name.endswith(".zip.bckp"))
         with zipfile.ZipFile(backup) as archive:
-            self.assertEqual(archive.read("Example.app/updated"), b"self-updated version")
+            self.assertEqual(
+                archive.read("Example.app/updated"), b"self-updated version"
+            )
         self.assertFalse(list(self.backups.glob(".retired-*")))
         self.assertTrue((self.destination / "Contents/Info.plist").exists())
 
     def test_failed_copy_leaves_installed_app_untouched(self):
         self.existing_app()
-        with patch.object(apps.subprocess, "run", side_effect=subprocess.CalledProcessError(1, "ditto")):
-            with self.assertRaises(subprocess.CalledProcessError):
-                apps.install_bundle(self.source, self.destination, self.backups, replace=True)
+        with (
+            patch.object(
+                apps.subprocess,
+                "run",
+                side_effect=subprocess.CalledProcessError(1, "ditto"),
+            ),
+            self.assertRaises(subprocess.CalledProcessError),
+        ):
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
         self.assertTrue((self.destination / "updated").exists())
         self.assertFalse(self.backups.exists())
 
@@ -239,14 +376,24 @@ class NativeAppTests(unittest.TestCase):
         replace = os.replace
 
         def fail_install(source, target):
-            if Path(source).parent.name.startswith(".mac-config-") and Path(target) == self.destination:
+            if (
+                Path(source).parent.name.startswith(".mac-config-")
+                and Path(target) == self.destination
+            ):
                 raise OSError("Simulated replacement failure")
             return replace(source, target)
 
-        with patch.object(apps.subprocess, "run", side_effect=self.ditto), patch.object(apps.os, "replace", side_effect=fail_install):
-            with self.assertRaisesRegex(OSError, "Simulated replacement"):
-                apps.install_bundle(self.source, self.destination, self.backups, replace=True)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        with (
+            patch.object(apps.subprocess, "run", side_effect=self.ditto),
+            patch.object(apps.os, "replace", side_effect=fail_install),
+            self.assertRaisesRegex(OSError, "Simulated replacement"),
+        ):
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
 
     def test_failed_archive_leaves_installed_app_untouched(self):
         self.existing_app()
@@ -256,19 +403,31 @@ class NativeAppTests(unittest.TestCase):
                 raise subprocess.CalledProcessError(1, "ditto")
             return self.ditto(command, **kwargs)
 
-        with patch.object(apps.subprocess, "run", side_effect=fail_archive):
-            with self.assertRaises(subprocess.CalledProcessError):
-                apps.install_bundle(self.source, self.destination, self.backups, replace=True)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        with (
+            patch.object(apps.subprocess, "run", side_effect=fail_archive),
+            self.assertRaises(subprocess.CalledProcessError),
+        ):
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
         self.assertFalse(list(self.backups.glob("*.bckp")))
 
     def test_refused_quit_preserves_installed_app(self):
         self.existing_app()
         self.quit_app.side_effect = RuntimeError("Still running")
-        with patch.object(apps.subprocess, "run", side_effect=self.ditto):
-            with self.assertRaisesRegex(RuntimeError, "Still running"):
-                apps.install_bundle(self.source, self.destination, self.backups, replace=True)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        with (
+            patch.object(apps.subprocess, "run", side_effect=self.ditto),
+            self.assertRaisesRegex(RuntimeError, "Still running"),
+        ):
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
         self.assertFalse(list(self.backups.glob("*.bckp")))
 
     def test_corrupt_archive_leaves_installed_app_untouched(self):
@@ -280,10 +439,16 @@ class NativeAppTests(unittest.TestCase):
                 return subprocess.CompletedProcess(command, 0)
             return self.ditto(command, **kwargs)
 
-        with patch.object(apps.subprocess, "run", side_effect=corrupt_archive):
-            with self.assertRaises(zipfile.BadZipFile):
-                apps.install_bundle(self.source, self.destination, self.backups, replace=True)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        with (
+            patch.object(apps.subprocess, "run", side_effect=corrupt_archive),
+            self.assertRaises(zipfile.BadZipFile),
+        ):
+            apps.install_bundle(
+                self.source, self.destination, self.backups, replace=True
+            )
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
 
     def test_app_created_during_staging_is_preserved(self):
         def create_app(command, **kwargs):
@@ -293,7 +458,9 @@ class NativeAppTests(unittest.TestCase):
 
         with patch.object(apps.subprocess, "run", side_effect=create_app):
             apps.install_bundle(self.source, self.destination, self.backups)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
         self.assertFalse(self.backups.exists())
         self.quit_app.assert_not_called()
 
@@ -306,11 +473,20 @@ class NativeAppTests(unittest.TestCase):
                 raise subprocess.CalledProcessError(1, "xattr")
             return self.ditto(command, **kwargs)
 
-        with patch.object(apps.subprocess, "run", side_effect=fail_attributes):
-            with self.assertRaises(subprocess.CalledProcessError):
-                apps.install_bundle(self.source, self.destination, self.backups,
-                                    replace=True, remove_quarantine=True)
-        self.assertEqual((self.destination / "updated").read_text(), "self-updated version")
+        with (
+            patch.object(apps.subprocess, "run", side_effect=fail_attributes),
+            self.assertRaises(subprocess.CalledProcessError),
+        ):
+            apps.install_bundle(
+                self.source,
+                self.destination,
+                self.backups,
+                replace=True,
+                remove_quarantine=True,
+            )
+        self.assertEqual(
+            (self.destination / "updated").read_text(), "self-updated version"
+        )
         self.assertFalse(self.backups.exists())
 
     def test_failed_detach_does_not_recurse_into_mounted_image(self):
@@ -323,19 +499,32 @@ class NativeAppTests(unittest.TestCase):
             return subprocess.CompletedProcess(command, 0)
 
         entry = {"format": "dmg", "source": "image.dmg", "appName": "Example.app"}
-        with patch.object(apps.tempfile, "mkdtemp", return_value=str(mount_root)), \
-                patch.object(apps.subprocess, "run", side_effect=hdiutil), \
-                patch.object(apps.shutil, "rmtree") as remove:
-            with self.assertRaises(subprocess.CalledProcessError):
-                with apps.unpack(entry):
-                    pass
+        with (
+            patch.object(apps.tempfile, "mkdtemp", return_value=str(mount_root)),
+            patch.object(apps.subprocess, "run", side_effect=hdiutil),
+            patch.object(apps.shutil, "rmtree") as remove,
+            self.assertRaises(subprocess.CalledProcessError),
+            apps.unpack(entry),
+        ):
+            pass
         remove.assert_not_called()
 
     @unittest.skipUnless(sys.platform == "darwin", "Native macOS archive metadata")
-    def test_native_archive_restores_attributes_and_dereferences_top_level_symlink(self):
+    def test_native_archive_restores_attributes_and_dereferences_top_level_symlink(
+        self,
+    ):
         self.existing_app()
         payload = self.destination / "updated"
-        subprocess.run(["/usr/bin/xattr", "-w", "com.example.backup-test", "preserved metadata", str(payload)], check=True)
+        subprocess.run(
+            [
+                "/usr/bin/xattr",
+                "-w",
+                "com.example.backup-test",
+                "preserved metadata",
+                str(payload),
+            ],
+            check=True,
+        )
         payload.chmod(0o444)
         (self.destination / "relative-link").symlink_to("updated")
         link = self.root / "links/Example.app"
@@ -345,18 +534,27 @@ class NativeAppTests(unittest.TestCase):
         # Removing the source proves this archive is independent of store GC.
         shutil.rmtree(self.destination)
         restored = self.root / "restored"
-        subprocess.run(["/usr/bin/ditto", "-x", "-k", str(backup), str(restored)], check=True)
+        subprocess.run(
+            ["/usr/bin/ditto", "-x", "-k", str(backup), str(restored)], check=True
+        )
         app = restored / "Example.app"
         self.assertFalse(app.is_symlink())
         self.assertEqual((app / "updated").read_text(), "self-updated version")
         self.assertEqual((app / "updated").stat().st_mode & 0o777, 0o444)
-        attribute = subprocess.run(["/usr/bin/xattr", "-p", "com.example.backup-test", str(app / "updated")],
-                                   check=True, capture_output=True, text=True)
+        attribute = subprocess.run(
+            ["/usr/bin/xattr", "-p", "com.example.backup-test", str(app / "updated")],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
         self.assertEqual(attribute.stdout.strip(), "preserved metadata")
         self.assertEqual(os.readlink(app / "relative-link"), "updated")
 
 
-@unittest.skipUnless(os.environ.get("APP_BUILD_PHASES"), "Generated app build phases require the Nix check")
+@unittest.skipUnless(
+    os.environ.get("APP_BUILD_PHASES"),
+    "Generated app build phases require the Nix check",
+)
 class AppBuildTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -373,7 +571,7 @@ class AppBuildTests(unittest.TestCase):
         sevenzip = shutil.which("7zz")
         # These small ZIP fixtures exercise real 7zz extraction. Only image
         # inspection is mocked; HFS routing uses a recording undmg stub.
-        stub = f'''#!{sys.executable}
+        stub = f"""#!{sys.executable}
 import json
 import os
 from pathlib import Path
@@ -390,7 +588,7 @@ status = int(os.environ.get("DMG_TEST_EXTRACT_STATUS", "0"))
 if status:
     sys.exit(status)
 os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
-'''
+"""
         for tool in ("7zz", "undmg"):
             executable = self.tools / tool
             executable.write_text(stub)
@@ -399,9 +597,14 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
     def make_archive(self, names, link_target="payload"):
         with zipfile.ZipFile(self.archive, "w") as archive:
             for name in names:
-                archive.writestr(f"{name}/Contents/Info.plist", plistlib.dumps({"CFBundleIdentifier": "test.fixture"}))
+                archive.writestr(
+                    f"{name}/Contents/Info.plist",
+                    plistlib.dumps({"CFBundleIdentifier": "test.fixture"}),
+                )
                 archive.writestr(f"{name}/Contents/MacOS/payload", "payload")
-                archive.writestr(f"{name}/Contents/Helpers/Helper.app/Contents/Info.plist", b"helper")
+                archive.writestr(
+                    f"{name}/Contents/Helpers/Helper.app/Contents/Info.plist", b"helper"
+                )
                 link = zipfile.ZipInfo(f"{name}/Contents/MacOS/helper")
                 link.create_system = 3
                 link.external_attr = 0o120777 << 16
@@ -412,24 +615,45 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
             archive.writestr(link, "/Applications")
 
     def phase(self, name, listing="Type = Dmg\nType = APFS\n----------\n", **overrides):
-        env = dict(os.environ, src=str(self.archive), out=str(self.output),
-                   PATH=str(self.tools) + os.pathsep + os.environ["PATH"],
-                   DMG_TEST_LISTING=listing, DMG_TEST_CALLS=str(self.calls), **overrides)
-        return subprocess.run(["bash", "-e", "-c", "runHook() { :; }\n" + self.phases[name]],
-                              cwd=self.work, env=env, capture_output=True, text=True)
+        env = dict(
+            os.environ,
+            src=str(self.archive),
+            out=str(self.output),
+            PATH=str(self.tools) + os.pathsep + os.environ["PATH"],
+            DMG_TEST_LISTING=listing,
+            DMG_TEST_CALLS=str(self.calls),
+            **overrides,
+        )
+        return subprocess.run(
+            ["bash", "-e", "-c", "runHook() { :; }\n" + self.phases[name]],
+            check=False,
+            cwd=self.work,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
 
     def extractor_calls(self):
         return [json.loads(line) for line in self.calls.read_text().splitlines()]
 
     def test_hfs_selects_undmg_and_ignores_type_text_in_file_listing(self):
-        result = self.phase("autoUnpack", listing="Type = Dmg\nType = HFS\n----------\nType = APFS\n")
+        result = self.phase(
+            "autoUnpack", listing="Type = Dmg\nType = HFS\n----------\nType = APFS\n"
+        )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual([call[:2] for call in self.extractor_calls()], [
-            ["7zz", "l"], ["undmg", str(self.archive)],
-        ])
+        self.assertEqual(
+            [call[:2] for call in self.extractor_calls()],
+            [
+                ["7zz", "l"],
+                ["undmg", str(self.archive)],
+            ],
+        )
 
     def test_unknown_and_ambiguous_filesystems_do_not_extract(self):
-        for listing in ("Type = Dmg\nType = FAT\n----------\n", "Type = HFS\nType = APFS\n----------\n"):
+        for listing in (
+            "Type = Dmg\nType = FAT\n----------\n",
+            "Type = HFS\nType = APFS\n----------\n",
+        ):
             with self.subTest(listing=listing):
                 self.calls.unlink(missing_ok=True)
                 result = self.phase("autoUnpack", listing=listing)
@@ -447,8 +671,11 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
         for filesystem in ("HFS", "APFS"):
             with self.subTest(filesystem=filesystem):
                 self.calls.unlink(missing_ok=True)
-                result = self.phase("autoUnpack", listing=f"Type = Dmg\nType = {filesystem}\n----------\n",
-                                    DMG_TEST_EXTRACT_STATUS="7")
+                result = self.phase(
+                    "autoUnpack",
+                    listing=f"Type = Dmg\nType = {filesystem}\n----------\n",
+                    DMG_TEST_EXTRACT_STATUS="7",
+                )
                 self.assertEqual(result.returncode, 7)
                 self.assertEqual(len(self.extractor_calls()), 2)
 
@@ -460,14 +687,18 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
         app = self.output / "Applications/Vendor Name.app"
         self.assertEqual((app / "Contents/MacOS/helper").read_text(), "payload")
         self.assertTrue((app / "Contents/MacOS/helper").is_symlink())
-        self.assertTrue((app / "Contents/Helpers/Helper.app/Contents/Info.plist").exists())
+        self.assertTrue(
+            (app / "Contents/Helpers/Helper.app/Contents/Info.plist").exists()
+        )
         self.assertFalse((self.work / "Applications").is_symlink())
 
     def test_7zz_rejects_parent_symlinks(self):
         self.make_archive(["Vendor Name.app"], link_target="../Info.plist")
         result = self.phase("autoUnpack")
         self.assertNotEqual(result.returncode, 0)
-        self.assertFalse((self.work / "Vendor Name.app/Contents/MacOS/helper").is_symlink())
+        self.assertFalse(
+            (self.work / "Vendor Name.app/Contents/MacOS/helper").is_symlink()
+        )
 
     def test_7zz_multiple_apps_fail_even_with_name_override(self):
         self.make_archive(["Release/Vendor Name.app", "Uninstaller.app"])
@@ -488,7 +719,9 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
         self.assertEqual(result.returncode, 0, result.stderr)
         result = self.phase("namedInstall")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertTrue((self.output / "Applications/Renamed.app/Contents/Info.plist").exists())
+        self.assertTrue(
+            (self.output / "Applications/Renamed.app/Contents/Info.plist").exists()
+        )
 
     def test_dmg_pkg_stages_single_nested_installer(self):
         with zipfile.ZipFile(self.archive, "w") as archive:
@@ -496,7 +729,10 @@ os.execv({sevenzip!r}, [{sevenzip!r}, *sys.argv[1:]])
         for phase in ("pkgUnpack", "pkgInstall"):
             result = self.phase(phase)
             self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual((self.output / "share/macos-pkgs/app-discovery-fixture.pkg").read_text(), "fixture installer")
+        self.assertEqual(
+            (self.output / "share/macos-pkgs/app-discovery-fixture.pkg").read_text(),
+            "fixture installer",
+        )
 
     def test_dmg_pkg_still_rejects_multiple_installers(self):
         with zipfile.ZipFile(self.archive, "w") as archive:

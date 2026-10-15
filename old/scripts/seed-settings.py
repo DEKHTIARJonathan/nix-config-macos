@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 """Seed writable editor preferences without overwriting existing files."""
+
 import argparse
 import json
 from pathlib import Path
