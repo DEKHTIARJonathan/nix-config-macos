@@ -30,6 +30,44 @@ declared here. CLI tools and system configuration are managed by Nix; GUI apps
 are writable native installations. Homebrew manages Hidden Bar, Codex CLI,
 Claude Code, Railway CLI, and herdr, with automatic removal disabled.
 
+## Bootstrap prerequisites
+
+From the repository root, run as your normal macOS user:
+
+```sh
+make setup
+```
+
+This prepares an Apple Silicon Mac for `make build` and `make install`. It
+checks Apple Command Line Tools (Git, Make, clang, and the macOS SDK), opens
+Apple's installer if they are missing, and waits for you to complete its dialog.
+It then installs
+[upstream Nix](https://nix.dev/manual/nix/stable/installation/installing-binary.html)
+with its multi-user daemon if Nix is absent, and checks daemon access. The Nix
+installer may ask for confirmation and your administrator password. Working
+installations are reused; broken or partial installations stop setup for repair.
+
+On a pristine Mac where Apple's `make` launcher cannot run yet, use
+`/bin/bash scripts/setup.sh` from this checkout instead. This is the same setup
+entry point and can install the Command Line Tools that provide Make. No Python,
+Homebrew, or pre-existing Nix is needed. If developer tools are already selected
+but unusable, finish Xcode's first-launch setup or repair that selection before
+retrying. Setup waits up to 30 minutes for Apple's dialog; Ctrl-C cancels it.
+
+Setup installs prerequisites only. Review `host.nix` and `settings/git.json`,
+then use `make build` to build or `make install` to build and activate.
+Activation installs Homebrew, the configured tools and apps, and Rosetta when
+needed through the existing configuration. Full Xcode and editor extension setup
+remain separate. Setup does not build the flake, update `flake.lock`, or
+activate settings.
+
+The Makefile finds Nix in its standard profile paths immediately after setup and
+passes `nix-command`/`flakes` flags explicitly, including to the progress
+monitor's build. It does not rewrite Nix configuration or shell dotfiles to
+enable those features. The upstream installer performs its own shell
+initialization; open a new terminal before using bare `nix` commands if Nix is
+not yet on your PATH.
+
 ## Migration on this Mac, in order
 
 Run these steps yourself in Terminal. Preparing this configuration has not
@@ -76,7 +114,11 @@ The backup directory is private and outside this repository. Keep it while
 migrating. The Brewfile records installed items; it does not pin their old
 versions for an exact restore.
 
-### 2. Enable flakes by default
+### 2. Prepare prerequisites and optionally enable flakes by default
+
+Run `make setup` as described above. The Makefile supplies feature flags, so the
+manual configuration below is only needed for bare `nix` commands before the
+first activation.
 
 Flakes and `nix-command` are already enabled for Jonathan. The following block
 also works when setting up another user: it preserves existing settings and adds
@@ -286,13 +328,13 @@ updates.
 
 ### Adapting these steps to another Mac
 
-Install Nix first if `nix --version` fails; follow the current
-[nix-darwin prerequisites](https://github.com/nix-darwin/nix-darwin#prerequisites).
-Use an Apple Silicon Mac, change the checkout path and account in `host.nix`,
-and keep `system = "aarch64-darwin"`. Use `manageNix = false` for Determinate
-Nix, which manages its own daemon; keep user-level flakes enabled and follow
-that distribution's guidance for root's configuration. With `manageNix = false`,
-this flake does not set system-wide Nix options. The installer and the Nix
+Run `make setup` first to prepare Nix and the Apple command-line prerequisites
+(see [Bootstrap prerequisites](#bootstrap-prerequisites)). Use an Apple Silicon
+Mac, change the checkout path and account in `host.nix`, and keep
+`system = "aarch64-darwin"`. Use `manageNix = false` for Determinate Nix, which
+manages its own daemon; keep user-level flakes enabled and follow that
+distribution's guidance for root's configuration. With `manageNix = false`, this
+flake does not set system-wide Nix options. The installer and the Nix
 distribution are distinct.
 
 For an existing nix-darwin installation, merge modules and preserve its
@@ -773,6 +815,7 @@ do not replace generic endpoints with version-specific redirect targets. See
 Run from the repository root:
 
 ```sh
+make setup   # Install/check bootstrap prerequisites without building or activating.
 make build   # Build with progress; create result without activating.
 make install # Build, then activate with sudo.
 make test    # Run tests through uv, as CI does.
@@ -786,7 +829,7 @@ Bare `make` also builds. Build, install, and test preserve `flake.lock`; only
 locked flake, equivalent to:
 
 ```sh
-nix run --no-update-lock-file .#nix-output-monitor -- build .#darwinConfigurations.mac.system --no-update-lock-file
+nix --extra-experimental-features 'nix-command flakes' run --no-update-lock-file .#nix-output-monitor -- build .#darwinConfigurations.mac.system --extra-experimental-features 'nix-command flakes' --no-update-lock-file --out-link result
 ```
 
 This works before the first system activation and does not depend on shell

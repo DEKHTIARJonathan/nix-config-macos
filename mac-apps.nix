@@ -8,7 +8,7 @@
     version = "latest";
     downloadName = "bionic-latest.dmg";
     url = "https://lmstudio.ai/download/bionic/latest/darwin/arm64";
-    hash = "sha256-0HxGsvlFtCKnwUTsBCi3Z50hEgw5+vvKRz2WFbXfQ8g=";
+    hash = "sha256-Q6tNoah/HEoQU/t+W+/EZJnxy02oH718uBdxsixKNz8=";
     appName = "Bionic.app";
   };
   lm-studio = {
@@ -34,6 +34,14 @@
     hash = "sha256-IN8PSSfzEvjUfmApS5p3/WDkS+YUdqWB+5GVwCm6CJM=";
     appName = "Google Earth Pro.app";
   };
+  qgis = {
+    # Explicit Intel exception: the Apple Silicon host needs Rosetta 2.
+    version = "latest";
+    downloadName = "qgis.dmg";
+    url = "https://download.qgis.org/downloads/macos/pr/qgis_pr_final-4_2_3.dmg";
+    hash = "sha256-zzrz09IooOKgq3+2s3BSrngGTQrvk7EvQfm9ck/SNAE=";
+    appName = "QGIS.app";
+  };
   # ====================== Dev Tools ====================== #
   android-studio = {
     version = "2026.2.1.8";
@@ -45,7 +53,7 @@
     version = "latest";
     downloadName = "docker-desktop.dmg";
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
-    hash = "sha256-AhR+TVWf9B4dnXvmOlVBATQCNwZMe23yNFSKoRHr8Ew=";
+    hash = "sha256-eFciLTwAnXh+f4NHsS4kv+5E5Jpoz0VctLYSmR0kksE=";
     appName = "Docker.app";
   };
   gitkraken = {
@@ -86,7 +94,7 @@
     version = "154.0.8037.98";
     downloadName = "googlechrome.dmg";
     url = "https://dl.google.com/tag/s/appguid%3DCOM.GOOGLE.CHROME%26iid%3D%7BA28A17CD-130C-A433-15D3-6C506FCA1744%7D%26brand%3DGGRO/chrome/mac/universal/stable/googlechrome.dmg";
-    hash = "sha256-7gLzm6L/ravtkTWCggjEzH5DuuGLCL+0Ie0AIvkrnd0=";
+    hash = "sha256-1HYTdVSukKR4dslivwr5k2NWdZcZVhfwkm9YV+kGkiQ=";
     appName = "Google Chrome.app";
   };
   firefox = {
@@ -114,13 +122,13 @@
     dmgExtractor = "7zz";
     version = "latest";
     url = "https://mole.fit/download";
-    hash = "sha256-eZAMUi6XJUmngneTiOhkyAMhV1qyoe1TTN7GMt8DBhQ=";
+    hash = "sha256-cVO47Te2FVYMsC2QPaA/TT4j02HECtQ9ojn1Y//quYo=";
     appName = "Mole.app";
   };
   raycast = {
     version = "latest";
     url = "https://www.raycast.com/download/mac";
-    hash = "sha256-P8QGQZiujT/4jxW0j/jbZxce88uz/4BaODceKP+Zpgw=";
+    hash = "sha256-7b20Mc93W48NTOm/68d+YwXQLTPFJfBdEfrKFztihuw=";
     appName = "Raycast.app";
   };
   rodecaster-app = {
@@ -198,7 +206,7 @@
     version = "latest";
     downloadName = "rambox-latest.dmg";
     url = "https://rambox.app/api/download?os=mac&package=dmg";
-    hash = "sha256-UfBP2LVBcQUw1pwSrQc5NIN0ZTVk/sCM0Zt2EldhL+s=";
+    hash = "sha256-JK5DJEyat8PstdjY4YVJoa2dDQFFU5biwfT2bmMTX/Y=";
     appName = "Rambox.app";
   };
   signal = {

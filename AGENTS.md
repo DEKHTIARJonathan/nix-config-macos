@@ -43,36 +43,37 @@ has passed a build or been activated.
 
 ## Repository map
 
-| Path                                  | Responsibility                                                                                                                                                             |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `AGENTS.md`                           | Instructions for agents working in this repository.                                                                                                                        |
-| `README.md`                           | Installation, migration, maintenance, troubleshooting, and user commands.                                                                                                  |
-| `Makefile`                            | `make build` runs the progress monitor; `make install` activates; `make test` uses uv; `make test-nix` runs the full Nix settings check; `make lock` updates flake inputs. |
-| `host.nix`                            | Existing account, home override, Apple Silicon platform, Nix ownership, and Darwin compatibility version.                                                                  |
-| `flake.nix`                           | Inputs, module wiring, `darwinConfigurations.mac`, app package outputs, and the settings check.                                                                            |
-| `flake.lock`                          | Exact upstream input revisions; keep unchanged for routine configuration edits.                                                                                            |
-| `configuration.nix`                   | System CLI packages, Zsh integration, fonts, Nix settings, and Homebrew declarations.                                                                                      |
-| `home.nix`                            | Home Manager shell/Git configuration, prompt file, helper commands, and user activation.                                                                                   |
-| `desktop.nix`                         | Applies the desktop preferences described in `settings/desktop.json`.                                                                                                      |
-| `android.nix`                         | Composed Android SDK, Java runtime, SDK license configuration, and environment variables.                                                                                  |
-| `mac-apps.nix`                        | Single inventory of vendor app downloads, hashes, bundle names, formats, and per-app exceptions.                                                                           |
-| `app-installation.nix`                | Produces native installation manifests and orders system activation.                                                                                                       |
-| `pkgs/app-sources.nix`                | Creates fixed-output `fetchurl` downloads from the app inventory.                                                                                                          |
-| `pkgs/macos-apps.nix`                 | Filters enabled inventory entries and exposes app package derivations.                                                                                                     |
-| `pkgs/mk-macos-app.nix`               | Extracts app archives or stages vendor PKGs during a build.                                                                                                                |
-| `scripts/install_native_apps.py`      | Installs writable DMG/ZIP bundles as the user, with native metadata and replacement backups.                                                                               |
-| `scripts/install_native_pkgs.py`      | Installs missing PKG products as root and verifies the expected app exists.                                                                                                |
-| `scripts/restore_settings.py`         | Seeds editor files, restores Dock/Terminal snapshots, and maintains Terminal Shift+Enter bindings.                                                                         |
-| `scripts/mac_preferences.py`          | Binary-safe CFPreferences access without a PyObjC dependency.                                                                                                              |
-| `scripts/curl_progress.py`            | Converts curl's meter to structured Nix phase updates, preserving diagnostics, stdout, and exit status.                                                                    |
-| `scripts/setup_editors.py`            | Explicit editor extension installation/configuration and verification.                                                                                                     |
-| `scripts/verify_development_tools.py` | Read-only checks of Xcode, Command Line Tools, clang, and SDK selection.                                                                                                   |
-| `settings/`                           | Checked-in preference snapshots, prompt configuration, and extension inventories.                                                                                          |
-| `tests/`                              | Python tests of migration, installers, developer tools, and generated shell startup behavior.                                                                              |
-| `.pre-commit-config.yaml`             | Prek hooks for formatting, syntax, and repository hygiene.                                                                                                                 |
-| `.github/workflows/check.yml`         | Linux CI for portable tests, hooks, and lockfile metadata validation.                                                                                                      |
-| `old/`                                | Historical reference only; not imported by the active flake.                                                                                                               |
-| `result`                              | Local Nix build output link, when present; not configuration source.                                                                                                       |
+| Path                                  | Responsibility                                                                                                                                                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AGENTS.md`                           | Instructions for agents working in this repository.                                                                                                                                                               |
+| `README.md`                           | Installation, migration, maintenance, troubleshooting, and user commands.                                                                                                                                         |
+| `Makefile`                            | `make setup` bootstraps prerequisites; `make build` runs the progress monitor; `make install` activates; `make test` uses uv; `make test-nix` runs the full Nix settings check; `make lock` updates flake inputs. |
+| `host.nix`                            | Existing account, home override, Apple Silicon platform, Nix ownership, and Darwin compatibility version.                                                                                                         |
+| `flake.nix`                           | Inputs, module wiring, `darwinConfigurations.mac`, app package outputs, and the settings check.                                                                                                                   |
+| `flake.lock`                          | Exact upstream input revisions; keep unchanged for routine configuration edits.                                                                                                                                   |
+| `configuration.nix`                   | System CLI packages, Zsh integration, fonts, Nix settings, and Homebrew declarations.                                                                                                                             |
+| `home.nix`                            | Home Manager shell/Git configuration, prompt file, helper commands, and user activation.                                                                                                                          |
+| `desktop.nix`                         | Applies the desktop preferences described in `settings/desktop.json`.                                                                                                                                             |
+| `android.nix`                         | Composed Android SDK, Java runtime, SDK license configuration, and environment variables.                                                                                                                         |
+| `mac-apps.nix`                        | Single inventory of vendor app downloads, hashes, bundle names, formats, and per-app exceptions.                                                                                                                  |
+| `app-installation.nix`                | Produces native installation manifests and orders system activation.                                                                                                                                              |
+| `pkgs/app-sources.nix`                | Creates fixed-output `fetchurl` downloads from the app inventory.                                                                                                                                                 |
+| `pkgs/macos-apps.nix`                 | Filters enabled inventory entries and exposes app package derivations.                                                                                                                                            |
+| `pkgs/mk-macos-app.nix`               | Extracts app archives or stages vendor PKGs during a build.                                                                                                                                                       |
+| `scripts/install_native_apps.py`      | Installs writable DMG/ZIP bundles as the user, with native metadata and replacement backups.                                                                                                                      |
+| `scripts/install_native_pkgs.py`      | Installs missing PKG products as root and verifies the expected app exists.                                                                                                                                       |
+| `scripts/restore_settings.py`         | Seeds editor files, restores Dock/Terminal snapshots, and maintains Terminal Shift+Enter bindings.                                                                                                                |
+| `scripts/mac_preferences.py`          | Binary-safe CFPreferences access without a PyObjC dependency.                                                                                                                                                     |
+| `scripts/curl_progress.py`            | Converts curl's meter to structured Nix phase updates, preserving diagnostics, stdout, and exit status.                                                                                                           |
+| `scripts/setup_editors.py`            | Explicit editor extension installation/configuration and verification.                                                                                                                                            |
+| `scripts/setup.sh`                    | Apple Silicon bootstrap: checks/installs Apple Command Line Tools and upstream Nix, without building or activating.                                                                                               |
+| `scripts/verify_development_tools.py` | Read-only checks of Xcode, Command Line Tools, clang, and SDK selection.                                                                                                                                          |
+| `settings/`                           | Checked-in preference snapshots, prompt configuration, and extension inventories.                                                                                                                                 |
+| `tests/`                              | Python tests of migration, installers, developer tools, and generated shell startup behavior.                                                                                                                     |
+| `.pre-commit-config.yaml`             | Prek hooks for formatting, syntax, and repository hygiene.                                                                                                                                                        |
+| `.github/workflows/check.yml`         | Linux CI for portable tests, hooks, and lockfile metadata validation.                                                                                                                                             |
+| `old/`                                | Historical reference only; not imported by the active flake.                                                                                                                                                      |
+| `result`                              | Local Nix build output link, when present; not configuration source.                                                                                                                                              |
 
 Important settings files:
 
@@ -443,6 +444,20 @@ explicit about that limitation instead of promising that an activation-time
 change fixes the first build. Preserve stdout, errors, exit codes, hash
 verification, and cancellation. Validate display changes with local fixtures,
 without downloading vendor installers or activating the system.
+
+From the repository root, `make setup` runs `scripts/setup.sh` with macOS Bash.
+It reuses working developer tools and Nix, opens Apple's Command Line Tools
+installer when no developer directory is selected, waits for completion, and
+installs upstream multi-user Nix only when no executable or existing Nix state
+is found. It checks daemon access without evaluating the flake. On a pristine
+Mac where Make cannot start, `/bin/bash scripts/setup.sh` is the same entry
+point. Preserve installer errors and existing installations. Adding or editing
+setup does not authorize running it; use mocked tests. Homebrew, Rosetta, and
+the configured packages remain owned by the existing activation path.
+
+The Makefile appends standard Nix profile paths and explicitly enables
+`nix-command`/`flakes` for its Nix commands and the monitor's child build. Setup
+does not edit user Nix configuration or managed shell files to enable features.
 
 From the repository root, `make build` runs the flake's `nix-output-monitor` and
 builds `.#darwinConfigurations.mac.system` into `result`, without changing the
