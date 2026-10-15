@@ -87,6 +87,10 @@
     hash = "sha256-+3fenJZN/aH8wgKSC6VmTQoL3pgJASK6uuWGDpbnwh4=";
     appName = "RODECaster App.app";
   };
+  tmog = {
+    url = "https://tmog.org/rtm/downloads/TMOG-Task-Manager-1.0.0-20260923234339-macOS-universal.dmg";
+    hash = "sha256-eMSC5Zjhb6W0eeBalgmjpMH3jfzpYEaL6nfw+5gYmJU=";
+  };
   # ====================== USAH Apps ====================== #
   frameforge = {
     url = "https://github.com/OpenSpeleo/FrameForge-Releases/releases/download/v1.2.0/FrameForge_1.2.0_aarch64.dmg";
