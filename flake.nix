@@ -93,7 +93,21 @@
               appName = "Fixture.app";
             }
           );
+          manualPkg = mkApp (
+            fixture
+            // {
+              format = "dmg-pkg";
+              manualInstall = true;
+            }
+          );
         in
+        # Drivers can stage a PKG without an app; automatic installers still
+        # require one, and optional packages must stay out of system packages.
+        assert manualPkg.appName == null && manualPkg.installPhase == pkgApp.installPhase;
+        assert !(builtins.tryEval (mkApp (fixture // { format = "pkg"; })).drvPath).success;
+        assert pkgs.lib.all (
+          package: !(package.manualInstall or false)
+        ) self.darwinConfigurations.mac.config.environment.systemPackages;
         pkgs.runCommand "mac-config-settings-tests"
           {
             nativeBuildInputs = [

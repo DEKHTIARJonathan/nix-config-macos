@@ -215,11 +215,14 @@ example = {
 
 Bundle discovery requires exactly one outer `.app`, including inside wrapper
 directories, and ignores helper apps inside it, hidden directories, `__MACOSX`,
-and symlinks. Ambiguous archives fail. PKG entries still require an accurate
-`appName` for presence checks and post-install verification. If an archive
-layout is unverified, report that limitation instead of claiming the package
-builds. Prefer Apple Silicon or universal assets. Intel-only exceptions must
-remain explicit rather than changing the host platform.
+and symlinks. Ambiguous archives fail. Automatic PKG entries require an accurate
+`appName` for presence checks and post-install verification. Optional entries
+with `manualInstall = true` remain flake package outputs but are excluded from
+system builds and activation; they may omit `appName` when staging a driver for
+explicit installation with Apple's installer. If an archive layout is
+unverified, report that limitation instead of claiming the package builds.
+Prefer Apple Silicon or universal assets. Intel-only exceptions must remain
+explicit rather than changing the host platform.
 
 ### App inventory fields
 
@@ -227,7 +230,8 @@ remain explicit rather than changing the host platform.
 | ------------------ | ------------------------------------------------------------------------------------ |
 | `url`              | User-supplied download endpoint.                                                     |
 | `hash`             | Fixed-output SHA-256 in SRI form, or `lib.fakeHash` while awaiting a mismatch.       |
-| `appName`          | Optional destination bundle name override. Required for PKGs.                        |
+| `appName`          | Optional destination bundle name override. Required for automatic PKGs.              |
+| `manualInstall`    | Default false; true excludes the entry from system builds and activation.            |
 | `downloadName`     | Optional store filename override; defaults to `<inventory-key>.<archive-extension>`. |
 | `format`           | `dmg` by default; also `zip`, `pkg`, `zip-pkg`, and `dmg-pkg`.                       |
 | `removeQuarantine` | Targeted native-copy exception; never a blanket Gatekeeper change.                   |

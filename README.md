@@ -746,11 +746,12 @@ time to avoid mismatched adb binaries and SDK paths.
 ## Downloaded macOS applications
 
 `mac-apps.nix` is the shared inventory for all downloaded applications.
-`app-installation.nix` consumes it during system configuration, and the same
-packages are exposed as flake outputs. The host targets Apple Silicon. Google
-Earth Pro is an explicitly allowed Intel application and requires Rosetta 2 as
-do some vendor SDK installers. Before other activation steps,
-`configuration.nix` checks Intel execution with
+`app-installation.nix` consumes its automatic entries during system
+configuration, and all packages are exposed as flake outputs. Entries with
+`manualInstall = true` are excluded from normal system builds and activation.
+The host targets Apple Silicon. Google Earth Pro is an explicitly allowed Intel
+application and requires Rosetta 2 as do some vendor SDK installers. Before
+other activation steps, `configuration.nix` checks Intel execution with
 `/usr/bin/arch -x86_64 /usr/bin/true`. If unavailable, activation runs
 `/usr/sbin/softwareupdate --install-rosetta --agree-to-license` as root and
 verifies Intel execution again. This automatically accepts Apple's Rosetta
@@ -810,10 +811,12 @@ store filename defaults to `<entry-name>.<archive-extension>`, even for URLs
 without a filename. `downloadName` is only an optional filename override.
 Changing this filename can cause Nix to fetch the source again.
 
-PKGs are staged during the build and run as root during activation when the
-expected app is missing. They still require `appName` to check for an existing
-installation and verify the result. Archives containing multiple PKGs are
-rejected instead of selecting an arbitrary installer.
+Automatic PKGs are staged during the build and run as root during activation
+when the expected app is missing. They require `appName` to check for an
+existing installation and verify the result. Optional entries with
+`manualInstall = true` only stage an installer for explicit installation and may
+omit `appName`. Archives containing multiple PKGs are rejected instead of
+selecting an arbitrary installer.
 
 To add or update an app, preserve the exact supplied URL, including generic
 `latest` endpoints, and set `hash = lib.fakeHash;`. Configuration-only edits
@@ -837,6 +840,43 @@ URL is still pinned by its hash, but a fresh download will fail if the vendor
 replaces the file. Keep the supplied URL and resolve that mismatch explicitly;
 do not replace generic endpoints with version-specific redirect targets. See
 [AGENTS.md](AGENTS.md) for the repository workflow.
+
+### Optional Brother ICA scanner driver
+
+`brother-scanner` stages the PKG inside the supplied
+[Brother ICA scanner driver DMG](https://download.brother.com/welcome/dlf106898/Brother_ScannerDrivers_ICA_1_16_0.dmg).
+The supplied filename identifies this as an ICA scanner driver. It is optional:
+`make build`, `make install`, and `mac-config-install-pkgs` do not download or
+install it. Keep `manualInstall = true`; the automatic PKG installer expects an
+application in `/Applications`.
+
+From the repository root, first resolve its pending hash:
+
+```sh
+nix build --no-update-lock-file --no-link .#brother-scanner.src
+```
+
+The initial build intentionally fails with a hash mismatch. Replace only
+`brother-scanner`'s `hash = lib.fakeHash;` in `mac-apps.nix` with the exact
+`got: sha256-...` value, quoted as a Nix string. Keep the URL unchanged. Then
+build and extract the installer without activating the system:
+
+```sh
+nix build --no-update-lock-file --out-link result-brother-scanner .#brother-scanner
+```
+
+When ready to install the driver, run Apple's installer explicitly:
+
+```sh
+sudo /usr/sbin/installer -pkg ./result-brother-scanner/share/macos-pkgs/brother-scanner.pkg -target /
+```
+
+This command runs the vendor PKG as root and can modify files outside
+`/Applications`. Repeating it reruns the installer; there is no automatic
+installed-driver check. Nix rollback does not uninstall the driver. Follow any
+restart instructions from the installer, then test scanning with your device.
+The download hash, archive layout, macOS/device compatibility, and scanning have
+not yet been verified for this entry.
 
 ### Download progress
 
