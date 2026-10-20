@@ -11,6 +11,7 @@
   src,
   appName ? null,
   format ? "dmg",
+  manualInstall ? false,
 }:
 assert lib.assertMsg (builtins.elem format [
   "dmg"
@@ -31,7 +32,7 @@ let
   ];
 in
 assert lib.assertMsg (
-  !isInstaller || appName != null
+  !isInstaller || manualInstall || appName != null
 ) "PKG entry ${pname} requires appName to verify installation";
 stdenvNoCC.mkDerivation (
   {
@@ -95,7 +96,14 @@ stdenvNoCC.mkDerivation (
       runHook postInstall
     '';
 
-    passthru = { inherit appName format isInstaller; };
+    passthru = {
+      inherit
+        appName
+        format
+        isInstaller
+        manualInstall
+        ;
+    };
     meta = {
       platforms = [ "aarch64-darwin" ];
       sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];

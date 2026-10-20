@@ -7,7 +7,10 @@
 let
   inventory = import ./mac-apps.nix { inherit lib; };
   sources = import ./pkgs/app-sources.nix { inherit pkgs; };
-  packages = import ./pkgs/macos-apps.nix { inherit pkgs; };
+  # Optional installers remain flake outputs, outside the system build/activation.
+  packages = lib.filterAttrs (_: package: !package.manualInstall) (
+    import ./pkgs/macos-apps.nix { inherit pkgs; }
+  );
   installers = lib.filterAttrs (_: package: package.isInstaller) packages;
   bundles = lib.filterAttrs (_: package: !package.isInstaller) packages;
   manifest = pkgs.writeText "native-macos-apps.json" (

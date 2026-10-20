@@ -3,6 +3,14 @@
 # and build again to verify the download and installation layout.
 { lib }:
 {
+  # ====================== Optional Drivers ====================== #
+  brother-scanner = {
+    # Explicit installation only; no /Applications app is expected.
+    manualInstall = true;
+    format = "dmg-pkg";
+    url = "https://download.brother.com/welcome/dlf106898/Brother_ScannerDrivers_ICA_1_16_0.dmg";
+    hash = "sha256-rCTcnvUEMAmy8mRuBIYYg9gbrrbR0TE5sWhgKLgPWcA=";
+  };
   # ====================== LOCAL LLM ====================== #
   bionic = {
     url = "https://lmstudio.ai/download/bionic/latest/darwin/arm64";
@@ -36,7 +44,7 @@
   };
   docker-desktop = {
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
-    hash = "sha256-eFciLTwAnXh+f4NHsS4kv+5E5Jpoz0VctLYSmR0kksE=";
+    hash = "sha256-0hvYeH6HYbIsKxt4w0/6mau2wGIZtDuoS2tFCHo1yf4=";
   };
   gitkraken = {
     url = "https://api.gitkraken.dev/releases/production/darwin/arm64/active/installGitKraken.dmg";
@@ -44,7 +52,7 @@
   };
   vscode = {
     url = "https://code.visualstudio.com/sha/download?build=stable&os=darwin-arm64-dmg";
-    hash = "sha256-qw7MdIVdXTjomGBSNLwDOye3nyAubxKhFEL8QQrgZWE=";
+    hash = "sha256-rAR3Suuj/XEQySgz2RlRRtUIZCe6ssqQIgDnrZ8Bip4=";
   };
   zed = {
     # download-success is an HTML page; use the matching release asset.
@@ -54,11 +62,11 @@
   # ====================== Browsers ====================== #
   brave = {
     url = "https://referrals.brave.com/latest/Brave-Browser.dmg";
-    hash = "sha256-R7meu8wNoPd81qKKAnx0EMe93p57gmQkq7o9GRoeSKg=";
+    hash = "sha256-0NauI9Vpg2LvvOwih3jO5//uFgXmDH0kIJ+mfX2zmEU=";
   };
   chrome = {
     url = "https://dl.google.com/tag/s/appguid%3DCOM.GOOGLE.CHROME%26iid%3D%7BA28A17CD-130C-A433-15D3-6C506FCA1744%7D%26brand%3DGGRO/chrome/mac/universal/stable/googlechrome.dmg";
-    hash = "sha256-MmLHMVbryB7+RLaKqzXO+DY9NOJ+GHUKY/wYtd5S9zg=";
+    hash = "sha256-MgNuiqslDl2SvWOjG9Rube3nrEDBPbvWF5syeoNdk8M=";
   };
   firefox = {
     url = "https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US";
@@ -75,11 +83,11 @@
   };
   mole = {
     url = "https://mole.fit/download";
-    hash = "sha256-cVO47Te2FVYMsC2QPaA/TT4j02HECtQ9ojn1Y//quYo=";
+    hash = "sha256-OFNAe2uFEtCv+d4oypqatMYAh/YXx+PFrS/jAhiXxmY=";
   };
   raycast = {
     url = "https://www.raycast.com/download/mac";
-    hash = "sha256-QwMO6O1n30Pnn4qBXoHwfZrdpWVQ2/QSNLqZJHFyZFo=";
+    hash = "sha256-NZmQ56RSlWDyzsfTKd+txRaEYd2znZb+sif24mk/GmY=";
   };
   rodecaster-app = {
     format = "zip-pkg";
@@ -126,7 +134,7 @@
   nordvpn = {
     format = "pkg";
     url = "https://downloads.nordcdn.com/apps/macos/generic/NordVPN-OpenVPN/latest/NordVPN.pkg";
-    hash = "sha256-UTwGA9O1s2whRYU5SVSLPtQqSDDkvMc/1U1UkSTB3Qc=";
+    hash = "sha256-pg+SIqziTSR8FpHPZudaPSU8y4rEQXFeI10IFDA/Ogo=";
     appName = "NordVPN.app";
   };
   protonvpn = {
@@ -148,7 +156,7 @@
   };
   whatsapp = {
     url = "https://web.whatsapp.com/desktop/mac_native/release/?configuration=Release";
-    hash = "sha256-K8woCy3GwBqeUCyXtWk3nw/BcGIcJdM+lr0MzXIJJzo=";
+    hash = "sha256-af99kJpk2BgWHh9fuJNo0lUqyRIZ0TA/7djoleNxyek=";
   };
   # ====================== Password Managers ====================== #
   onepassword = {
