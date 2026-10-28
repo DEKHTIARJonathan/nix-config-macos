@@ -860,7 +860,8 @@ The supplied filename identifies this as an ICA scanner driver. It is optional:
 install it. Keep `manualInstall = true`; the automatic PKG installer expects an
 application in `/Applications`.
 
-From the repository root, build and extract the installer without activating the system:
+From the repository root, build and extract the installer without activating the
+system:
 
 ```sh
 nix build --no-update-lock-file --out-link result-brother-scanner .#brother-scanner

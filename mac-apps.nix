@@ -95,6 +95,10 @@
     hash = "sha256-+3fenJZN/aH8wgKSC6VmTQoL3pgJASK6uuWGDpbnwh4=";
     appName = "RODECaster App.app";
   };
+  the-unarchiver = {
+    url = "https://dl.devmate.com/com.macpaw.site.theunarchiver/TheUnarchiver.dmg";
+    hash = "sha256-L+gRjQhdY4n0a1z2TWiFPTFo13g4kMZZ74u0drAl3VA=";
+  };
   tmog = {
     url = "https://tmog.org/rtm/downloads/TMOG-Task-Manager-1.0.0-20260923234339-macOS-universal.dmg";
     hash = "sha256-eMSC5Zjhb6W0eeBalgmjpMH3jfzpYEaL6nfw+5gYmJU=";
