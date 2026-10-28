@@ -476,6 +476,15 @@ and period substitution, and captured trackpad preferences (including speed
 preferences are autohide enabled, delay `0.0`, animation modifier `0.25`, bottom
 placement, size 64, and no recent applications.
 
+Finder defaults to List view. Every activation also maintains automatic sorting
+by name for Desktop icons and the default Finder Icon view, including with
+`all --once`. These values live in `settings/desktop.json`. Icon size, spacing,
+backgrounds, and unrelated view preferences are preserved; changed Finder
+preferences are backed up privately before writing. Finder is not restarted
+automatically: relaunch it or log out and back in to load the preferences.
+Folders with saved view settings can override the defaults; adjust those through
+Finder's View → Show View Options. Activation does not delete `.DS_Store` files.
+
 On the first Home Manager activation, after applications are installed:
 
 - Missing VS Code/Zed settings files are seeded. Existing files and symlinks,
@@ -546,6 +555,7 @@ After activation, these commands run as your user (never with `sudo`):
 
 ```sh
 mac-config-restore all --dry-run
+mac-config-restore finder                  # Maintain Desktop/Finder icon sorting
 mac-config-restore dock
 mac-config-restore terminal
 mac-config-restore editors                 # Seed only missing files
@@ -850,16 +860,7 @@ The supplied filename identifies this as an ICA scanner driver. It is optional:
 install it. Keep `manualInstall = true`; the automatic PKG installer expects an
 application in `/Applications`.
 
-From the repository root, first resolve its pending hash:
-
-```sh
-nix build --no-update-lock-file --no-link .#brother-scanner.src
-```
-
-The initial build intentionally fails with a hash mismatch. Replace only
-`brother-scanner`'s `hash = lib.fakeHash;` in `mac-apps.nix` with the exact
-`got: sha256-...` value, quoted as a Nix string. Keep the URL unchanged. Then
-build and extract the installer without activating the system:
+From the repository root, build and extract the installer without activating the system:
 
 ```sh
 nix build --no-update-lock-file --out-link result-brother-scanner .#brother-scanner

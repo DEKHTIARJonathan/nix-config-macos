@@ -172,6 +172,101 @@ class RestoreTests(unittest.TestCase):
         self.home = Path(self.temporary.name) / "Home with spaces"
         self.source = ROOT / "settings"
 
+    def test_finder_preserves_views_backs_up_and_skips_unchanged_preferences(self):
+        domain = "com.apple.finder"
+        original = {
+            "DesktopViewSettings": {
+                "IconViewSettings": {
+                    "arrangeBy": "none",
+                    "iconSize": 48,
+                    "gridSpacing": 72,
+                    "textSize": 14,
+                },
+                "OtherSetting": True,
+            },
+            "StandardViewSettings": {
+                "IconViewSettings": {"arrangeBy": "grid", "backgroundType": 1},
+                "ListViewSettings": {"sortColumn": "dateModified"},
+            },
+            "ShowStatusBar": True,
+        }
+        preferences = FakePreferences({domain: original})
+        expected = copy.deepcopy(original)
+        for key in ("DesktopViewSettings", "StandardViewSettings"):
+            expected[key]["IconViewSettings"]["arrangeBy"] = "name"
+        restore.restore_finder(self.source, self.home, preferences)
+        self.assertEqual(preferences.values[domain], expected)
+        backups = list(restore.state_directory(self.home).glob("backups/*"))
+        self.assertEqual(len(backups), 1)
+        self.assertEqual(plistlib.loads(backups[0].read_bytes()), original)
+        self.assertEqual(backups[0].stat().st_mode & 0o777, 0o600)
+        restore.restore_finder(self.source, self.home, preferences)
+        self.assertEqual(preferences.writes, 1)
+        self.assertEqual(
+            list(restore.state_directory(self.home).glob("backups/*")), backups
+        )
+
+    def test_finder_dry_run_creates_no_preferences_or_state(self):
+        preferences = FakePreferences()
+        restore.restore_finder(self.source, self.home, preferences, dry_run=True)
+        self.assertEqual(preferences.writes, 0)
+        self.assertEqual(preferences.values, {})
+        self.assertFalse(self.home.exists())
+
+    def test_finder_missing_settings_and_failed_write_remain_retryable(self):
+        preferences = FakePreferences()
+        preferences.fail = True
+        with self.assertRaisesRegex(RuntimeError, "Simulated"):
+            restore.restore_finder(self.source, self.home, preferences)
+        self.assertEqual(preferences.values, {})
+        self.assertFalse(
+            (restore.state_directory(self.home) / "finder-restored").exists()
+        )
+        preferences.fail = False
+        restore.restore_finder(self.source, self.home, preferences)
+        self.assertEqual(
+            preferences.values["com.apple.finder"],
+            {
+                key: {"IconViewSettings": {"arrangeBy": "name"}}
+                for key in ("DesktopViewSettings", "StandardViewSettings")
+            },
+        )
+
+    def test_finder_refuses_malformed_views_without_writing(self):
+        for value in ([], {"IconViewSettings": "invalid"}):
+            with self.subTest(value=value):
+                preferences = FakePreferences(
+                    {"com.apple.finder": {"StandardViewSettings": value}}
+                )
+                with self.assertRaisesRegex(TypeError, "Expected a dictionary"):
+                    restore.restore_finder(self.source, self.home, preferences)
+                self.assertEqual(preferences.writes, 0)
+                self.assertFalse(self.home.exists())
+
+    def test_all_once_maintains_finder_and_reports_write_failure(self):
+        preferences = FakePreferences()
+        arguments = ["mac-config-restore", "all", "--once", "--home", str(self.home)]
+        with (
+            patch.object(sys, "argv", arguments),
+            patch.dict(os.environ, {"DRY_RUN": ""}),
+            patch.object(restore.os, "geteuid", return_value=501),
+            patch.object(restore, "seed_editors"),
+            patch.object(restore, "restore_editor_fonts"),
+            patch.object(restore, "restore_gitkraken_fonts"),
+            patch.object(restore, "restore_editor_keybindings"),
+            patch.object(restore, "restore_desktop"),
+            patch.object(restore, "Preferences", return_value=preferences),
+        ):
+            self.assertEqual(restore.main(), 0)
+            preferences.values["com.apple.finder"]["DesktopViewSettings"][
+                "IconViewSettings"
+            ]["arrangeBy"] = "none"
+            preferences.fail = True
+            self.assertEqual(restore.main(), 1)
+            preferences.fail = False
+            self.assertEqual(restore.main(), 0)
+        self.assertEqual(preferences.writes, 2)
+
     def test_zshrc_migrates_managed_link_without_changing_store_file(self):
         store = Path(self.temporary.name) / "store"
         generated = store / "example-home-manager-files/.zshrc"

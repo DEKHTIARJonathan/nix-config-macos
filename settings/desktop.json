@@ -13,6 +13,10 @@
     "tilesize": 64,
     "show-recents": false
   },
+  "finder": {
+    "FXPreferredViewStyle": "Nlsv"
+  },
+  "finderIconArrangement": "name",
   "custom": {
     "NSGlobalDomain": {
       "AppleLanguages": [

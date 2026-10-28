@@ -1,4 +1,4 @@
-"""Seed writable shell/editor files and restore captured Dock/Terminal preferences."""
+"""Seed writable shell/editor files and maintain macOS preferences."""
 
 import argparse
 import json
@@ -330,6 +330,40 @@ def dock_entries(items, applications=Path("/Applications")):
     return entries
 
 
+def restore_finder(source, home, preferences, dry_run=False):
+    """Maintain icon arrangement without replacing unrelated view settings."""
+    arrangement = json.loads((source / "desktop.json").read_text())[
+        "finderIconArrangement"
+    ]
+    domain = "com.apple.finder"
+    current = preferences.read(domain)
+    updates = {}
+    for key in ("DesktopViewSettings", "StandardViewSettings"):
+        view = current.get(key, {})
+        if not isinstance(view, dict):
+            raise TypeError(f"Expected a dictionary in Finder {key}")
+        icons = view.get("IconViewSettings", {})
+        if not isinstance(icons, dict):
+            raise TypeError(f"Expected a dictionary in Finder {key}.IconViewSettings")
+        if icons.get("arrangeBy") != arrangement:
+            updates[key] = {
+                **view,
+                "IconViewSettings": {**icons, "arrangeBy": arrangement},
+            }
+    if not updates:
+        return
+    print(
+        f"{'Would set' if dry_run else 'Setting'} Finder icon arrangement: {arrangement}"
+    )
+    if dry_run:
+        return
+    backup = backup_path(home, "finder.plist")
+    atomic_write(backup, plistlib.dumps(current, fmt=plistlib.FMT_BINARY))
+    print(f"Backup: {backup}")
+    preferences.write(domain, updates)
+    print("Finder preferences saved; relaunch Finder or log out/in to reload them.")
+
+
 def restore_desktop(
     component,
     source,
@@ -398,6 +432,7 @@ def main():
             "editor-fonts",
             "gitkraken-fonts",
             "editor-keybindings",
+            "finder",
             "dock",
             "terminal",
             "all",
@@ -430,6 +465,7 @@ def main():
             "editor-fonts",
             "gitkraken-fonts",
             "editor-keybindings",
+            "finder",
             "dock",
             "terminal",
         ]
@@ -453,10 +489,18 @@ def main():
             else:
                 if preferences is None:
                     preferences = Preferences()
-                restore_desktop(
-                    component, args.source, args.home, preferences, args.once, dry_run
-                )
-        except (OSError, ValueError, RuntimeError) as error:
+                if component == "finder":
+                    restore_finder(args.source, args.home, preferences, dry_run)
+                else:
+                    restore_desktop(
+                        component,
+                        args.source,
+                        args.home,
+                        preferences,
+                        args.once,
+                        dry_run,
+                    )
+        except (OSError, ValueError, TypeError, RuntimeError) as error:
             print(f"Failed to restore {component}: {error}")
             failed = True
     return int(failed)

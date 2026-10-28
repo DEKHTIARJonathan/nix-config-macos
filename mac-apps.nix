@@ -66,7 +66,7 @@
   };
   chrome = {
     url = "https://dl.google.com/tag/s/appguid%3DCOM.GOOGLE.CHROME%26iid%3D%7BA28A17CD-130C-A433-15D3-6C506FCA1744%7D%26brand%3DGGRO/chrome/mac/universal/stable/googlechrome.dmg";
-    hash = "sha256-MgNuiqslDl2SvWOjG9Rube3nrEDBPbvWF5syeoNdk8M=";
+    hash = "sha256-FdnYoz7rhYZnlG8enSnSqCYZIUyJ0bsWqxE8tj7BE1U=";
   };
   firefox = {
     url = "https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US";

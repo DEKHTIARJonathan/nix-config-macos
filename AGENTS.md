@@ -347,6 +347,14 @@ Terminal snapshots have separate completion markers beneath
 `~/.local/state/nix-macos-config`; Terminal's managed key mappings are the
 intentional exception to one-time profile restoration.
 
+Finder defaults to List view through `desktop.nix`. `restore_finder()` maintains
+Desktop and default Finder icon sorting by name on every activation, including
+`all --once`, using `finderIconArrangement` in `settings/desktop.json`. Merge
+only `IconViewSettings.arrangeBy` into each existing view dictionary, back up
+before changed writes, and preserve icon size, spacing, and other preferences.
+Do not delete `.DS_Store` files or restart Finder automatically; saved folder
+views may override defaults, and Finder may need a relaunch to load changes.
+
 Preserve these contracts when changing migration code:
 
 - Missing editor settings are seeded as writable files. Existing files and
