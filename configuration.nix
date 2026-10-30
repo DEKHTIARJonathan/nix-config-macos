@@ -1,4 +1,5 @@
 {
+  blazePackage,
   config,
   host,
   lib,
@@ -74,6 +75,9 @@
   # Use macOS's native core utilities (cp, ls, mv, date, etc.). Installing
   # GNU coreutils here shadows them and can break macOS-specific build scripts.
   environment.systemPackages = with pkgs; [
+    # Incremental Rust builds from indexable-inc/blaze's upstream flake.
+    blazePackage
+
     # Cross-platform make
     cmake
 
@@ -158,6 +162,9 @@
 
     # Display directories as trees (with optional color/HTML output)
     tree
+
+    # Run a command repeatedly and display its output.
+    watch
 
     # Download files over HTTP, HTTPS, and FTP.
     wget

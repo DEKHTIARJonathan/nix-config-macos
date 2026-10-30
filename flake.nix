@@ -6,6 +6,9 @@
     # The Darwin branch includes macOS build fixes.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-26.05-darwin";
 
+    # Rust build tool, with upstream's own nixpkgs and pinned nightly toolchain.
+    blaze.url = "github:indexable-inc/blaze";
+
     nix-darwin = {
       url = "github:nix-darwin/nix-darwin/nix-darwin-26.05";
       # Use one shared nixpkgs revision rather than two independent copies.
@@ -28,6 +31,7 @@
   outputs =
     {
       self,
+      blaze,
       nix-darwin,
       nix-homebrew,
       home-manager,
@@ -42,7 +46,10 @@
       # All commands use `--flake .#mac`; no hostname change is required.
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
         # Pass our machine settings to every imported module.
-        specialArgs = { inherit host; };
+        specialArgs = {
+          inherit host;
+          blazePackage = blaze.packages.${host.system}.default;
+        };
 
         modules = [
           nix-homebrew.darwinModules.nix-homebrew

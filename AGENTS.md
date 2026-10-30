@@ -77,10 +77,11 @@ has passed a build or been activated.
 
 Important settings files:
 
-- `settings/agent-skills/review-agent/SKILL.md`: user-level review skill managed
-  by Home Manager at `~/.agents/skills/review-agent/SKILL.md`. Edit the
-  repository source; activation installs the skill without executing its
-  workflow.
+- `settings/agent-skills/`: user-level skills managed by Home Manager under
+  `~/.agents/skills/`, with per-skill directory links under `~/.claude/skills/`
+  and `~/.codex/skills/`. Preserve other installed skills and Codex's `.system`
+  directory. Edit the repository source; activation installs skills without
+  executing their workflows. `review-agent/SKILL.md` defines the review skill.
 - `settings/desktop.json`: appearance, locale, Dock behavior, and trackpad
   values.
 - `settings/dock.json`: captured app order; this does not install those apps.

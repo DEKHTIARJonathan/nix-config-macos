@@ -7,6 +7,26 @@
 }:
 let
   python = pkgs.python3.withPackages (ps: [ ps.json5 ]);
+  skillNames = builtins.attrNames (
+    lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./settings/agent-skills)
+  );
+  # Link individual skills so each application's own skills remain intact.
+  skillLinks = lib.listToAttrs (
+    lib.concatMap (
+      name:
+      map
+        (
+          directory:
+          lib.nameValuePair "${directory}/${name}" {
+            source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/skills/${name}";
+          }
+        )
+        [
+          ".claude/skills"
+          ".codex/skills"
+        ]
+    ) skillNames
+  );
   # Playwright 1.61.1 requires these browser revisions; nixpkgs currently ships
   # older ones. Keep the upstream Apple Silicon archive layouts unchanged.
   playwrightWebkitRevision = "2311";
@@ -47,16 +67,21 @@ in
       editors
       verifyTools
     ];
-    file.".p10k.zsh".source = ./settings/p10k.zsh;
-    file.".agents/skills/review-agent/SKILL.md".source = ./settings/agent-skills/review-agent/SKILL.md;
-    # Manage only these revisions, keeping other projects' cached browsers intact.
-    # No global PLAYWRIGHT_BROWSERS_PATH override or browser installer is needed.
-    file."Library/Caches/ms-playwright/webkit-${playwrightWebkitRevision}".source = playwrightWebkit;
-    file."Library/Caches/ms-playwright/chromium_headless_shell-${playwrightChromiumRevision}".source =
-      playwrightChromiumHeadless;
-    # Keep the entry point writable for application setup (for example Docker).
-    # Home Manager still updates the generated shell configuration separately.
-    file."./.zshrc".target = ".config/zsh/nix-zshrc";
+    file = skillLinks // {
+      ".p10k.zsh".source = ./settings/p10k.zsh;
+      ".agents/skills" = {
+        source = ./settings/agent-skills;
+        recursive = true;
+      };
+      # Manage only these revisions, keeping other projects' cached browsers intact.
+      # No global PLAYWRIGHT_BROWSERS_PATH override or browser installer is needed.
+      "Library/Caches/ms-playwright/webkit-${playwrightWebkitRevision}".source = playwrightWebkit;
+      "Library/Caches/ms-playwright/chromium_headless_shell-${playwrightChromiumRevision}".source =
+        playwrightChromiumHeadless;
+      # Keep the entry point writable for application setup (for example Docker).
+      # Home Manager still updates the generated shell configuration separately.
+      "./.zshrc".target = ".config/zsh/nix-zshrc";
+    };
     activation.writableZshrc = lib.hm.dag.entryBetween [ "linkGeneration" ] [ "writeBoundary" ] ''
       run ${restore}/bin/mac-config-restore zshrc
     '';

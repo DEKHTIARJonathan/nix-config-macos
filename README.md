@@ -345,6 +345,7 @@ already includes a lock.
 
 | Original entry           | Managed installation                               |
 | ------------------------ | -------------------------------------------------- |
+| blaze                    | Upstream `blaze` flake's default package           |
 | bun                      | Homebrew formula `oven-sh/bun/bun`                 |
 | cmake                    | `pkgs.cmake`                                       |
 | coreutils                | Use macOS's built-in utilities                     |
@@ -369,11 +370,18 @@ already includes a lock.
 | trash                    | `pkgs.darwin.trash` (same upstream implementation) |
 | tree                     | `pkgs.tree`                                        |
 | uv                       | Homebrew formula `uv`                              |
+| watch                    | `pkgs.watch`                                       |
 | android-commandlinetools | `pkgs.androidenv.composeAndroidPackages` SDK       |
 | android-platform-tools   | Same composed SDK, including adb and fastboot      |
 | hiddenbar                | Homebrew cask `hiddenbar`                          |
 
 Both Android entries are included in one SDK package.
+
+The [Blaze Rust build tool](https://github.com/indexable-inc/blaze) comes from
+its upstream flake, pinned in `flake.lock` together with its own build inputs.
+It is compiled from source by Nix. After activation, use `blaze build`,
+`blaze run`, or `blaze test` in a Rust project. Its package supplies its pinned
+Rust toolchain to Blaze without changing the global Rustup-managed commands.
 
 Playwright **1.61.1** browser dependencies are declared in `home.nix` using
 upstream Apple Silicon archives. Home Manager links them under
@@ -426,12 +434,15 @@ if desired.
 
 ## Personal environment restoration
 
-Home Manager installs the `review-agent` skill at
-`~/.agents/skills/review-agent/SKILL.md`. Its source is
-`settings/agent-skills/review-agent/SKILL.md`; edit that source and activate to
-update it. The skill requests an adversarial sub-agent review, a corrective plan
-and implementation, full tests, `prek run -a`, and a final commit when invoked.
-Activation only installs the skill; it does not run the review.
+Home Manager installs `settings/agent-skills/` under `~/.agents/skills/`, with
+individual skill-directory symlinks under `~/.claude/skills/` and
+`~/.codex/skills/`. These links share the same source while preserving other
+installed skills, including Codex's `.system` directory. Add or edit a skill in
+`settings/agent-skills/` and activate to update all three locations.
+
+The `review-agent` skill requests an adversarial sub-agent review, a corrective
+plan and implementation, full tests, `prek run -a`, and a final commit when
+invoked. Activation only installs the skill; it does not run the review.
 
 The settings were captured directly from this Mac on 2026-10-04. `old/` is a
 historical reference and is not imported. Home Manager follows the existing
@@ -476,14 +487,20 @@ and period substitution, and captured trackpad preferences (including speed
 preferences are autohide enabled, delay `0.0`, animation modifier `0.25`, bottom
 placement, size 64, and no recent applications.
 
-Finder defaults to List view. Every activation also maintains automatic sorting
-by name for Desktop icons and the default Finder Icon view, including with
-`all --once`. These values live in `settings/desktop.json`. Icon size, spacing,
-backgrounds, and unrelated view preferences are preserved; changed Finder
-preferences are backed up privately before writing. Finder is not restarted
-automatically: relaunch it or log out and back in to load the preferences.
-Folders with saved view settings can override the defaults; adjust those through
-Finder's View → Show View Options. Activation does not delete `.DS_Store` files.
+Finder defaults to List view for folders without a saved view. Every activation
+also maintains automatic sorting by name for Desktop icons and the default
+Finder Icon view, including with `all --once`. These values live in
+`settings/desktop.json`. Icon size, spacing, backgrounds, and unrelated view
+preferences are preserved; changed Finder preferences are backed up privately
+before writing. Finder is not restarted automatically: relaunch it or log out
+and back in to load the preferences. Existing folders can retain Icon view in
+their saved `.DS_Store` metadata even when the global default is already List.
+In an affected folder, press Command-2 to select List, then Command-J for View
+Options. Select "Always open in List view" and, if wanted, "Browse in List view"
+for its subfolders. Subfolders with their own saved views may need the same
+adjustment. "Use as Defaults" applies view options to folders using that view;
+it does not reset every folder's view. Activation does not delete `.DS_Store`
+files or overwrite saved folder views.
 
 On the first Home Manager activation, after applications are installed:
 
