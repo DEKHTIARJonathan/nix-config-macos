@@ -222,6 +222,7 @@
       "oven-sh/bun/bun" # JavaScript runtime, bundler, and package manager.
       "node" # Includes npm; Homebrew owns both.
       "uv" # Python dependency environments, including make test.
+      "sccache" # Shared compiler cache for Rust and C/C++ builds.
       "railway"
       "herdr"
       "mactop"
