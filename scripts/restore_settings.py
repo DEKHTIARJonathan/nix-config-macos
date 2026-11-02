@@ -53,6 +53,93 @@ def atomic_write(path, data):
             os.unlink(temporary)
 
 
+def restore_agent_skills(source, home, dry_run=False):
+    """Install real, writable skill copies under .agents/skills."""
+    source = source / "agent-skills"
+
+    def inventory(folder):
+        entries = {}
+        for path in sorted(folder.rglob("*")):
+            if path.is_symlink():
+                raise RuntimeError(f"Skill tree contains a symlink: {path}")
+            relative = path.relative_to(folder)
+            if path.is_dir():
+                entries[relative] = None
+            elif path.is_file():
+                entries[relative] = (path.read_bytes(), path.stat().st_mode & 0o111)
+            else:
+                raise RuntimeError(f"Unsupported skill file: {path}")
+        return entries
+
+    def backup_skill(target):
+        backup = backup_path(home, f"{target.parent.parent.name[1:]}-{target.name}")
+        # Preserve linked content independently of Nix GC or changes to .agents,
+        # as well as the original object for rollback.
+        if target.is_dir():
+            shutil.copytree(
+                target,
+                backup.with_name(backup.name + "-contents"),
+                ignore_dangling_symlinks=True,
+            )
+        os.replace(target, backup)
+        print(f"Backup: {backup}")
+        return backup
+
+    skills = []
+    for skill in sorted(source.iterdir()):
+        # Finder metadata and source-root notes are not installable skills.
+        if skill.name.startswith("."):
+            continue
+        if skill.is_symlink():
+            raise RuntimeError(f"Expected a regular skill directory: {skill}")
+        if not skill.is_dir():
+            continue
+        skills.append((skill, inventory(skill)))
+
+    root = home / ".agents/skills"
+    for parent in (home, root.parent, root):
+        if parent.is_symlink():
+            raise RuntimeError(
+                f"Refusing to install skills through a symlink: {parent}"
+            )
+        if parent.exists() and not parent.is_dir():
+            raise RuntimeError(f"Expected a directory: {parent}")
+
+    for skill, expected in skills:
+        target = root / skill.name
+        if target.is_dir() and not target.is_symlink():
+            try:
+                if inventory(target) == expected:
+                    continue
+            except RuntimeError:
+                # Replace legacy trees containing file symlinks as well.
+                pass
+        print(f"{'Would copy' if dry_run else 'Copying'} agent skill to {target}")
+        if dry_run:
+            continue
+        root.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryDirectory(
+            prefix=f".{skill.name}.", dir=root
+        ) as temporary:
+            staged = Path(temporary) / skill.name
+            shutil.copytree(skill, staged)
+            # Store sources are read-only; installed copies must be writable.
+            staged.chmod(0o755)
+            for relative, content in expected.items():
+                (staged / relative).chmod(
+                    0o755 if content is None else 0o644 | content[1]
+                )
+            backup = None
+            if target.exists() or target.is_symlink():
+                backup = backup_skill(target)
+            try:
+                os.replace(staged, target)
+            except OSError:
+                if backup is not None:
+                    os.replace(backup, target)
+                raise
+
+
 def seed_zshrc(home, dry_run=False, *, store=Path("/nix/store")):
     """Migrate the HM symlink to a writable loader; retain app/user additions."""
     target = home / ".zshrc"
@@ -427,6 +514,7 @@ def main():
     parser.add_argument(
         "component",
         choices=[
+            "agent-skills",
             "zshrc",
             "editors",
             "editor-fonts",
@@ -476,7 +564,9 @@ def main():
     preferences = None
     for component in components:
         try:
-            if component == "zshrc":
+            if component == "agent-skills":
+                restore_agent_skills(args.source, args.home, dry_run)
+            elif component == "zshrc":
                 seed_zshrc(args.home, dry_run)
             elif component == "editors":
                 seed_editors(args.source, args.home, args.replace_existing, dry_run)

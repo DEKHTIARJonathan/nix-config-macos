@@ -77,11 +77,13 @@ has passed a build or been activated.
 
 Important settings files:
 
-- `settings/agent-skills/`: user-level skills managed by Home Manager under
-  `~/.agents/skills/`, with per-skill directory links under `~/.claude/skills/`
-  and `~/.codex/skills/`. Preserve other installed skills and Codex's `.system`
-  directory. Edit the repository source; activation installs skills without
-  executing their workflows. `review-agent/SKILL.md` defines the review skill.
+- `settings/agent-skills/`: user-level skills copied as real, writable files
+  only to `~/.agents/skills/` by `mac-config-restore agent-skills`, after Home
+  Manager's `linkGeneration` step. Do not use Home Manager file symlinks for
+  these skills. Back up changed managed skill directories, leave identical
+  copies alone, and preserve other installed skills. Edit the repository source;
+  activation installs skills without executing their workflows.
+  `review-agent/SKILL.md` defines the review skill.
 - `settings/desktop.json`: appearance, locale, Dock behavior, and trackpad
   values.
 - `settings/dock.json`: captured app order; this does not install those apps.

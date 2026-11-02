@@ -7,26 +7,6 @@
 }:
 let
   python = pkgs.python3.withPackages (ps: [ ps.json5 ]);
-  skillNames = builtins.attrNames (
-    lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./settings/agent-skills)
-  );
-  # Link individual skills so each application's own skills remain intact.
-  skillLinks = lib.listToAttrs (
-    lib.concatMap (
-      name:
-      map
-        (
-          directory:
-          lib.nameValuePair "${directory}/${name}" {
-            source = config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/skills/${name}";
-          }
-        )
-        [
-          ".claude/skills"
-          ".codex/skills"
-        ]
-    ) skillNames
-  );
   # Playwright 1.61.1 requires these browser revisions; nixpkgs currently ships
   # older ones. Keep the upstream Apple Silicon archive layouts unchanged.
   playwrightWebkitRevision = "2311";
@@ -67,12 +47,8 @@ in
       editors
       verifyTools
     ];
-    file = skillLinks // {
+    file = {
       ".p10k.zsh".source = ./settings/p10k.zsh;
-      ".agents/skills" = {
-        source = ./settings/agent-skills;
-        recursive = true;
-      };
       # Manage only these revisions, keeping other projects' cached browsers intact.
       # No global PLAYWRIGHT_BROWSERS_PATH override or browser installer is needed.
       "Library/Caches/ms-playwright/webkit-${playwrightWebkitRevision}".source = playwrightWebkit;
@@ -87,6 +63,10 @@ in
     '';
     activation.restoreSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       run ${restore}/bin/mac-config-restore all --once
+    '';
+    # Copy only after Home Manager removes the old generation's skill links.
+    activation.copyAgentSkills = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      run ${restore}/bin/mac-config-restore agent-skills
     '';
   };
 
