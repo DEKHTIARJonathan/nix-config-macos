@@ -78,15 +78,8 @@
     # Incremental Rust builds from indexable-inc/blaze's upstream flake.
     blazePackage
 
-    # Cross-platform make
-    cmake
-
     # Play, record, convert, and stream select audio and video codecs
     ffmpeg
-
-    # GitHub command-line tool
-    # Your existing login stays user-managed; `gh auth login` if needed.
-    gh
 
     # Distributed revision control system
     # Home Manager restores the captured global Git settings.
@@ -133,9 +126,6 @@
 
     # Discover library compiler and linker flags for builds such as FFmpeg
     pkg-config
-
-    # Fast Git hook manager written in Rust, drop-in alternative to pre-commit
-    prek
 
     # Python interpreter for shells and development tools
     python3
@@ -218,9 +208,12 @@
       "oleksandrkrupko/debloat"
     ];
     brews = [
-      # Upgrade these independently of Nix with `brew upgrade bun node uv`.
+      # Upgrade these independently of Nix with `brew upgrade bun cmake gh node prek uv`.
       "oven-sh/bun/bun" # JavaScript runtime, bundler, and package manager.
+      "cmake" # Cross-platform build system generator.
+      "gh" # GitHub CLI; existing login stays user-managed (`gh auth login` if needed).
       "node" # Includes npm; Homebrew owns both.
+      "prek" # Fast Git hook manager, drop-in alternative to pre-commit.
       "uv" # Python dependency environments, including make test.
       "sccache" # Shared compiler cache for Rust and C/C++ builds.
       "railway"

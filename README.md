@@ -347,10 +347,10 @@ already includes a lock.
 | ------------------------ | -------------------------------------------------- |
 | blaze                    | Upstream `blaze` flake's default package           |
 | bun                      | Homebrew formula `oven-sh/bun/bun`                 |
-| cmake                    | `pkgs.cmake`                                       |
+| cmake                    | Homebrew formula `cmake`                           |
 | coreutils                | Use macOS's built-in utilities                     |
 | ffmpeg                   | `pkgs.ffmpeg`                                      |
-| gh                       | `pkgs.gh`                                          |
+| gh                       | Homebrew formula `gh`                              |
 | git                      | `pkgs.git`                                         |
 | git-lfs                  | `pkgs.git-lfs`                                     |
 | make                     | `pkgs.gnumake`                                     |
@@ -362,7 +362,7 @@ already includes a lock.
 | ninja                    | `pkgs.ninja`                                       |
 | nixfmt                   | `pkgs.nixfmt`                                      |
 | node                     | Homebrew formula `node` (includes npm)             |
-| prek                     | `pkgs.prek`                                        |
+| prek                     | Homebrew formula `prek`                            |
 | python3                  | `pkgs.python3`; Zsh aliases `python` to `python3`  |
 | ripgrep                  | `pkgs.ripgrep`                                     |
 | rustup                   | `pkgs.rustup`                                      |
@@ -666,14 +666,15 @@ brew upgrade railway
 Existing credentials are retained. Avoid installing duplicate npm copies of
 these CLIs.
 
-Bun, Node (including npm), and uv are also installed through Homebrew so they
-can be upgraded independently of the Nix lockfile. Bun uses the official
-`oven-sh/bun` tap. After activating this configuration with `make install`, open
-a new login shell and check which installations are selected:
+Bun, CMake, GitHub CLI, Node (including npm), prek, and uv are also installed
+through Homebrew so they can be upgraded independently of the Nix lockfile. Bun
+uses the official `oven-sh/bun` tap. After activating this configuration with
+`make install`, open a new login shell and check which installations are
+selected:
 
 ```sh
-type -a bun node npm uv
-brew upgrade bun node uv
+type -a bun cmake gh node npm prek uv
+brew upgrade bun cmake gh node prek uv
 ```
 
 After activation, verify `bun --version` is **1.4.2 or newer**. There is no

@@ -22,7 +22,7 @@ let
     includeSources = false;
     includeNDK = false;
 
-    # Your standalone pkgs.cmake is already installed. An Android project
+    # Standalone CMake is installed through Homebrew. An Android project
     # may require a specific SDK CMake version; declare it here if so.
     includeCmake = false;
   };
