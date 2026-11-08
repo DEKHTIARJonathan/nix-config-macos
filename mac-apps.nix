@@ -42,6 +42,10 @@
     url = "https://edgedl.me.gvt1.com/android/studio/install/2026.2.1.8/android-studio-rabbit1-mac_arm.dmg";
     hash = "sha256-FtSg+KUkE7UYafwY1b3N+c7NOGFc17t88U1RuZ0v71Q=";
   };
+  db-browser-for-sqlite = {
+    url = "https://github.com/sqlitebrowser/sqlitebrowser/releases/download/v3.13.1/DB.Browser.for.SQLite-v3.13.1.dmg";
+    hash = "sha256-pkHPv8ws5gnwfeRKNRNNq1NIXswY5tmvope1FNdL114=";
+  };
   docker-desktop = {
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
     hash = "sha256-0hvYeH6HYbIsKxt4w0/6mau2wGIZtDuoS2tFCHo1yf4=";
