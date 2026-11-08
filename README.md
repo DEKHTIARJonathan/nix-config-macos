@@ -552,6 +552,13 @@ restoration; explicitly rerun it after installing them. Preference backups are
 binary plists in the private `backups/` directory under that state directory.
 Explicit editor restores also back up replaced files.
 
+Apple Terminal maintains Option+Left/Right for word navigation and
+Command+Left/Right for the beginning/end of the command line in every profile.
+The Basic profile also maintains MesloLGS NF while preserving its font size,
+colors, and other settings. These repairs run even with `terminal --once`; fully
+quit and reopen Terminal to reload saved preferences. Choose Basic in Terminal's
+profile settings to use it; activation preserves your default profile.
+
 VS Code and Zed also receive terminal-only Shift+Enter bindings on every
 activation, sending the same `ESC [13;2u` sequence. The repair merges into their
 writable keybinding files, including existing VS Code profile directories,

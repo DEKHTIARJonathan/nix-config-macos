@@ -16,18 +16,30 @@ from mac_preferences import Preferences
 
 
 def terminal_keybindings(profiles):
-    """Send CSI-u Shift+Enter instead of an indistinguishable plain Return."""
-    return {
+    """Maintain navigation, distinct Shift+Enter, and Basic's prompt font."""
+    updated = {
         name: {
             **profile,
             "keyMapBoundKeys": {
                 **profile.get("keyMapBoundKeys", {}),
                 "$000D": "\x1b[13;2u",  # Shift+Return
                 "$0003": "\x1b[13;2u",  # Shift+keypad Enter
+                "~F702": "\x1bb",  # Option+Left: previous word
+                "~F703": "\x1bf",  # Option+Right: next word
+                "@F702": "\x01",  # Command+Left: beginning of line
+                "@F703": "\x05",  # Command+Right: end of line
             },
         }
         for name, profile in profiles.items()
     }
+    basic = updated.get("Basic", {})
+    if isinstance(basic.get("Font"), bytes):
+        font = plistlib.loads(basic["Font"])
+        for item in font.get("$objects", []):
+            if isinstance(item, dict) and isinstance(item.get("NSName"), plistlib.UID):
+                font["$objects"][item["NSName"].data] = "MesloLGS-NF-Regular"
+        basic["Font"] = plistlib.dumps(font, fmt=plistlib.FMT_BINARY)
+    return updated
 
 
 def state_directory(home):
@@ -476,7 +488,7 @@ def restore_desktop(
             )
         updates = {"persistent-apps": entries}
     elif keep_snapshot:
-        # Profile restoration is one-time, but these two bindings are managed
+        # Profile restoration is one-time, but navigation, Shift+Enter and Basic's font are managed
         # on every activation, including profiles added after the first switch.
         profiles = terminal_keybindings(current.get("Window Settings", {}))
         if profiles == current.get("Window Settings", {}):

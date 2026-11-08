@@ -706,10 +706,11 @@ class RestoreTests(unittest.TestCase):
         current = preferences.read(domain)
         self.assertIn("Personal", current["Window Settings"])
         self.assertEqual(current["unrelated"], 7)
-        profile = current["Window Settings"]["Basic (Shift-Enter)"]
+        profile = current["Window Settings"]["Basic"]
         self.assertIsInstance(profile["Font"], bytes)
-        self.assertEqual(current["Default Window Settings"], "Basic (Shift-Enter)")
-        for name in ["Basic (Shift-Enter)", "Clear Dark", "Personal"]:
+        self.assertEqual(current["Default Window Settings"], "Basic")
+        self.assertEqual(current["Startup Window Settings"], "Basic")
+        for name in ["Basic", "Basic (Shift-Enter)", "Clear Dark", "Personal"]:
             keys = current["Window Settings"][name]["keyMapBoundKeys"]
             self.assertEqual(keys["$000D"], "\x1b[13;2u")
             self.assertEqual(keys["$0003"], "\x1b[13;2u")
@@ -773,6 +774,40 @@ class RestoreTests(unittest.TestCase):
             "terminal", self.source, self.home, preferences, once=True
         )
         self.assertEqual(preferences.writes, 1)
+
+    def test_terminal_basic_font_and_navigation_preserve_profile_settings(self):
+        captured = plistlib.loads((self.source / "terminal.plist").read_bytes())
+        font = plistlib.loads(captured["Window Settings"]["Basic"]["Font"])
+        for item in font["$objects"]:
+            if isinstance(item, dict) and "NSName" in item:
+                font["$objects"][item["NSName"].data] = "SFMonoTerminal-Regular"
+                item["NSSize"] = 17.0
+        profiles = {
+            "Basic": {
+                "Font": plistlib.dumps(font, fmt=plistlib.FMT_BINARY),
+                "BackgroundColor": b"keep color",
+                "keyMapBoundKeys": {"F704": "custom", "~F702": "old"},
+            }
+        }
+        original = copy.deepcopy(profiles)
+        updated = restore.terminal_keybindings(profiles)
+        self.assertEqual(profiles, original)
+        self.assertEqual(updated["Basic"]["BackgroundColor"], b"keep color")
+        keys = updated["Basic"]["keyMapBoundKeys"]
+        self.assertEqual(keys["F704"], "custom")
+        self.assertEqual(keys["~F702"], "\x1bb")
+        self.assertEqual(keys["~F703"], "\x1bf")
+        self.assertEqual(keys["@F702"], "\x01")
+        self.assertEqual(keys["@F703"], "\x05")
+        repaired = plistlib.loads(updated["Basic"]["Font"])
+        self.assertIn("MesloLGS-NF-Regular", repaired["$objects"])
+        self.assertTrue(
+            any(
+                isinstance(item, dict) and item.get("NSSize") == 17.0
+                for item in repaired["$objects"]
+            )
+        )
+        self.assertEqual(restore.terminal_keybindings(updated), updated)
 
     def test_failed_restore_can_retry_without_completion_marker(self):
         preferences = FakePreferences()

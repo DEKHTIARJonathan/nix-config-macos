@@ -18,6 +18,10 @@
   },
   "finderIconArrangement": "name",
   "custom": {
+    "com.apple.desktopservices": {
+      "DSDontWriteNetworkStores": true,
+      "DSDontWriteUSBStores": true
+    },
     "NSGlobalDomain": {
       "AppleLanguages": [
         "en-US"
