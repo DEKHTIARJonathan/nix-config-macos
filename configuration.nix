@@ -208,10 +208,12 @@
       "oleksandrkrupko/debloat"
     ];
     brews = [
-      # Upgrade these independently of Nix with `brew upgrade bun cmake gh node prek uv`.
+      # Upgrade these independently of Nix with `brew upgrade bun cmake gh jj node prek uv`.
       "oven-sh/bun/bun" # JavaScript runtime, bundler, and package manager.
+      "awscli" # AWS CLI v2.
       "cmake" # Cross-platform build system generator.
       "gh" # GitHub CLI; existing login stays user-managed (`gh auth login` if needed).
+      "jj" # Jujutsu, a Git-compatible version control system.
       "node" # Includes npm; Homebrew owns both.
       "prek" # Fast Git hook manager, drop-in alternative to pre-commit.
       "uv" # Python dependency environments, including make test.
@@ -222,6 +224,7 @@
       "oleksandrkrupko/debloat/debloat" # Interactive macOS service management.
     ];
     casks = [
+      "azure-cli" # Microsoft Azure CLI.
       "hiddenbar"
       "codex"
       "claude-code"
