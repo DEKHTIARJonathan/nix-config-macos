@@ -215,7 +215,9 @@
       "gh" # GitHub CLI; existing login stays user-managed (`gh auth login` if needed).
       "jj" # Jujutsu, a Git-compatible version control system.
       "node" # Includes npm; Homebrew owns both.
+      "parallel" # GNU Parallel for running commands concurrently.
       "prek" # Fast Git hook manager, drop-in alternative to pre-commit.
+      "rsync" # Efficient file synchronization and transfer.
       "uv" # Python dependency environments, including make test.
       "sccache" # Shared compiler cache for Rust and C/C++ builds.
       "railway"
