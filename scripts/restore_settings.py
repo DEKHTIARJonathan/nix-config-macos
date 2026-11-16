@@ -70,6 +70,8 @@ def restore_agent_skills(source, home, dry_run=False):
     source = source / "agent-skills"
 
     def inventory(folder):
+        if folder.is_file():
+            return {Path("."): (folder.read_bytes(), folder.stat().st_mode & 0o111)}
         entries = {}
         for path in sorted(folder.rglob("*")):
             if path.is_symlink():
@@ -99,13 +101,10 @@ def restore_agent_skills(source, home, dry_run=False):
 
     skills = []
     for skill in sorted(source.iterdir()):
-        # Finder metadata and source-root notes are not installable skills.
-        if skill.name.startswith("."):
-            continue
         if skill.is_symlink():
-            raise RuntimeError(f"Expected a regular skill directory: {skill}")
-        if not skill.is_dir():
-            continue
+            raise RuntimeError(f"Skill tree contains a symlink: {skill}")
+        if not skill.is_dir() and not skill.is_file():
+            raise RuntimeError(f"Unsupported skill file: {skill}")
         skills.append((skill, inventory(skill)))
 
     root = home / ".agents/skills"
@@ -119,13 +118,6 @@ def restore_agent_skills(source, home, dry_run=False):
 
     for skill, expected in skills:
         target = root / skill.name
-        if target.is_dir() and not target.is_symlink():
-            try:
-                if inventory(target) == expected:
-                    continue
-            except RuntimeError:
-                # Replace legacy trees containing file symlinks as well.
-                pass
         print(f"{'Would copy' if dry_run else 'Copying'} agent skill to {target}")
         if dry_run:
             continue
@@ -134,9 +126,13 @@ def restore_agent_skills(source, home, dry_run=False):
             prefix=f".{skill.name}.", dir=root
         ) as temporary:
             staged = Path(temporary) / skill.name
-            shutil.copytree(skill, staged)
+            if skill.is_dir():
+                shutil.copytree(skill, staged)
+            else:
+                shutil.copyfile(skill, staged)
             # Store sources are read-only; installed copies must be writable.
-            staged.chmod(0o755)
+            if skill.is_dir():
+                staged.chmod(0o755)
             for relative, content in expected.items():
                 (staged / relative).chmod(
                     0o755 if content is None else 0o644 | content[1]

@@ -18,6 +18,86 @@ import setup_editors as editors
 import verify_development_tools as development
 
 
+class AgentSkillsTests(unittest.TestCase):
+    def test_copies_every_entry_and_always_replaces_managed_copies(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "settings"
+            skills = source / "agent-skills"
+            skill = skills / "example"
+            skill.mkdir(parents=True)
+            (skill / "SKILL.md").write_text("repository version")
+            (skill / ".metadata").write_text("nested hidden file")
+            (skill / "run.sh").write_text("#!/bin/sh\n")
+            (skill / "run.sh").chmod(0o555)
+            (skills / ".hidden").mkdir()
+            (skills / ".hidden" / "data").write_text("hidden directory")
+            (skills / "README.md").write_text("root file")
+            (skills / ".root-file").write_text("hidden root file")
+            home = Path(directory) / "home"
+            root = home / ".agents/skills"
+            unrelated = root / "unrelated"
+            unrelated.mkdir(parents=True)
+            (unrelated / "SKILL.md").write_text("keep me")
+
+            restore.restore_agent_skills(source, home)
+            self.assertEqual((root / "README.md").read_text(), "root file")
+            self.assertEqual((root / ".root-file").read_text(), "hidden root file")
+            self.assertEqual((root / ".hidden/data").read_text(), "hidden directory")
+            self.assertEqual(
+                (root / "example/.metadata").read_text(), "nested hidden file"
+            )
+            self.assertEqual((root / "example/run.sh").stat().st_mode & 0o777, 0o755)
+
+            # Even identical content is replaced and backed up on every run.
+            with patch.object(
+                restore.shutil, "copytree", wraps=restore.shutil.copytree
+            ) as copy:
+                restore.restore_agent_skills(source, home)
+                self.assertTrue(
+                    any(call.args[0] == skill for call in copy.call_args_list)
+                )
+            backups = list((restore.state_directory(home) / "backups").iterdir())
+            self.assertTrue(
+                any(path.name.endswith("-agents-example") for path in backups)
+            )
+
+            (root / "example/SKILL.md").write_text("local edit")
+            (root / "example/obsolete").write_text("remove me")
+            restore.restore_agent_skills(source, home)
+            self.assertEqual(
+                (root / "example/SKILL.md").read_text(), "repository version"
+            )
+            self.assertFalse((root / "example/obsolete").exists())
+            self.assertEqual((unrelated / "SKILL.md").read_text(), "keep me")
+            self.assertTrue(
+                any(
+                    path.is_dir() and (path / "SKILL.md").read_text() == "local edit"
+                    for path in (restore.state_directory(home) / "backups").iterdir()
+                    if path.name.endswith("-agents-example")
+                )
+            )
+
+    def test_dry_run_does_not_create_home(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "settings"
+            (source / "agent-skills").mkdir(parents=True)
+            (source / "agent-skills/file").write_text("data")
+            home = Path(directory) / "home"
+            restore.restore_agent_skills(source, home, dry_run=True)
+            self.assertFalse(home.exists())
+
+    def test_rejects_source_symlinks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "settings"
+            skills = source / "agent-skills"
+            skills.mkdir(parents=True)
+            (skills / ".link").symlink_to("missing")
+            home = Path(directory) / "home"
+            with self.assertRaisesRegex(RuntimeError, "symlink"):
+                restore.restore_agent_skills(source, home)
+            self.assertFalse(home.exists())
+
+
 @unittest.skipUnless(
     os.environ.get("DEBLOAT_ACTIVATION_FILE"),
     "Generated activation script is supplied by the Nix check",

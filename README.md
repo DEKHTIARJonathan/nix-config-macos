@@ -434,17 +434,9 @@ if desired.
 
 ## Personal environment restoration
 
-Home Manager activation copies `settings/agent-skills/` into real, writable
-directories under `~/.agents/skills/`. Other installed skills are preserved. Add
-or edit a skill in `settings/agent-skills/` and activate to update it. Changed
-managed skill directories are backed up privately before replacement; edit the
-repository source because local edits and obsolete files in those directories
-are replaced on activation. Identical copies are left alone. To refresh just
-these skills, run `mac-config-restore agent-skills` (supports `--dry-run`).
-
-The `review-agent` skill requests an adversarial sub-agent review, a corrective
-plan and implementation, full tests, `prek run -a`, and a final commit when
-invoked. Activation only installs the skill; it does not run the review.
+Everything under `settings/agent-skills/` is copied to `~/.agents/skills/` when
+you run `make install`, overwriting the installed copies. No Nix configuration
+changes are needed.
 
 The settings were captured directly from this Mac on 2026-10-04. `old/` is a
 historical reference and is not imported. Home Manager follows the existing
