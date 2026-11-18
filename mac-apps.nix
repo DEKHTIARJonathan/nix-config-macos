@@ -54,9 +54,13 @@
     url = "https://api.gitkraken.dev/releases/production/darwin/arm64/active/installGitKraken.dmg";
     hash = "sha256-1TEOAmnLHJR7wZFQBN+5jmbKJGsCR2nRj7t50KlrTRc=";
   };
-  vscode = {
-    url = "https://code.visualstudio.com/sha/download?build=stable&os=darwin-arm64-dmg";
-    hash = "sha256-rAR3Suuj/XEQySgz2RlRRtUIZCe6ssqQIgDnrZ8Bip4=";
+  # vscode = {
+  #   url = "https://code.visualstudio.com/sha/download?build=stable&os=darwin-arm64-dmg";
+  #   hash = "sha256-rAR3Suuj/XEQySgz2RlRRtUIZCe6ssqQIgDnrZ8Bip4=";
+  # };
+  vscodium = {
+    url = "https://github.com/VSCodium/vscodium/releases/download/1.143.17232/VSCodium.arm64.1.143.17232.dmg";
+    hash = "sha256-2i2ROFrnNZSxMgi8nfIM9NkFqU+EeWozuz4JFiSB5HU=";
   };
   zed = {
     # download-success is an HTML page; use the matching release asset.
