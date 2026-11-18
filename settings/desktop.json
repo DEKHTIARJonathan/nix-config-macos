@@ -11,7 +11,8 @@
     "autohide-time-modifier": 0.25,
     "orientation": "bottom",
     "tilesize": 64,
-    "show-recents": false
+    "show-recents": false,
+    "wvous-br-corner": 1
   },
   "finder": {
     "FXPreferredViewStyle": "Nlsv"

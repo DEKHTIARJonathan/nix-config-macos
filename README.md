@@ -479,7 +479,8 @@ Every rebuild applies Dark appearance, `en-US`/`en_US`, automatic capitalization
 and period substitution, and captured trackpad preferences (including speed
 `0.875`, tap-to-click, tap-to-drag, gestures, and click thresholds). Dock
 preferences are autohide enabled, delay `0.0`, animation modifier `0.25`, bottom
-placement, size 64, and no recent applications.
+placement, size 64, and no recent applications. The bottom-right Hot Corner is
+disabled to prevent the Quick Note pop-up.
 
 Finder defaults to List view for folders without a saved view. Every activation
 also maintains automatic sorting by name for Desktop icons and the default
