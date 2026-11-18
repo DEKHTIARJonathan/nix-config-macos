@@ -188,6 +188,13 @@ class RosettaActivationTests(unittest.TestCase):
         # install software or depend on the host's actual Rosetta state.
         script = script.replace("/usr/bin/arch", "mock_arch")
         script = script.replace("/usr/sbin/softwareupdate", "mock_softwareupdate")
+        script = (
+            "\n".join(
+                "true" if "prepare_system_shell.py" in line else line
+                for line in script.splitlines()
+            )
+            + "\n"
+        )
         harness = """
             set -e
             rosetta_ready=$ROSETTA_READY

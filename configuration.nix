@@ -38,6 +38,9 @@
         exit 1
       fi
     fi
+
+    # Adopt an unmanaged bashrc only after preserving it; never touch managed links.
+    ${pkgs.python3}/bin/python3 ${./scripts/prepare_system_shell.py} || exit 1
   '';
 
   # Describe the EXISTING account for modules that need its home directory.

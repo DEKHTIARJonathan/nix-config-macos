@@ -297,6 +297,14 @@ changes. Removing an inventory entry does not uninstall the native app.
 
 ## Shell, fonts, and Terminal
 
+`configuration.nix` runs `scripts/prepare_system_shell.py` during
+pre-activation, before nix-darwin checks `/etc`. It preserves an unmanaged
+regular `/etc/bashrc` by moving it into a unique private
+`/etc/bashrc.before-nix-darwin.*/bashrc` backup. Preserve managed links,
+existing backups, atomic rename, and failure propagation. Do not source the old
+file automatically or extend this migration to unrelated `/etc` files. Builds
+and tests must not change live shell files.
+
 Home Manager owns the generated Zsh settings and `.p10k.zsh`. The writable
 `~/.zshrc` loads the managed `~/.config/zsh/nix-zshrc`, allowing applications
 such as Docker Desktop to append setup lines. `seed_zshrc()` in

@@ -217,11 +217,23 @@ PAM authentication files remain managed by macOS
 (`security.pam.services.sudo_local.enable = false`), because this laptop
 protects `/etc/pam.d`.
 
-If activation reports a conflicting existing `/etc` file, inspect and preserve
-the specifically named file, then follow the message and rerun the same command.
-Do not delete `/etc/nix` or Homebrew to work around a conflict. If macOS
-requests App Management permission for your terminal, allow it so activation can
-install the app copies.
+Activation automatically preserves an unmanaged regular `/etc/bashrc` before
+nix-darwin adopts it. The original file is moved atomically into a private,
+unique `/etc/bashrc.before-nix-darwin.*/bashrc` backup, whose exact path is
+printed during activation. Existing backups and nix-darwin-managed links are
+left intact. Backup failures stop activation; unrelated symlinks and non-regular
+files require manual inspection. This runs for both profiles, only during
+activation.
+
+Custom content from the old Bash configuration remains in the backup rather than
+being sourced automatically. Move any custom setup you want to retain into
+`/etc/bash.local`, which nix-darwin's Bash configuration sources.
+
+For other conflicting `/etc` files, inspect and preserve the specifically named
+file, then follow the error message and rerun the same command. Do not delete
+`/etc/nix` or Homebrew to work around a conflict. If macOS requests App
+Management permission for your terminal, allow it so activation can install the
+app copies.
 
 ### 5. Open a new terminal and verify the replacements
 
