@@ -1,9 +1,10 @@
 .DEFAULT_GOAL := build
 
-.PHONY: setup build install test test-nix lock
+.PHONY: setup build build-light install install-light test test-nix lock
 
 # Find a fresh Nix installation even before the calling shell is restarted.
 export PATH := $(PATH):/nix/var/nix/profiles/default/bin:$(HOME)/.nix-profile/bin
+PROFILE ?= mac
 NIX_FEATURES := --extra-experimental-features 'nix-command flakes'
 
 # Install bootstrap prerequisites only; building and activation stay explicit.
@@ -14,13 +15,20 @@ setup:
 # Finish independent downloads/builds even when another source has a bad hash.
 build:
 	nix $(NIX_FEATURES) run --no-update-lock-file .#nix-output-monitor -- \
-	    build .#darwinConfigurations.mac.system \
+	    build .#darwinConfigurations.$(PROFILE).system \
 		$(NIX_FEATURES) --no-update-lock-file --keep-going --out-link result
+
+# Select only the lightweight vendor app inventory.
+build-light:
+	$(MAKE) build PROFILE=lightweight
+
+install-light:
+	$(MAKE) install PROFILE=lightweight
 
 # Use the built system's launcher, including on a laptop's first activation.
 # switch also records the system generation for subsequent rollbacks.
 install: build
-	sudo ./result/sw/bin/darwin-rebuild switch --flake .#mac --no-update-lock-file
+	sudo ./result/sw/bin/darwin-rebuild switch --flake .#$(PROFILE) --no-update-lock-file
 
 # Explicitly refresh flake input revisions; ordinary builds keep them pinned.
 lock:

@@ -10,7 +10,7 @@ everyday tools remain available without entering a development shell.
 | File                    | Purpose                                                               |
 | ----------------------- | --------------------------------------------------------------------- |
 | `host.nix`              | Account, Apple Silicon platform, Nix ownership, compatibility version |
-| `flake.nix`             | Inputs and the configuration named `mac`                              |
+| `flake.nix`             | Inputs and the `mac` / `lightweight` configurations                   |
 | `configuration.nix`     | Persistent packages, shell integration, Homebrew management           |
 | `home.nix`              | Home Manager: Zsh, Git, writable settings seeding, restore commands   |
 | `desktop.nix`           | Captured appearance, locale, Dock, and trackpad preferences           |
@@ -67,6 +67,26 @@ monitor's build. It does not rewrite Nix configuration or shell dotfiles to
 enable those features. The upstream installer performs its own shell
 initialization; open a new terminal before using bare `nix` commands if Nix is
 not yet on your PATH.
+
+## Lightweight app profile
+
+Use these targets to build or activate with only Zed, GitKraken, Chrome, Mole,
+The Unarchiver, Tailscale, and LuLu from `mac-apps.nix`:
+
+```sh
+make build-light
+make install-light
+```
+
+`build-light` builds `.#darwinConfigurations.lightweight.system`;
+`install-light` builds and switches to `.#lightweight`. Excluded vendor apps are
+absent from both installation manifests and the system build dependencies, so
+these targets do not download them. Existing installed apps are preserved. The
+CLI tools, Homebrew declarations, Android SDK, and settings remain the same as
+`mac`. Individual app package outputs remain available for explicit builds.
+
+`make build` and `make install` still select the full `mac` configuration. The
+shared recipes also accept `PROFILE=lightweight`.
 
 ## Migration on this Mac, in order
 

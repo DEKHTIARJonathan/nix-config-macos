@@ -40,33 +40,50 @@
     let
       host = import ./host.nix;
       appPackages = import ./pkgs/macos-apps.nix { pkgs = self.darwinConfigurations.mac.pkgs; };
+      mkSystem =
+        extraModules:
+        nix-darwin.lib.darwinSystem {
+          # Pass our machine settings to every imported module.
+          specialArgs = {
+            inherit host;
+            blazePackage = blaze.packages.${host.system}.default;
+          };
+
+          modules = extraModules ++ [
+            nix-homebrew.darwinModules.nix-homebrew
+            home-manager.darwinModules.home-manager
+            {
+              home-manager = {
+                useGlobalPkgs = true;
+                useUserPackages = true;
+                backupFileExtension = "before-nix";
+                extraSpecialArgs = { inherit host; };
+                users.${host.username} = import ./home.nix;
+              };
+            }
+            ./configuration.nix
+            ./android.nix
+            ./app-installation.nix
+            ./desktop.nix
+          ];
+        };
     in
     {
-      # "mac" is a configuration name, not your computer's hostname.
-      # All commands use `--flake .#mac`; no hostname change is required.
-      darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
-        # Pass our machine settings to every imported module.
-        specialArgs = {
-          inherit host;
-          blazePackage = blaze.packages.${host.system}.default;
-        };
-
-        modules = [
-          nix-homebrew.darwinModules.nix-homebrew
-          home-manager.darwinModules.home-manager
+      # Configuration names are independent of the computer's hostname.
+      darwinConfigurations = {
+        mac = mkSystem [ ];
+        lightweight = mkSystem [
           {
-            home-manager = {
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              backupFileExtension = "before-nix";
-              extraSpecialArgs = { inherit host; };
-              users.${host.username} = import ./home.nix;
-            };
+            macApps.include = [
+              "chrome"
+              "gitkraken"
+              "lulu"
+              "mole"
+              "tailscale"
+              "the-unarchiver"
+              "zed"
+            ];
           }
-          ./configuration.nix
-          ./android.nix
-          ./app-installation.nix
-          ./desktop.nix
         ];
       };
 

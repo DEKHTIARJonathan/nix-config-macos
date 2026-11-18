@@ -98,10 +98,18 @@ Important settings files:
 
 ## Host, inputs, and compatibility
 
-The configuration name is `mac`; it is not the computer's hostname. Commands use
-`.#mac` or `.#darwinConfigurations.mac.system` regardless of the host's name.
-Run commands from the repository root rather than copying a historical absolute
-path from documentation.
+The default configuration name is `mac`; it is not the computer's hostname. The
+`lightweight` configuration shares the same modules but sets `macApps.include`
+to Zed, GitKraken, Chrome, Mole, The Unarchiver, Tailscale, and LuLu. This
+option filters both bundle and PKG installation manifests and build
+dependencies; excluded vendor apps must not be downloaded by a lightweight
+system build. `make build-light` and `make install-light` select this
+configuration through `PROFILE=lightweight`; ordinary build/install targets
+default to `PROFILE=mac`. Commands use `.#mac` /
+`.#darwinConfigurations.mac.system` or `.#lightweight` /
+`.#darwinConfigurations.lightweight.system` regardless of the host's name. Run
+commands from the repository root rather than copying a historical absolute path
+from documentation.
 
 The supported platform is `aarch64-darwin`. `host.nix` describes an existing
 macOS account; do not turn it into account-creation logic. Read the username and
@@ -480,11 +488,12 @@ The Makefile appends standard Nix profile paths and explicitly enables
 does not edit user Nix configuration or managed shell files to enable features.
 
 From the repository root, `make build` runs the flake's `nix-output-monitor` and
-builds `.#darwinConfigurations.mac.system` into `result`, without changing the
-lockfile. Its child build uses `--keep-going` so independent downloads and
-builds finish after a hash mismatch or other build failure; the overall failure
-status is preserved. `make install` depends on that successful build, then runs
-`sudo ./result/sw/bin/darwin-rebuild switch --flake .#mac --no-update-lock-file`.
+builds `.#darwinConfigurations.${PROFILE}.system` (default `mac`) into `result`,
+without changing the lockfile. Its child build uses `--keep-going` so
+independent downloads and builds finish after a hash mismatch or other build
+failure; the overall failure status is preserved. `make install` depends on that
+successful build, then runs
+`sudo ./result/sw/bin/darwin-rebuild switch --flake .#${PROFILE} --no-update-lock-file`.
 The bundled launcher works before the first activation; `switch` records the
 system generation. Bare `make` means `make build`. Adding or editing these
 targets does not authorize running a full build or activation. Check recipes

@@ -1,4 +1,5 @@
 {
+  config,
   lib,
   pkgs,
   host,
@@ -8,9 +9,9 @@ let
   inventory = import ./mac-apps.nix { inherit lib; };
   sources = import ./pkgs/app-sources.nix { inherit pkgs; };
   # Optional installers remain flake outputs, outside the system build/activation.
-  packages = lib.filterAttrs (_: package: !package.manualInstall) (
-    import ./pkgs/macos-apps.nix { inherit pkgs; }
-  );
+  packages = lib.filterAttrs (
+    name: package: builtins.elem name config.macApps.include && !package.manualInstall
+  ) (import ./pkgs/macos-apps.nix { inherit pkgs; });
   installers = lib.filterAttrs (_: package: package.isInstaller) packages;
   bundles = lib.filterAttrs (_: package: !package.isInstaller) packages;
   manifest = pkgs.writeText "native-macos-apps.json" (
@@ -41,30 +42,38 @@ let
   '';
 in
 {
-  # Downloads are pinned; native installers and app copies run at activation.
-  environment.systemPackages = [
-    installApps
-    installPkgs
-  ]
-  ++ builtins.attrValues installers;
-  environment.pathsToLink = [ "/share/macos-pkgs" ];
+  options.macApps.include = lib.mkOption {
+    type = lib.types.listOf (lib.types.enum (builtins.attrNames inventory));
+    default = builtins.attrNames inventory;
+    description = "Vendor apps selected from mac-apps.nix for build and activation.";
+  };
 
-  # Native apps are installed directly in /Applications. Replace nix-darwin's
-  # unused app-copy step, which otherwise creates an empty Nix Apps directory.
-  system.activationScripts.applications.text = lib.mkForce ''
-    if [ -d '/Applications/Nix Apps' ] && [ ! -L '/Applications/Nix Apps' ]; then
-      if ! /bin/rmdir '/Applications/Nix Apps' 2>/dev/null; then
-        echo 'Preserving /Applications/Nix Apps: it is not empty or could not be removed.' >&2
+  config = {
+    # Downloads are pinned; native installers and app copies run at activation.
+    environment.systemPackages = [
+      installApps
+      installPkgs
+    ]
+    ++ builtins.attrValues installers;
+    environment.pathsToLink = [ "/share/macos-pkgs" ];
+
+    # Native apps are installed directly in /Applications. Replace nix-darwin's
+    # unused app-copy step, which otherwise creates an empty Nix Apps directory.
+    system.activationScripts.applications.text = lib.mkForce ''
+      if [ -d '/Applications/Nix Apps' ] && [ ! -L '/Applications/Nix Apps' ]; then
+        if ! /bin/rmdir '/Applications/Nix Apps' 2>/dev/null; then
+          echo 'Preserving /Applications/Nix Apps: it is not empty or could not be removed.' >&2
+        fi
       fi
-    fi
-  '';
+    '';
 
-  # Install missing apps before Home Manager restores Dock entries. Preserve
-  # existing apps, including self-updated versions, on subsequent rebuilds.
-  system.activationScripts.postActivation.text = lib.mkBefore ''
-    ${installPkgs}/bin/mac-config-install-pkgs
-    launchctl asuser "$(id -u ${lib.escapeShellArg host.username})" \
-      sudo -u ${lib.escapeShellArg host.username} --set-home \
-      ${installApps}/bin/mac-config-install-apps
-  '';
+    # Install missing apps before Home Manager restores Dock entries. Preserve
+    # existing apps, including self-updated versions, on subsequent rebuilds.
+    system.activationScripts.postActivation.text = lib.mkBefore ''
+      ${installPkgs}/bin/mac-config-install-pkgs
+      launchctl asuser "$(id -u ${lib.escapeShellArg host.username})" \
+        sudo -u ${lib.escapeShellArg host.username} --set-home \
+        ${installApps}/bin/mac-config-install-apps
+    '';
+  };
 }

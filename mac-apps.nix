@@ -14,11 +14,11 @@
   # ====================== LOCAL LLM ====================== #
   bionic = {
     url = "https://lmstudio.ai/download/bionic/latest/darwin/arm64";
-    hash = "sha256-Q6tNoah/HEoQU/t+W+/EZJnxy02oH718uBdxsixKNz8=";
+    hash = "sha256-6gpVDTSkLrqLA8Mvht1ks+eeLVXxA+jA3R4aH1ndCf8=";
   };
   lm-studio = {
     url = "https://lmstudio.ai/download/latest/darwin/arm64";
-    hash = "sha256-BfdXAzZwIteXXmQx51bglycDcGO7iBjVizZpYGkliok=";
+    hash = "sha256-+L5jTx7quqGdkATW3ouL+M2AWiLjSx+VONTXAs+IR3U=";
   };
   # ====================== GIS ====================== #
   ariane = {
@@ -48,11 +48,11 @@
   };
   docker-desktop = {
     url = "https://desktop.docker.com/mac/main/arm64/Docker.dmg";
-    hash = "sha256-0hvYeH6HYbIsKxt4w0/6mau2wGIZtDuoS2tFCHo1yf4=";
+    hash = "sha256-Dt5/mRe1XDlqF7A8Bpyt9Fen0hkEvCZMbTmP4TLaf7k=";
   };
   gitkraken = {
     url = "https://api.gitkraken.dev/releases/production/darwin/arm64/active/installGitKraken.dmg";
-    hash = "sha256-1TEOAmnLHJR7wZFQBN+5jmbKJGsCR2nRj7t50KlrTRc=";
+    hash = "sha256-qLCO5Zo04U73DBbPpU5/6nyR6CC+a/osQD8vu7Q6BbM=";
   };
   # vscode = {
   #   url = "https://code.visualstudio.com/sha/download?build=stable&os=darwin-arm64-dmg";
@@ -70,15 +70,15 @@
   # ====================== Browsers ====================== #
   brave = {
     url = "https://referrals.brave.com/latest/Brave-Browser.dmg";
-    hash = "sha256-0NauI9Vpg2LvvOwih3jO5//uFgXmDH0kIJ+mfX2zmEU=";
+    hash = "sha256-SxbUtYhrNoaRzlWf/D+icpeNOa5Y719pV0ByOpQ+9cA=";
   };
   chrome = {
     url = "https://dl.google.com/tag/s/appguid%3DCOM.GOOGLE.CHROME%26iid%3D%7BA28A17CD-130C-A433-15D3-6C506FCA1744%7D%26brand%3DGGRO/chrome/mac/universal/stable/googlechrome.dmg";
-    hash = "sha256-FdnYoz7rhYZnlG8enSnSqCYZIUyJ0bsWqxE8tj7BE1U=";
+    hash = "sha256-cuqy9tmp3Aez/8YFlcmTp6JVG2KxbyUG9/LbHYeNNN4=";
   };
   firefox = {
     url = "https://download.mozilla.org/?product=firefox-latest-ssl&os=osx&lang=en-US";
-    hash = "sha256-3+hQjuiIDOwVeCU+sCuRVLWXGlXoMtlzlvRjzQe172c=";
+    hash = "sha256-25pSIpHYLL6aKykigi3vTbCnnU+j5hSXkDnXBbE7HCU=";
   };
   # ====================== Mac Tools ====================== #
   bazecor = {
@@ -91,7 +91,7 @@
   };
   mole = {
     url = "https://mole.fit/download";
-    hash = "sha256-OFNAe2uFEtCv+d4oypqatMYAh/YXx+PFrS/jAhiXxmY=";
+    hash = "sha256-rBSVo9wLwZqDwbcUIcrASDCAJyaCfagozT6Gpchu8wk=";
   };
   raycast = {
     url = "https://www.raycast.com/download/mac";
