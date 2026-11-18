@@ -1,5 +1,4 @@
 {
-  blazePackage,
   config,
   host,
   lib,
@@ -75,9 +74,6 @@
   # Use macOS's native core utilities (cp, ls, mv, date, etc.). Installing
   # GNU coreutils here shadows them and can break macOS-specific build scripts.
   environment.systemPackages = with pkgs; [
-    # Incremental Rust builds from indexable-inc/blaze's upstream flake.
-    blazePackage
-
     # Play, record, convert, and stream select audio and video codecs
     ffmpeg
 

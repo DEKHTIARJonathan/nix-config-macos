@@ -103,10 +103,11 @@ The default configuration name is `mac`; it is not the computer's hostname. The
 to Zed, GitKraken, Chrome, Mole, The Unarchiver, Tailscale, and LuLu. This
 option filters both bundle and PKG installation manifests and build
 dependencies; excluded vendor apps must not be downloaded by a lightweight
-system build. `make build-light` and `make install-light` select this
-configuration through `PROFILE=lightweight`; ordinary build/install targets
-default to `PROFILE=mac`. Commands use `.#mac` /
-`.#darwinConfigurations.mac.system` or `.#lightweight` /
+system build. Blaze is included only by the full `mac` profile in `flake.nix`;
+lightweight builds exclude it and its `blaze-dist` build dependency.
+`make build-light` and `make install-light` select this configuration through
+`PROFILE=lightweight`; ordinary build/install targets default to `PROFILE=mac`.
+Commands use `.#mac` / `.#darwinConfigurations.mac.system` or `.#lightweight` /
 `.#darwinConfigurations.lightweight.system` regardless of the host's name. Run
 commands from the repository root rather than copying a historical absolute path
 from documentation.

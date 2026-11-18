@@ -46,7 +46,6 @@
           # Pass our machine settings to every imported module.
           specialArgs = {
             inherit host;
-            blazePackage = blaze.packages.${host.system}.default;
           };
 
           modules = extraModules ++ [
@@ -71,7 +70,12 @@
     {
       # Configuration names are independent of the computer's hostname.
       darwinConfigurations = {
-        mac = mkSystem [ ];
+        mac = mkSystem [
+          {
+            # Keep Blaze and its build dependencies out of lightweight builds.
+            environment.systemPackages = [ blaze.packages.${host.system}.default ];
+          }
+        ];
         lightweight = mkSystem [
           {
             macApps.include = [

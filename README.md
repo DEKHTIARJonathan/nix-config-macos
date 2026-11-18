@@ -81,9 +81,10 @@ make install-light
 `build-light` builds `.#darwinConfigurations.lightweight.system`;
 `install-light` builds and switches to `.#lightweight`. Excluded vendor apps are
 absent from both installation manifests and the system build dependencies, so
-these targets do not download them. Existing installed apps are preserved. The
-CLI tools, Homebrew declarations, Android SDK, and settings remain the same as
-`mac`. Individual app package outputs remain available for explicit builds.
+these targets do not download them. Existing installed apps are preserved. Blaze
+and its `blaze-dist` build dependency are also excluded. Other CLI tools,
+Homebrew declarations, Android SDK, and settings remain the same as `mac`.
+Individual app package outputs remain available for explicit builds.
 
 `make build` and `make install` still select the full `mac` configuration. The
 shared recipes also accept `PROFILE=lightweight`.
@@ -397,11 +398,12 @@ already includes a lock.
 
 Both Android entries are included in one SDK package.
 
-The [Blaze Rust build tool](https://github.com/indexable-inc/blaze) comes from
-its upstream flake, pinned in `flake.lock` together with its own build inputs.
-It is compiled from source by Nix. After activation, use `blaze build`,
-`blaze run`, or `blaze test` in a Rust project. Its package supplies its pinned
-Rust toolchain to Blaze without changing the global Rustup-managed commands.
+The full `mac` profile includes the
+[Blaze Rust build tool](https://github.com/indexable-inc/blaze) from its
+upstream flake, pinned in `flake.lock` together with its own build inputs. It is
+compiled from source by Nix. After activation, use `blaze build`, `blaze run`,
+or `blaze test` in a Rust project. Its package supplies its pinned Rust
+toolchain to Blaze without changing the global Rustup-managed commands.
 
 Playwright **1.61.1** browser dependencies are declared in `home.nix` using
 upstream Apple Silicon archives. Home Manager links them under
