@@ -930,6 +930,7 @@ make build   # Build with progress; create result without activating.
 make install # Build, then activate with sudo.
 make test    # Run tests through uv, as CI does.
 make test-nix # Run the complete Apple Silicon Nix settings check.
+make clean-cache # Garbage-collect unreferenced Nix store paths.
 make lock    # Update flake.lock to the latest allowed input revisions.
 ```
 
@@ -967,6 +968,21 @@ shows the phase, but its native renderer only has one live status row. The flake
 cannot add rows to that already running client. No shell alias or function is
 installed. The Makefile invokes the monitor explicitly; the Nix executable is
 unchanged.
+
+### Cleaning unused Nix store data
+
+Run `make clean-cache` to remove all unreferenced Nix store paths, including
+unused downloads and build dependencies. It runs `nix store gc` directly,
+without evaluating or building the flake. To preview deletions, run
+`nix store gc --dry-run`.
+
+Nix preserves anything referenced by current profiles, retained generations, and
+build links such as `result` or `result-*`. This includes rollback closures and
+completed builds that have not been activated, so "unused" means unreferenced by
+Nix rather than simply absent from the current system. This target preserves
+those roots and generations, native apps in `/Applications`, Homebrew data, and
+user settings. Collected dependencies may need downloading again for a future
+build.
 
 ### PKG installation and updates
 

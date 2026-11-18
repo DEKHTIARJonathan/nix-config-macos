@@ -499,6 +499,13 @@ system generation. Bare `make` means `make build`. Adding or editing these
 targets does not authorize running a full build or activation. Check recipes
 with dry runs and mock commands when appropriate.
 
+`make clean-cache` runs `nix store gc` directly without flake evaluation or a
+build. It removes unreferenced store paths and preserves current profiles,
+retained generations, and roots such as `result` / `result-*`. It does not prune
+generations, remove build links, or touch native apps or user data. Adding or
+editing this target does not authorize running garbage collection; validate the
+recipe with dry runs or mocked commands.
+
 On an already bootstrapped machine, when activation is requested:
 
 ```sh

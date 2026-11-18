@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := build
 
-.PHONY: setup build build-light install install-light test test-nix lock
+.PHONY: setup build build-light install install-light clean-cache test test-nix lock
 
 # Find a fresh Nix installation even before the calling shell is restarted.
 export PATH := $(PATH):/nix/var/nix/profiles/default/bin:$(HOME)/.nix-profile/bin
@@ -29,6 +29,10 @@ install-light:
 # switch also records the system generation for subsequent rollbacks.
 install: build
 	sudo ./result/sw/bin/darwin-rebuild switch --flake .#$(PROFILE) --no-update-lock-file
+
+# Remove unreferenced store paths while preserving profiles and build roots.
+clean-cache:
+	nix $(NIX_FEATURES) store gc
 
 # Explicitly refresh flake input revisions; ordinary builds keep them pinned.
 lock:
