@@ -187,7 +187,7 @@
   tailscale = {
     format = "pkg";
     url = "https://pkgs.tailscale.com/stable/Tailscale-latest-macos.pkg";
-    hash = "sha256-Z+xV8Y7ir6wKj7V/eBGXf0rW3x3r1KGH+g2z27XUAdU=";
+    hash = "sha256-Dsq2DgmNMfnL0zSGdHQpPcCJeBVGZdp1w/P+H4IV1uc=";
     appName = "Tailscale.app";
   };
 }
